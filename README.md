@@ -1,28 +1,25 @@
 # PIXEL GRAND PRIX — 2D Track Racer
 
-Carreras arcade retro desde arriba, con circuitos cerrados y curvas que exigen frenar, girar y cuidar el agarre.
+Arcade de carreras retro desde arriba, con circuitos cerrados, frenado para curvas, un rival CPU y multijugador local.
 
 ## Ejecutar
-Abrí `index.html` en un navegador moderno. Para publicarlo online, activá GitHub Pages desde Settings → Pages.
+Abrí `index.html` en un navegador moderno. Para publicarlo online, activá GitHub Pages en Settings → Pages.
 
 ## Controles
-- **Jugador 1:** W acelera, S frena, A/D gira, ESPACIO freno de mano, R reinicia la carrera y ESC pausa.
+- **Jugador 1:** W acelera, S frena, A/D gira, ESPACIO freno de mano, R reinicia y ESC pausa.
 - **Jugador 2:** flechas para acelerar/frenar/girar, ENTER freno de mano.
-- Un jugador compite contra un rival que sigue el trazado y reduce la velocidad antes de curvas.
-- Dos jugadores compiten localmente en la misma pantalla.
+- Un jugador compite contra un rival que reduce velocidad antes de curvas. Dos jugadores comparten pantalla.
+- El auto se puede elegir en el garaje antes de empezar.
 
-## Etapas completadas
-1. Menú, estructura del juego y selección de modos.
-2. Aceleración, frenado progresivo y derrapes.
-3. Diez circuitos temáticos.
-4. Renovación de jugabilidad: vista 2D desde arriba, circuitos cerrados, 3 vueltas, manejo con dirección real, penalización al salirse del asfalto, avisos de frenado, choques y rival IA.
-5. Cronometraje de vueltas, mejor vuelta, reinicio rápido y minimapa.
-6. **Audio generado en el navegador:** sonido de motor que cambia con la velocidad, pitidos al completar vueltas y efecto de choque; control ON/OFF.
-7. **Campeonato:** puntos por puesto, clasificación acumulada entre los 10 circuitos, campeón de temporada y opción de iniciar una nueva temporada.
+## Fases completadas
+1–3. Menú, física inicial y circuitos temáticos.
+4–5. Renovación 2D, vueltas, minimapa, IA rival, colisiones entre autos, cronómetro y mejor vuelta.
+6–7. Sonidos de motor/choque y campeonato por puntos.
+8. **Garaje:** cuatro modelos con velocidad, aceleración, frenado, dirección y agarre diferentes; seis pinturas seleccionables.
+9. **Conducción y seguridad de pista:** asfalto más ancho, barreras exteriores, neumáticos en curvas cerradas, colisiones con rebote, penalización fuerte del pasto y agarre reducido al entrar demasiado rápido. Se quitó el cartel “BRAKE!” para que la conducción dé la señal por el comportamiento del auto, no por un aviso.
+10. **Pulido y rendimiento:** comprobación de sintaxis y ejecuciones simuladas de carreras en los diez circuitos; opciones gráficas detalladas/retro/rendimiento y actualización de la interfaz.
 
-## Próximas etapas
-8. Garaje con colores y autos desbloqueables.
-9. Ajustes gráficos extra, controles configurables y optimización.
-10. Pruebas en navegador, balance de dificultad y pulido final.
+## Próximas mejoras
+Podemos ajustar el equilibrio después de probarlo en navegador, añadir más variedad de circuitos y pulir el comportamiento de la IA según cómo se sienta la conducción.
 
-El juego sigue siendo un prototipo: conviene probarlo en distintos navegadores y ajustar la física según cómo se sienta al jugar.
+El juego sigue siendo un prototipo en evolución; las pruebas simuladas no sustituyen probarlo visualmente con teclado y navegador real.
