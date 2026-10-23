@@ -336,7 +336,8 @@ function finishRace(){
  running=false;cancelAnimationFrame(raf);game.classList.add('hidden');result.classList.remove('hidden');
  const winner=[...cars].sort((a,b)=>(a.finishTime??Infinity)-(b.finishTime??Infinity))[0];
  awardPoints(winner);updateAudio();
- if(mode==='solo')$('resultTitle').textContent=winner.isAI?'¡TE GANÓ EL RIVAL!':'¡GANASTE LA CARRERA!';
+ if(stage===9)$('resultTitle').textContent='¡CAMPEONATO TERMINADO!';
+ else if(mode==='solo')$('resultTitle').textContent=winner.isAI?'¡TE GANÓ EL RIVAL!':'¡GANASTE LA CARRERA!';
  else $('resultTitle').textContent='¡GANA EL JUGADOR '+(winner.player+1)+'!';
  const champion=Object.entries(championship).sort((a,b)=>b[1]-a[1])[0];
  const finalNote=stage===9?' · CAMPEÓN DE TEMPORADA: '+(champion[0]==='player1'?'JUGADOR 1':champion[0]==='player2'?'JUGADOR 2':'CPU')+' ('+champion[1]+' pts)':'';
