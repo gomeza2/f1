@@ -85,7 +85,10 @@ function resetChampionship(){
 function awardPoints(winner){
  const winningKey=mode==='solo'?(winner.isAI?'rival':'player1'):(winner.player===0?'player1':'player2');
  const losingKey=mode==='solo'?(winner.isAI?'player1':'rival'):(winner.player===0?'player2':'player1');
- championship[winningKey]+=25;championship[losingKey]+=18;roundsCompleted++;
+ const loser=cars.find(car=>car!==winner);
+ championship[winningKey]+=25;
+ championship[losingKey]+=loser?.done?18:0;
+ roundsCompleted++;
 }
 function standingsText(){
  if(mode==='solo')return 'CAMPEONATO · VOS '+championship.player1+' PTS · CPU '+championship.rival+' PTS';
@@ -193,7 +196,7 @@ for(let i=0;i<tracks.length;i++){const o=document.createElement('option');o.valu
 function keyFor(i){return i===0?{up:'w',down:'s',left:'a',right:'d',hand:' '}:{up:'arrowup',down:'arrowdown',left:'arrowleft',right:'arrowright',hand:'enter'};}
 window.addEventListener('keydown',e=>{
  const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' ','enter'].includes(k))e.preventDefault();
- keys[k]=true;if(k==='escape'&&!e.repeat&&running)togglePause();if(k==='r'&&!e.repeat&&running)start(mode,stage);
+ keys[k]=true;if(k==='escape'&&!e.repeat&&running)togglePause();if(k==='r'&&!e.repeat&&running)start(mode,stage,true);
 });
 window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
 window.addEventListener('blur',()=>{keys=Object.create(null);});
@@ -283,11 +286,25 @@ function resolveCollisions(dt){
   const now=performance.now();if(now-lastCrashSoundAt>420){playTone(105,.12,.05);lastCrashSoundAt=now;}
  }
 }
+const trackPathCache=new WeakMap();
+function getTrackPath(){
+ let path=trackPathCache.get(track);
+ if(path||typeof Path2D==='undefined')return path||null;
+ path=new Path2D();const s=track.samples;path.moveTo(s[0].x,s[0].y);
+ for(let i=1;i<s.length;i++)path.lineTo(s[i].x,s[i].y);
+ path.closePath();trackPathCache.set(track,path);return path;
+}
 function strokeTrack(context,color,width,dash=[],offset=0){
- context.beginPath();const s=track.samples;context.moveTo(s[0].x,s[0].y);
- for(let i=1;i<s.length;i++)context.lineTo(s[i].x,s[i].y);
- context.closePath();context.lineJoin='round';context.lineCap='round';context.lineWidth=width;
- context.strokeStyle=color;context.setLineDash(dash);context.lineDashOffset=offset;context.stroke();context.setLineDash([]);
+ context.lineJoin='round';context.lineCap='round';context.lineWidth=width;
+ context.strokeStyle=color;context.setLineDash(dash);context.lineDashOffset=offset;
+ const path=getTrackPath();
+ if(path)context.stroke(path);
+ else{
+  context.beginPath();const s=track.samples;context.moveTo(s[0].x,s[0].y);
+  for(let i=1;i<s.length;i++)context.lineTo(s[i].x,s[i].y);
+  context.closePath();context.stroke();
+ }
+ context.setLineDash([]);
 }
 function drawBackground(context){
  context.fillStyle=track.grass;context.fillRect(0,0,1000,640);
@@ -365,7 +382,6 @@ function drawMiniMap(context){
 function drawFrame(){
  const w=canvas.width,h=canvas.height;ctx.setTransform(w/1000,0,0,h/640,0,0);drawBackground(ctx);
  const player=cars[0];
- // Sin cartel "BRAKE!": hay que leer la curva y aprender a frenar por cuenta propia.
  cars.slice().sort((a,b)=>a.speed-b.speed).forEach(car=>drawCar(ctx,car));
  ctx.fillStyle='#101725ed';ctx.fillRect(14,14,245,68);ctx.textAlign='left';ctx.font='bold 13px monospace';
  ctx.fillStyle=player.color;ctx.fillText('SPEED  '+Math.round(player.speed)+' KM/H',26,35);
@@ -384,7 +400,9 @@ function loop(now){
  resolveCollisions(dt);
  $('timer').textContent=format(elapsed);$('lap').textContent=Math.min(LAPS_TO_WIN,cars[0].lap+1)+'/'+LAPS_TO_WIN;
  updateAudio();drawFrame();
- if(cars.some(car=>car.done)){finishRace();return;}
+ const finishers=cars.filter(car=>car.done);
+ if(cars.every(car=>car.done)){finishRace();return;}
+ if(finishers.length&&elapsed-Math.min(...finishers.map(car=>car.finishTime))>18){finishRace();return;}
  raf=requestAnimationFrame(loop);
 }
 function format(t){const m=Math.floor(t/60),s=(t%60).toFixed(1).padStart(4,'0');return String(m).padStart(2,'0')+':'+s;}
