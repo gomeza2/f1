@@ -93,7 +93,7 @@ function resize(){
 function setupCar(player,isAI=false){
  return {player,isAI,color:isAI?'#ffc857':player===0?'#ff3d81':'#39e8e8',
   x:0,y:0,heading:0,speed:0,steer:0,drift:0,done:false,finishTime:null,
-  progress:0,previousProgress:0,lap:0,raceProgress:0,offroad:0,particles:[],flash:0};
+  progress:0,previousProgress:0,lap:0,lapTimes:[],lapStartTime:0,raceProgress:0,offroad:0,particles:[],flash:0};
 }
 function placeCar(car,progress,lateral){
  const p=sampleAt(progress),nx=-Math.sin(p.angle),ny=Math.cos(p.angle);
@@ -117,7 +117,7 @@ for(let i=0;i<tracks.length;i++){const o=document.createElement('option');o.valu
 function keyFor(i){return i===0?{up:'w',down:'s',left:'a',right:'d',hand:' '}:{up:'arrowup',down:'arrowdown',left:'arrowleft',right:'arrowright',hand:'enter'};}
 window.addEventListener('keydown',e=>{
  const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' ','enter'].includes(k))e.preventDefault();
- keys[k]=true;if(k==='escape'&&!e.repeat&&running)togglePause();
+ keys[k]=true;if(k==='escape'&&!e.repeat&&running)togglePause();if(k==='r'&&!e.repeat&&running)start(mode,stage);
 });
 window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
 window.addEventListener('blur',()=>{keys=Object.create(null);});
@@ -129,7 +129,7 @@ function updateProgress(car,loc){
  const old=car.progress,newP=loc.progress,delta=newP-old;
  if(delta < -track.length*.5){
   const forward=Math.cos(wrapAngle(car.heading-loc.angle))>.12;
-  if(forward)car.lap++;
+  if(forward){const lapTime=elapsed-car.lapStartTime;car.lapTimes.push(lapTime);car.lapStartTime=elapsed;car.lap++;}
  }
  car.previousProgress=old;car.progress=newP;car.raceProgress=car.lap*track.length+newP;
  car.offroad=loc.distance;car.roadOffset=loc.offset;car.nearest=loc;
@@ -292,11 +292,12 @@ function finishRace(){
  const winner=[...cars].sort((a,b)=>(a.finishTime??Infinity)-(b.finishTime??Infinity))[0];
  if(mode==='solo')$('resultTitle').textContent=winner.isAI?'¡TE GANÓ EL RIVAL!':'¡GANASTE LA CARRERA!';
  else $('resultTitle').textContent='¡GANA EL JUGADOR '+(winner.player+1)+'!';
- $('resultText').textContent=track.name+' · '+LAPS_TO_WIN+' vueltas · Tiempo '+format(winner.finishTime??elapsed)+'. '+(stage===9&&!winner.isAI?'¡CAMPEÓN DEL PIXEL GRAND PRIX!':'¿Vamos a la siguiente pista?');
+ $('resultText').textContent=track.name+' · '+LAPS_TO_WIN+' vueltas · Tiempo total '+format(winner.finishTime??elapsed)+(winner.lapTimes.length?' · Mejor vuelta '+format(Math.min(...winner.lapTimes)):'')+'. '+(stage===9&&!winner.isAI?'¡CAMPEÓN DEL PIXEL GRAND PRIX!':'¿Vamos a la siguiente pista?');
  $('nextBtn').textContent=stage===9?'REPETIR CAMPEONATO ↻':'SIGUIENTE CIRCUITO →';
  $('nextBtn').onclick=()=>start(mode,(stage+1)%tracks.length);
 }
 $('pauseBtn').onclick=togglePause;
+$('restartBtn').onclick=()=>start(mode,stage);
 $('backBtn').onclick=()=>{running=false;cancelAnimationFrame(raf);keys=Object.create(null);game.classList.add('hidden');menu.classList.remove('hidden');};
 $('menuBtn').onclick=()=>{result.classList.add('hidden');menu.classList.remove('hidden');};
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>start(b.dataset.mode));
