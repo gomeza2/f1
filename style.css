@@ -67,3 +67,14 @@ h2{font:clamp(17px,4vw,27px)/1.5 'Press Start 2P'}
 .views{border-color:#59637c;box-shadow:0 8px 34px #0008,0 0 0 1px #c8d7ff12}
 button:focus-visible,select:focus-visible{outline:2px solid var(--lime);outline-offset:3px}
 @media(max-width:760px){.garage-controls{grid-template-columns:1fr}.garage-summary{grid-column:auto}.garage-summary small{font-size:13px}}
+
+/* Fase 11: pantalla completa y proporciones de pista */
+.header-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+#fullscreenBtn{border-color:#647194;color:var(--lime)}
+.shell:fullscreen{width:100vw;max-width:none;height:100vh;min-height:100vh;border:0;padding:clamp(8px,1.4vw,22px);overflow:auto;background:#090b19}
+.shell:fullscreen #game{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0}
+.shell:fullscreen .views{max-height:calc(100vh - 190px);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.shell:fullscreen .views canvas{width:auto;max-width:100%;height:auto;max-height:calc(100vh - 215px);aspect-ratio:1000/640}
+.shell:fullscreen header{padding-bottom:8px}
+.shell:fullscreen footer{padding-top:8px}
+@media(max-width:760px){.header-actions{gap:5px}.header-actions .small{font-size:7px;padding:8px}.shell:fullscreen .views canvas{width:100%;height:auto;max-height:none}}
