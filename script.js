@@ -259,7 +259,7 @@ function updateProgress(car,loc,fromX,fromY){
  }
  if(gateCrossed(finish,fromX,fromY,car.x,car.y,car.heading)&&car.checkpointPasses===checkpoints.length){
   const lapTime=elapsed-car.lapStartTime;
-  if(car.lap>0)car.lapTimes.push(lapTime);
+  car.lapTimes.push(lapTime);
   car.lapStartTime=elapsed;car.lap++;car.checkpointPasses=0;car.nextCheckpoint=0;
   playTone(car.lap>=LAPS_TO_WIN?880:620,.12,.035);
  }
