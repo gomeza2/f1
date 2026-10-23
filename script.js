@@ -267,7 +267,7 @@ function drawFrame(){
   ctx.fillText('BRAKE!',x,y-30);
   ctx.strokeStyle='#ffed68';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,14,0,Math.PI*2);ctx.stroke();
  }
- cars.slice().sort((a,b)=>a.lane-b.lane).forEach(drawCar);
+ cars.slice().sort((a,b)=>a.lane-b.lane).forEach(car=>drawCar(ctx,car));
  // Large in-world info ribbon, legible but compact.
  ctx.fillStyle='#101725e8';ctx.fillRect(14,14,216,58);
  ctx.textAlign='left';ctx.font='bold 12px monospace';
