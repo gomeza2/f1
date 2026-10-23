@@ -27,7 +27,7 @@ select{width:100%;background:#171d32;color:var(--lime);border:1px solid #414c6b;
 footer{border-top:1px solid var(--line);padding-top:14px;font-size:8px;margin-top:14px}
 .hidden{display:none!important}
 #game{margin:auto 0;width:100%}
-.hud{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 2px}
+.hud{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 2px}.race-actions{display:flex;gap:8px;align-items:center}
 .hud strong{display:block;font:11px 'Press Start 2P';margin-top:9px;color:var(--lime)}
 .raceinfo{display:flex;gap:20px;font:10px 'Press Start 2P';color:#adb7d7}
 .raceinfo b{color:var(--cyan)}
@@ -49,7 +49,7 @@ h2{font:clamp(17px,4vw,27px)/1.5 'Press Start 2P'}
  .menu-grid{grid-template-columns:1fr}
  .panel{padding:25px 5px}
  .hud{flex-wrap:wrap}
- .raceinfo{gap:9px;font-size:8px}
+ .raceinfo{gap:9px;font-size:8px}.race-actions{width:100%;justify-content:flex-end}
  .racebottom{flex-wrap:wrap}
  .racebottom span:nth-child(2){order:3;width:100%}
  .keys{gap:12px}
