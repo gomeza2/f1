@@ -238,18 +238,26 @@ function togglePause(){
  if(!running)return;paused=!paused;$('status').textContent=paused?'PAUSA — ESC PARA SEGUIR':'¡A FONDO!';updateAudio();
  if(!paused){last=performance.now();raf=requestAnimationFrame(loop);}
 }
-function updateProgress(car,loc){
+function gateCrossed(gate,fromX,fromY,toX,toY,heading){
+ const tx=Math.cos(gate.angle),ty=Math.sin(gate.angle),nx=-ty,ny=tx;
+ const before=(fromX-gate.x)*tx+(fromY-gate.y)*ty;
+ const after=(toX-gate.x)*tx+(toY-gate.y)*ty;
+ const lateral=(toX-gate.x)*nx+(toY-gate.y)*ny;
+ const forward=Math.cos(wrapAngle(heading-gate.angle))>.12;
+ return before<0&&after>=0&&Math.abs(lateral)<=ROAD_EDGE&&forward;
+}
+function updateProgress(car,loc,fromX,fromY){
  const old=car.progress,newP=loc.progress,delta=newP-old;
- const crossedStart=delta < -track.length*.5;
- const forward=Math.cos(wrapAngle(car.heading-loc.angle))>.12;
- if(!crossedStart&&newP>=old){
+ const finishGate=sampleAt(0);
+ const finish={x:finishGate.x,y:finishGate.y,angle:finishGate.angle};
+ for(let tries=0;tries<checkpoints.length;tries++){
   const gate=checkpoints[car.nextCheckpoint];
-  if(gate&&old<gate.progress&&newP>=gate.progress){
+  if(gate&&gateCrossed(gate,fromX,fromY,car.x,car.y,car.heading)){
    car.checkpointPasses++;car.nextCheckpoint=(car.nextCheckpoint+1)%checkpoints.length;
    car.lastCheckpointTime=elapsed;playTone(520+gate.id*80,.07,.022);
-  }
+  }else break;
  }
- if(crossedStart&&forward&&car.checkpointPasses===checkpoints.length){
+ if(gateCrossed(finish,fromX,fromY,car.x,car.y,car.heading)&&car.checkpointPasses===checkpoints.length){
   const lapTime=elapsed-car.lapStartTime;
   if(car.lap>0)car.lapTimes.push(lapTime);
   car.lapStartTime=elapsed;car.lap++;car.checkpointPasses=0;car.nextCheckpoint=0;
@@ -288,7 +296,7 @@ function physics(car,i,dt){
  const turnRate=(.6+car.speed/235*1.7)*model.steering;
  car.heading=wrapAngle(car.heading+car.steer*turnRate*grip*dt);
  car.drift=clamp(Math.max(car.drift*.92,tooFast/128),0,1);
- const oldProgress=car.progress;
+ const oldProgress=car.progress,previousX=car.x,previousY=car.y;
  const move=car.speed*(car.isAI?.63:.62)*dt;
  car.x+=Math.cos(car.heading)*move;car.y+=Math.sin(car.heading)*move;
  let after=nearestOnTrack(car.x,car.y);
@@ -313,7 +321,7 @@ function physics(car,i,dt){
   car.flash=.16;
   after=nearestOnTrack(car.x,car.y);
  }
- updateProgress(car,after);
+ updateProgress(car,after,previousX,previousY);
  if(tooFast>12&&upcoming.distance<130)car.speed=Math.max(30,car.speed-tooFast*dt*.045);
  if(car.drift>.28&&car.speed>55&&Math.random()<dt*15){
   car.particles.push({life:.42,max:.42,dx:(Math.random()-.5)*13,dy:6+Math.random()*10,size:2+Math.random()*3});
@@ -475,6 +483,22 @@ $('backBtn').onclick=()=>{running=false;updateAudio();cancelAnimationFrame(raf);
 $('menuBtn').onclick=()=>{result.classList.add('hidden');menu.classList.remove('hidden');};
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>start(b.dataset.mode));
 $('soundBtn').onclick=()=>{soundEnabled=!soundEnabled;$('soundBtn').textContent='♫ SONIDO: '+(soundEnabled?'ON':'OFF');if(soundEnabled){initAudio();if(audioContext&&audioContext.state==='suspended')audioContext.resume().catch(()=>{});}updateAudio();};
+$('fullscreenBtn').onclick=async()=>{
+ const target=document.querySelector('.shell');
+ try{
+  if(!document.fullscreenElement){if(target.requestFullscreen)await target.requestFullscreen();}
+  else if(document.exitFullscreen)await document.exitFullscreen();
+ }catch(err){$('status').textContent='PANTALLA COMPLETA NO DISPONIBLE EN ESTE NAVEGADOR';}
+ drawFullScreenButton();
+};
+function drawFullScreenButton(){
+ const button=$('fullscreenBtn');
+ if(button)button.textContent=document.fullscreenElement?'⛶ SALIR DE PANTALLA COMPLETA':'⛶ PANTALLA COMPLETA';
+}
+document.addEventListener('fullscreenchange',()=>{drawFullScreenButton();if(running)resize();});
+window.addEventListener('keydown',e=>{
+ if(e.key==='Escape'&&document.fullscreenElement&&document.exitFullscreen){document.exitFullscreen().catch(()=>{});}
+});
 $('graphics').addEventListener('change',()=>{graphics=$('graphics').value;$('views').classList.toggle('pixelated',graphics==='retro');$('views').classList.toggle('performance',graphics==='lite');if(running)resize();});
 $('carModel').addEventListener('change',updateGaragePreview);
 $('carColor').addEventListener('change',updateGaragePreview);
