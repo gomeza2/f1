@@ -48,6 +48,7 @@ function makeTrack(def){
 const tracks=trackDefs.map(makeTrack);
 let stage=0,mode='solo',track=tracks[0],running=false,paused=false,raf=0,last=0,elapsed=0;
 let keys=Object.create(null),cars=[],graphics='high',difficulty='normal',decorations=[],tireBarriers=[];
+let backgroundCache=null,backgroundCacheKey='';
 let soundEnabled=true,audioContext=null,engineOsc=null,engineFilter=null,engineGain=null,lastCrashSoundAt=0;
 let championship={player1:0,player2:0,rival:0},roundsCompleted=0;
 function initAudio(){
@@ -306,7 +307,7 @@ function strokeTrack(context,color,width,dash=[],offset=0){
  }
  context.setLineDash([]);
 }
-function drawBackground(context){
+function renderStaticBackground(context){
  context.fillStyle=track.grass;context.fillRect(0,0,1000,640);
  for(let y=0;y<640;y+=36){context.fillStyle=(Math.floor(y/36)%2)?'#ffffff05':'#0b2b1a0a';context.fillRect(0,y,1000,18);}
  for(const d of decorations){
@@ -336,7 +337,7 @@ function drawBackground(context){
  strokeTrack(context,'#3c414c',112);
  strokeTrack(context,graphics==='high'?'#707783':'#646873',106);
  strokeTrack(context,'#2c313b',99);
- strokeTrack(context,'#eef0d8ad',2.5,[18,22],-elapsed*9);
+ // The moving center-line dashes are drawn as a lightweight dynamic overlay.
  // Pilas de neumáticos en el exterior de las curvas más cerradas.
  for(const tire of tireBarriers){
   context.save();context.translate(tire.x,tire.y);context.rotate(tire.angle);
@@ -353,6 +354,17 @@ function drawBackground(context){
  const sign=sampleAt(135),nx=-Math.sin(sign.angle),ny=Math.cos(sign.angle);
  context.save();context.translate(sign.x+nx*72,sign.y+ny*72);context.rotate(sign.angle);
  context.fillStyle='#111725';context.fillRect(-48,-12,96,24);context.fillStyle=track.accent;context.font='bold 10px monospace';context.textAlign='center';context.fillText(track.name,0,4);context.restore();
+}
+function drawBackground(context){
+ const key=stage+'|'+graphics;
+ if(!backgroundCache||backgroundCacheKey!==key){
+  const cache=document.createElement('canvas');
+  cache.width=1000;cache.height=640;
+  const cacheContext=cache.getContext('2d');
+  renderStaticBackground(cacheContext);
+  backgroundCache=cache;backgroundCacheKey=key;
+ }
+ context.drawImage(backgroundCache,0,0,1000,640);
 }
 function drawCar(context,car){
  context.save();context.translate(car.x,car.y);context.rotate(car.heading);
@@ -381,6 +393,7 @@ function drawMiniMap(context){
 }
 function drawFrame(){
  const w=canvas.width,h=canvas.height;ctx.setTransform(w/1000,0,0,h/640,0,0);drawBackground(ctx);
+ strokeTrack(ctx,'#eef0d85c',2.5,[18,22],-elapsed*13);
  const player=cars[0];
  cars.slice().sort((a,b)=>a.speed-b.speed).forEach(car=>drawCar(ctx,car));
  ctx.fillStyle='#101725ed';ctx.fillRect(14,14,245,68);ctx.textAlign='left';ctx.font='bold 13px monospace';
