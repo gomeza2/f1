@@ -1,30 +1,28 @@
 # PIXEL GRAND PRIX
-Juego arcade de carreras retro en HTML Canvas, sin instalación ni dependencias de juego.
+
+Juego de carreras arcade retro en HTML Canvas, sin instalación ni dependencias de juego.
 
 ## Ejecutar
 Abrí `index.html` en un navegador moderno. También podés activar GitHub Pages desde Settings → Pages para publicarlo.
 
 ## Controles
-- Jugador 1: W acelera, S frena, A/D gira.
-- Jugador 2: flechas del teclado.
+- Jugador 1: W acelera, S frena, A/D gira y ESPACIO usa el freno de mano.
+- Jugador 2: flechas para acelerar/frenar/girar y ENTER para el freno de mano.
 - ESC: pausa.
+- En modo dos jugadores, ambos compiten en la misma computadora.
 
-## Incluye en esta primera etapa
-- Modo individual y modo local para dos jugadores.
-- 10 circuitos con paletas visuales diferentes.
-- Ajustes de gráficos y dificultad.
-- HUD, velocidad, vueltas, cronómetro, pausa y pantalla de resultados.
+## Etapas completadas
+1. **Base del juego:** menú, controles, dos modos, 10 circuitos temáticos y renderizado arcade.
+2. **Manejo mejorado:** aceleración y frenado progresivos, dirección con inercia, derrapes, freno de mano, pérdida de velocidad fuera de pista, humo de neumáticos y opciones gráficas detalladas/retro/rendimiento.
 
-## Hoja de ruta en 10 etapas
-1. Base jugable, menú, controles y render retro.
-2. Física de manejo y respuesta del auto.
-3. Circuitos con curvas y variedad visual.
+## Hoja de ruta
+3. Circuitos con curvas y variedad visual mayor.
 4. Colisiones, límites de pista y recuperación.
-5. IA rival para el modo individual.
-6. Mejoras de HUD, vueltas y cronómetro.
-7. Sonido, música y efectos.
+5. Rivales controlados por la computadora para el modo individual.
+6. HUD, vueltas, cronómetro y posiciones más completos.
+7. Audio y efectos de carrera.
 8. Garaje, colores y autos desbloqueables.
-9. Opciones gráficas ampliadas y optimización.
-10. Pruebas finales, balance y pulido.
+9. Opciones visuales ampliadas y optimización.
+10. Pruebas finales, balance y pulido general.
 
-Este repositorio empieza con el prototipo de la etapa 1; la hoja de ruta sirve para iterar sin romper lo que ya funciona.
+La versión actual es un prototipo en desarrollo. Las opciones de audio y algunas características del menú aún necesitan implementación.
