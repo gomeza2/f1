@@ -55,3 +55,15 @@ h2{font:clamp(17px,4vw,27px)/1.5 'Press Start 2P'}
  .keys{gap:12px}
  footer{font-size:6px}
 }
+
+/* Etapa 8: garaje, lectura visual y opciones más claras */
+.garage-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;max-width:650px;margin:0 auto 22px;text-align:left;align-items:start}
+.garage-controls label{display:flex;flex-direction:column;gap:9px;font:8px 'Press Start 2P';color:#9ba4c7}
+.garage-controls select{font-size:8px}
+.garage-summary{grid-column:1/-1;display:flex;align-items:center;gap:13px;flex-wrap:wrap;min-height:52px;padding:13px 14px;background:linear-gradient(100deg,#171d32,#111528);border:1px solid #3c4666;border-left:4px solid var(--car-paint,#ff3d81);font:9px 'Press Start 2P';color:#dfe7ff}
+.garage-summary strong{color:var(--car-paint,#ff3d81);font-size:10px}
+.garage-summary small{font:12px Rajdhani,sans-serif;color:#adb7d7;width:100%}
+.paint-dot{display:inline-block;width:18px;height:18px;border-radius:50%;border:2px solid #fff7;box-shadow:0 0 12px var(--car-paint,#ff3d81)}
+.views{border-color:#59637c;box-shadow:0 8px 34px #0008,0 0 0 1px #c8d7ff12}
+button:focus-visible,select:focus-visible{outline:2px solid var(--lime);outline-offset:3px}
+@media(max-width:760px){.garage-controls{grid-template-columns:1fr}.garage-summary{grid-column:auto}.garage-summary small{font-size:13px}}
