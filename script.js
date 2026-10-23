@@ -17,7 +17,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const wrapAngle=a=>Math.atan2(Math.sin(a),Math.cos(a));
 const pointDistance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const LAPS_TO_WIN=3;
-const ROAD_EDGE=54, WALL_EDGE=77;
+const ROAD_EDGE=42, WALL_EDGE=66;
 const CAR_MODELS={
  balanced:{name:'BALANCED',maxSpeed:232,acceleration:76,braking:192,steering:1,grip:1,grass:1,description:'Equilibrado para aprender y competir.'},
  corner:{name:'CORNER KING',maxSpeed:218,acceleration:73,braking:215,steering:1.19,grip:1.15,grass:.86,description:'Más agarre y frenado; velocidad punta menor.'},
@@ -47,8 +47,8 @@ function makeTrack(def){
 }
 const tracks=trackDefs.map(makeTrack);
 let stage=0,mode='solo',track=tracks[0],running=false,paused=false,raf=0,last=0,elapsed=0;
-let keys=Object.create(null),cars=[],graphics='high',difficulty='normal',decorations=[],tireBarriers=[];
-let backgroundCache=null,backgroundCacheKey='';
+let keys=Object.create(null),cars=[],graphics='high',difficulty='normal',decorations=[],tireBarriers=[],checkpoints=[];
+let backgroundCache=null,backgroundCacheKey='',trackSurfaceCache=null,trackSurfaceKey='';
 let soundEnabled=true,audioContext=null,engineOsc=null,engineFilter=null,engineGain=null,lastCrashSoundAt=0;
 let championship={player1:0,player2:0,rival:0},roundsCompleted=0;
 function initAudio(){
@@ -134,14 +134,30 @@ function upcomingCorner(progress){
 }
 function barriersForTrack(){
  const list=[];
- for(let d=0;d<track.length;d+=13){
-  const curve=curvatureAt(d);
-  if(curve.severity<.22)continue;
+ for(let d=0;d<track.length;d+=10){
+  const bend=curvatureAt(d);
+  if(bend.severity<.2)continue;
   const p=sampleAt(d),nx=-Math.sin(p.angle),ny=Math.cos(p.angle);
-  const outside=curve.turn>0?-1:1;
-  list.push({x:p.x+nx*outside*71,y:p.y+ny*outside*71,angle:p.angle});
+  const outside=bend.turn>0?-1:1;
+  list.push({x:p.x+nx*outside*57,y:p.y+ny*outside*57,angle:p.angle,progress:d});
  }
  return list;
+}
+function checkpointsForTrack(){
+ const result=[];
+ for(let i=1;i<=3;i++){const progress=track.length*i/4,p=sampleAt(progress);result.push({id:i,progress,x:p.x,y:p.y,angle:p.angle});}
+ return result;
+}
+function drawCheckpoints(context){
+ for(const gate of checkpoints){
+  const p=sampleAt(gate.progress);
+  context.save();context.translate(p.x,p.y);context.rotate(p.angle);
+  context.fillStyle='#0b1226d9';context.fillRect(-4,-ROAD_EDGE,8,ROAD_EDGE*2);
+  for(let j=0;j<10;j++){context.fillStyle=j%2?'#d7ff38':'#f6f7ff';context.fillRect(-4,j*(ROAD_EDGE*2/10)-ROAD_EDGE,8,ROAD_EDGE*2/10);}
+  context.restore();
+  context.fillStyle='#111725e8';context.fillRect(p.x-13,p.y-ROAD_EDGE-19,26,15);
+  context.fillStyle='#d7ff38';context.font='bold 10px monospace';context.textAlign='center';context.fillText('CP'+gate.id,p.x,p.y-ROAD_EDGE-8);
+ }
 }
 function updateGaragePreview(){
  const id=$('carModel')?.value||'balanced',paint=CAR_PAINTS[$('carColor')?.value||'pink']||CAR_PAINTS.pink;
@@ -165,7 +181,22 @@ function decorationsForTrack(){
 function resize(){
  const r=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);
  const quality=graphics==='retro'?.58:graphics==='lite'?.75:1;
- canvas.width=Math.max(500,Math.round(r.width*dpr*quality));canvas.height=Math.round(canvas.width*640/1000);
+ const width=Math.max(500,Math.round(r.width*dpr*quality)),height=Math.round(width*640/1000);
+ if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;trackSurfaceCache=null;trackSurfaceKey='';}
+}
+function drawTrackSurface(context){
+ const key=stage+'|'+graphics;
+ if(!trackSurfaceCache||trackSurfaceKey!==key){
+  const surface=document.createElement('canvas');surface.width=1000;surface.height=640;
+  const sc=surface.getContext('2d');
+  strokeTrack(sc,'#11171c',122);strokeTrack(sc,'#cdd1d3',114,[18,18],0);
+  strokeTrack(sc,'#d84b59',106,[12,24],0);strokeTrack(sc,'#282d37',94);
+  strokeTrack(sc,'#e74b5d',82,[23,23],0);strokeTrack(sc,'#f5f0dc',82,[23,23],23);
+  strokeTrack(sc,'#3c414c',74);strokeTrack(sc,graphics==='high'?'#707783':'#646873',68);
+  strokeTrack(sc,'#2c313b',61);
+  trackSurfaceCache=surface;trackSurfaceKey=key;
+ }
+ context.drawImage(trackSurfaceCache,0,0,1000,640);
 }
 function setupCar(player,isAI=false){
  const model=isAI?'balanced':player===0?($('carModel')?.value||'balanced'):'balanced';
@@ -178,10 +209,12 @@ function placeCar(car,progress,lateral){
  const p=sampleAt(progress),nx=-Math.sin(p.angle),ny=Math.cos(p.angle);
  car.x=p.x+nx*lateral;car.y=p.y+ny*lateral;car.heading=p.angle;
  car.progress=wrapDistance(progress);car.previousProgress=car.progress;car.raceProgress=car.progress;
+ car.nextCheckpoint=0;car.checkpointPasses=0;car.lastCheckpointTime=0;
 }
 function start(m,s=Number($('stageSelect').value),keepSeason=false){
  if(!keepSeason)resetChampionship();
  mode=m;stage=s;track=tracks[stage];graphics=$('graphics').value;difficulty=$('difficulty').value;
+ backgroundCache=null;backgroundCacheKey='';trackSurfaceCache=null;trackSurfaceKey='';checkpoints=checkpointsForTrack();
  cars=[setupCar(0)];
  if(mode==='solo')cars.push(setupCar(1,true));else cars.push(setupCar(1));
  placeCar(cars[0],4,mode==='duo'?-18:-15);
@@ -207,9 +240,20 @@ function togglePause(){
 }
 function updateProgress(car,loc){
  const old=car.progress,newP=loc.progress,delta=newP-old;
- if(delta < -track.length*.5){
-  const forward=Math.cos(wrapAngle(car.heading-loc.angle))>.12;
-  if(forward){const lapTime=elapsed-car.lapStartTime;car.lapTimes.push(lapTime);car.lapStartTime=elapsed;car.lap++;playTone(car.lap>=LAPS_TO_WIN?880:620,.12,.035);}
+ const crossedStart=delta < -track.length*.5;
+ const forward=Math.cos(wrapAngle(car.heading-loc.angle))>.12;
+ if(!crossedStart&&newP>=old){
+  const gate=checkpoints[car.nextCheckpoint];
+  if(gate&&old<gate.progress&&newP>=gate.progress){
+   car.checkpointPasses++;car.nextCheckpoint=(car.nextCheckpoint+1)%checkpoints.length;
+   car.lastCheckpointTime=elapsed;playTone(520+gate.id*80,.07,.022);
+  }
+ }
+ if(crossedStart&&forward&&car.checkpointPasses===checkpoints.length){
+  const lapTime=elapsed-car.lapStartTime;
+  if(car.lap>0)car.lapTimes.push(lapTime);
+  car.lapStartTime=elapsed;car.lap++;car.checkpointPasses=0;car.nextCheckpoint=0;
+  playTone(car.lap>=LAPS_TO_WIN?880:620,.12,.035);
  }
  car.previousProgress=old;car.progress=newP;car.raceProgress=car.lap*track.length+newP;
  car.offroad=Math.abs(loc.offset);car.roadOffset=loc.offset;car.nearest=loc;
@@ -328,16 +372,8 @@ function renderStaticBackground(context){
   }
  }
  // Asfalto más ancho y barreras claras para mantener las ruedas dentro de la pista.
- strokeTrack(context,'#11171c',188);
- strokeTrack(context,'#cdd1d3',180,[18,18],0);
- strokeTrack(context,'#d84b59',171,[12,24],-elapsed*3);
- strokeTrack(context,'#282d37',151);
- strokeTrack(context,'#e74b5d',130,[23,23],0);
- strokeTrack(context,'#f5f0dc',130,[23,23],23);
- strokeTrack(context,'#3c414c',112);
- strokeTrack(context,graphics==='high'?'#707783':'#646873',106);
- strokeTrack(context,'#2c313b',99);
- // The moving center-line dashes are drawn as a lightweight dynamic overlay.
+ drawTrackSurface(context);
+ // Animated center-line dashes stay separate from the cached asphalt.
  // Pilas de neumáticos en el exterior de las curvas más cerradas.
  for(const tire of tireBarriers){
   context.save();context.translate(tire.x,tire.y);context.rotate(tire.angle);
@@ -351,6 +387,7 @@ function renderStaticBackground(context){
  const start=sampleAt(0);context.save();context.translate(start.x,start.y);context.rotate(start.angle);
  for(let j=0;j<10;j++){context.fillStyle=j%2?'#f5f5e9':'#181b22';context.fillRect(-5,-43+j*8.6,10,8.6);}
  context.restore();
+ drawCheckpoints(context);
  const sign=sampleAt(135),nx=-Math.sin(sign.angle),ny=Math.cos(sign.angle);
  context.save();context.translate(sign.x+nx*72,sign.y+ny*72);context.rotate(sign.angle);
  context.fillStyle='#111725';context.fillRect(-48,-12,96,24);context.fillStyle=track.accent;context.font='bold 10px monospace';context.textAlign='center';context.fillText(track.name,0,4);context.restore();
