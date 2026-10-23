@@ -18,7 +18,7 @@ Abrí `index.html` en un navegador moderno. Para publicarlo online, activá GitH
 8. Garaje con cuatro autos y seis pinturas.
 9. Asfalto más ancho, barreras exteriores, neumáticos en curvas, rebote al tocar el muro y penalización fuerte del pasto.
 10. Renderizado estático cacheado para mejorar rendimiento, opciones gráficas y equilibrio de dificultad.
-11. **Checkpoints, pista más estrecha y pantalla completa.** Tres checkpoints secuenciales por vuelta. Una vuelta solo cuenta si pasás los tres en orden y cruzás la meta hacia adelante. Barreras de neumáticos solo en curvas más exigentes; otros sectores quedan despejados para permitir distintas trazadas. Se ajustó el ancho visual del asfalto a los límites físicos.
+11. **Checkpoints, pista más estrecha y pantalla completa.** Tres checkpoints secuenciales por vuelta. Cada uno se valida al cruzar físicamente su línea en la dirección correcta; una vuelta solo cuenta al cruzar la meta después de pasar los tres en orden. Cortar camino o cruzar al revés no cuenta. Barreras de neumáticos solo en curvas más exigentes; otros sectores quedan despejados para permitir distintas trazadas. Se ajustó el ancho visual del asfalto a los límites físicos.
 
 ## Diseño de la conducción
 Soltar el acelerador reduce velocidad, pero las curvas cerradas piden anticipación y freno. El pasto frena mucho. Las barreras evitan que salgas indefinidamente del circuito, pero chocarlas cuesta velocidad. El modo normal busca ser competitivo; fácil reduce la fuerza del rival y difícil la aumenta.
