@@ -26,7 +26,7 @@ function resize(c){
 function setupCar(player){
  return {x:player===0?-.22:.22,speed:0,dist:0,lap:1,player,
  color:player===0?'#ff3d81':'#39e8e8',steer:0,lateralVelocity:0,
- drift:0,yaw:0,done:false,particles:[],smokeClock:0};
+ drift:0,yaw:0,done:false,finishTime:null,particles:[],smokeClock:0};
 }
 function start(m,s=Number($('stageSelect').value)){
  mode=m;stage=s;graphics=$('graphics').value;difficulty=$('difficulty').value;
@@ -85,13 +85,13 @@ function physics(car,i,dt){
  if(Math.abs(car.x)>.88)car.speed=Math.max(.12,car.speed-.32*dt);
  car.dist=Math.min(TOTAL_DISTANCE,car.dist+car.speed*760*dt);
  car.lap=Math.min(3,Math.floor(car.dist/LAP_DISTANCE)+1);
- if(car.dist>=TOTAL_DISTANCE){car.done=true;car.speed=0;car.lap=3;}
+ if(car.dist>=TOTAL_DISTANCE&&!car.done){car.done=true;car.finishTime=elapsed;car.speed=0;car.lap=3;}
  if(car.drift>.28&&car.speed>.25){
   car.smokeClock+=dt;
   if(car.smokeClock>.045){
    car.smokeClock=0;
    for(let n=0;n<(graphics==='lite'?1:2);n++)car.particles.push({
-    x:320,y:0,vx:(Math.random()-.5)*26-car.lateralVelocity*12,
+    x:0,y:0,vx:(Math.random()-.5)*26-car.lateralVelocity*12,
     vy:16+Math.random()*23,life:.35+Math.random()*.3,maxLife:.65,
     size:2+Math.random()*4
    });
@@ -162,7 +162,7 @@ function draw(c,car,dt){
  for(const p of car.particles){
   p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;
   ctx.globalAlpha=clamp(p.life/p.maxLife,0,1)*.48;
-  ctx.fillStyle='#dce4ed';ctx.beginPath();ctx.arc(cx-16+p.x*.035,p.y||carY+12,p.size,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#dce4ed';ctx.beginPath();ctx.arc(cx-16+p.x,carY+12+p.y,p.size,0,Math.PI*2);ctx.fill();
  }
  ctx.globalAlpha=1;car.particles=car.particles.filter(p=>p.life>0);
  if(car.drift>.28&&car.speed>.25){
@@ -215,7 +215,7 @@ function format(t){
 function finishRace(){
  running=false;cancelAnimationFrame(raf);game.classList.add('hidden');result.classList.remove('hidden');
  const winner=cars.length===1?'¡LLEGASTE A LA META!':
-  cars[0].dist>=cars[1].dist?'¡GANA EL JUGADOR 1!':'¡GANA EL JUGADOR 2!';
+  (cars[0].finishTime??Infinity)<=(cars[1].finishTime??Infinity)?'¡GANA EL JUGADOR 1!':'¡GANA EL JUGADOR 2!';
  $('resultTitle').textContent=cars.length===1?'¡CARRERA TERMINADA!':winner;
  $('resultText').textContent='Etapa '+(stage+1)+' completada · Tiempo '+format(elapsed)+'. '+(stage===9?'¡CAMPEÓN DEL PIXEL GRAND PRIX!':'¿Listo para el próximo circuito?');
  $('nextBtn').textContent=stage===9?'VOLVER A CORRER ↻':'SIGUIENTE ETAPA →';
