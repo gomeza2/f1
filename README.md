@@ -1,28 +1,28 @@
-# PIXEL GRAND PRIX
+# PIXEL GRAND PRIX — 2D Track Racer
 
-Juego de carreras arcade retro en HTML Canvas, sin instalación ni dependencias de juego.
+Carreras arcade retro desde arriba, con circuitos cerrados, frenado para curvas, pérdida de agarre, salidas de pista y tres vueltas por carrera.
 
 ## Ejecutar
-Abrí `index.html` en un navegador moderno. También podés activar GitHub Pages desde Settings → Pages para publicarlo.
+Abrí `index.html` en un navegador moderno. Para publicarlo online, activá GitHub Pages desde Settings → Pages.
 
 ## Controles
-- Jugador 1: W acelera, S frena, A/D gira y ESPACIO usa el freno de mano.
-- Jugador 2: flechas para acelerar/frenar/girar y ENTER para el freno de mano.
-- ESC: pausa.
-- En modo dos jugadores, ambos compiten en la misma computadora.
+- **Jugador 1:** W acelera, S frena, A/D cambia la línea dentro de la pista, ESPACIO freno de mano.
+- **Jugador 2:** flechas para acelerar/frenar/cambiar la línea, ENTER freno de mano.
+- **ESC:** pausa.
+- Un jugador compite contra un rival controlado por la computadora. En dos jugadores, ambos comparten la pista en la misma pantalla.
 
 ## Etapas completadas
-1. **Base del juego:** menú, controles, dos modos, 10 circuitos temáticos y renderizado arcade.
-2. **Manejo mejorado:** aceleración y frenado progresivos, dirección con inercia, derrapes, freno de mano, pérdida de velocidad fuera de pista, humo de neumáticos y opciones gráficas detalladas/retro/rendimiento.
-3. **Circuitos con identidad visual:** perfiles de curvas que cambian a lo largo de la pista, líneas de carril discontinuas, paisajes diferentes por circuito y objetos de pista temáticos para puerto, ciudad nocturna, desierto, nieve, jungla, volcán, valle y tribunas.
+1. Base de juego: menú, modos y controles.
+2. Aceleración, frenado progresivo, derrapes y gráficos retro.
+3. Circuitos con distintos paisajes y curvas.
+4. **Renovación de jugabilidad 2D:** circuito cerrado visto desde arriba, trazados suavizados, tres vueltas, frenado necesario en curvas cerradas, indicador de velocidad segura, pérdida de agarre al entrar demasiado rápido, salidas de pista, choques entre vehículos, humo y rival IA con control de velocidad por curva.
 
-## Hoja de ruta
-4. Colisiones, límites de pista y recuperación.
-5. Rivales controlados por la computadora para el modo individual.
-6. HUD, vueltas, cronómetro y posiciones más completos.
-7. Audio y efectos de carrera.
-8. Garaje, colores y autos desbloqueables.
-9. Opciones visuales ampliadas y optimización.
-10. Pruebas finales, balance y pulido general.
+## Próximos pasos
+5. Mejorar la IA, las colisiones y las posiciones de carrera.
+6. HUD con tiempos por vuelta, récords y tabla de resultados.
+7. Sonidos de motor, frenada, choque y música.
+8. Garaje, autos y colores desbloqueables.
+9. Ajustes gráficos extra y optimización.
+10. Pruebas de juego, balance de dificultad y pulido.
 
-La versión actual es un prototipo en desarrollo. La opción de audio todavía es solo una etiqueta y no reproduce sonidos.
+El código sigue en fase de prototipo y necesita pruebas en navegador para ajustar el equilibrio de conducción.
