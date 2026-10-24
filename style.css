@@ -78,3 +78,58 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--lime);outline-
 .shell:fullscreen header{padding-bottom:8px}
 .shell:fullscreen footer{padding-top:8px}
 @media(max-width:760px){.header-actions{gap:5px}.header-actions .small{font-size:7px;padding:8px}.shell:fullscreen .views canvas{width:100%;height:auto;max-height:none}}
+
+
+/* Fase 2: la carrera aprovecha más pantalla, especialmente en pantalla completa. */
+.shell:fullscreen{
+  display:flex;
+  flex-direction:column;
+  padding:clamp(8px,1.2vw,18px);
+  overflow:hidden;
+}
+.shell:fullscreen #game{
+  flex:1 1 auto;
+  display:flex;
+  flex-direction:column;
+  justify-content:stretch;
+  min-height:0;
+  max-height:calc(100vh - 98px);
+  margin:0;
+}
+.shell:fullscreen .hud{
+  flex:0 0 auto;
+  padding:5px 2px 9px;
+}
+.shell:fullscreen .views{
+  flex:1 1 auto;
+  min-height:0;
+  width:100%;
+  max-height:none;
+  padding:2px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.shell:fullscreen .views canvas{
+  flex:0 1 auto;
+  width:auto;
+  height:100%;
+  max-height:100%;
+  max-width:100%;
+  aspect-ratio:1000/640;
+  object-fit:contain;
+}
+.shell:fullscreen .racebottom{
+  flex:0 0 auto;
+  padding-top:6px;
+}
+.shell:fullscreen footer{display:none}
+.shell:fullscreen header{flex:0 0 auto;padding-bottom:8px}
+.shell:fullscreen .views canvas#canvas2{display:none!important}
+@media (max-width:760px){
+  .settings{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .shell:fullscreen .hud strong{font-size:9px}
+  .shell:fullscreen .views canvas{width:100%;height:auto;max-height:100%}
+  .shell:fullscreen .racebottom{font-size:7px}
+}
