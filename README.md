@@ -30,7 +30,7 @@ Antes de correr podés elegir gráficos, dificultad, circuito, coche, color y pe
 
 El registro actual contiene 14 circuitos: diez pistas originales y cuatro incorporaciones de trazado largo: Coastline Run, Rally Canyon, Meadow Run e Industrial Mix.
 
-Las superficies incluyen asfalto, tierra, pasto, hielo, volcánico y secciones mixtas. En las pistas mixtas, el agarre y los indicadores de terreno cambian según el sector. Las pistas tienen checkpoints secuenciales; cortar camino no debería contar como una vuelta válida.
+Las superficies incluyen asfalto, tierra, pasto, hielo, volcánico y secciones mixtas. En las pistas mixtas, el agarre, el minimapa y los indicadores de terreno cambian según el sector. Las pistas tienen checkpoints secuenciales; cortar camino no debería contar como una vuelta válida.
 
 ## Funcionalidades actuales
 
@@ -53,7 +53,7 @@ Las superficies incluyen asfalto, tierra, pasto, hielo, volcánico y secciones m
 
 ## Validación conocida
 
-Se revisaron la sintaxis de JavaScript, la correspondencia de los identificadores de interfaz, el número de circuitos y la geometría aproximada de los trazados con muestreo de segmentos. Estas comprobaciones automáticas no sustituyen jugar carreras completas en un navegador.
+Se revisaron la sintaxis de JavaScript, la correspondencia de los identificadores de interfaz, el número de circuitos y la geometría aproximada de los trazados con muestreo de segmentos. La revisión también corrigió el agarre por sector de los circuitos mixtos, los efectos de partículas por terreno, la textura volcánica y el cálculo de distancia de la CPU cuando hay vueltas acumuladas. Estas comprobaciones automáticas no sustituyen jugar carreras completas en un navegador.
 
 Antes de considerar estable una versión, probá los 14 circuitos, cada perfil de barreras, las vueltas y checkpoints, el modo para dos jugadores, la pausa, el reinicio y el comportamiento de la CPU en rectas, curvas y superficies mixtas.
 
