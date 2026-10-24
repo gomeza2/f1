@@ -27,6 +27,6 @@ Soltar el acelerador reduce velocidad, pero las curvas cerradas piden anticipaci
 
 ## Hoja de ruta de mejoras
 
-El desarrollo está organizado en dieciséis fases documentadas en [`ROADMAP_16_FASES.md`](ROADMAP_16_FASES.md). La build 0.13 inició la ampliación visual, los perfiles de barreras, la CPU más agresiva y las marcas de derrape; la build 0.14 agregó carteles de frenado, zonas de adelantamiento e información de curvas. La build 0.15 suma dos circuitos largos con diseños originales, uno costero y otro de rally, con terreno y asfalto diferenciados. Los récords personales se guardan localmente en el navegador.
+El desarrollo está organizado en veinte fases documentadas en [`ROADMAP_20_FASES.md`](ROADMAP_20_FASES.md). La build 0.15 sumó los circuitos Coastline Run y Rally Canyon; la build 0.16 amplía el juego a 14 circuitos, agrega Meadow Run e Industrial Mix, asigna superficies y perfiles de barreras según cada pista y mueve la telemetría y el minimapa fuera del lienzo. La CPU también busca huecos, defiende su línea y mejora su recuperación. Los récords personales se guardan localmente en el navegador.
 
 La sintaxis se revisa durante los cambios; la sensación de manejo, las colisiones y la composición en pantalla completa deben verificarse manualmente en un navegador real. El juego continúa usando Canvas 2D y conserva los sistemas de carrera existentes.
