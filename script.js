@@ -350,20 +350,37 @@ function physics(car,i,dt){
  const baseModel=CAR_MODELS[car.model]||CAR_MODELS.balanced;
  const model=car.isAI?{...baseModel,maxSpeed:difficulty==='hard'?246:difficulty==='normal'?238:220,steering:difficulty==='hard'?1.08:difficulty==='normal'?1.02:.98,grip:difficulty==='hard'?1.04:difficulty==='normal'?1:.97}:baseModel;
  if(car.isAI){
-  const player=cars[0],lookAhead=clamp(48+car.speed*.4,58,118),bendAhead=curvatureAt(before.progress+lookAhead);
-  let laneOffset=clamp(bendAhead.turn*43,-20,20);
+  const player=cars[0],lookAhead=clamp(54+car.speed*.43,62,132),bendAhead=curvatureAt(before.progress+lookAhead);
+  let laneOffset=clamp(bendAhead.turn*46,-22,22);
   const rivalDistance=player?Math.hypot(player.x-car.x,player.y-car.y):Infinity;
-  if(player&&rivalDistance<150){const playerLoc=nearestOnTrack(player.x,player.y);laneOffset=Math.abs(playerLoc.offset)<13?(playerLoc.offset>=0?-27:27):clamp(-Math.sign(playerLoc.offset)*29,-29,29);}
+  const rawGap=player?player.raceProgress-car.raceProgress:Infinity;
+  const progressGap=Number.isFinite(rawGap)?(rawGap>track.length/2?rawGap-track.length:rawGap< -track.length/2?rawGap+track.length:rawGap):Infinity;
+  const nearRace=player&&rivalDistance<178&&Math.abs(progressGap)<220;
+  if(nearRace){
+   const playerLoc=nearestOnTrack(player.x,player.y);
+   const preferredSide=Math.abs(playerLoc.offset)>12?-Math.sign(playerLoc.offset):(bendAhead.turn>=0?-1:1);
+   if(progressGap>8){
+    // Si el jugador va adelante, la CPU ocupa una línea defensiva pero no lo embiste.
+    laneOffset=clamp(playerLoc.offset+preferredSide*9,-30,30);
+   }else{
+    // Si la CPU viene detrás o en paralelo, busca el hueco exterior para el adelantamiento.
+    laneOffset=preferredSide*clamp(26+rivalDistance*.025,28,34);
+   }
+   if(rivalDistance<47)laneOffset=preferredSide*34;
+  }
   const targetBase=sampleAt(before.progress+lookAhead),nx=-Math.sin(targetBase.angle),ny=Math.cos(targetBase.angle);
   const target={x:targetBase.x+nx*laneOffset,y:targetBase.y+ny*laneOffset};
-  const desired=Math.atan2(target.y-car.y,target.x-car.x),error=wrapAngle(desired-car.heading),steerTarget=clamp(error*1.78,-1,1);
-  car.steer+=(steerTarget-car.steer)*Math.min(1,dt*8.5);
-  const aiSkill=difficulty==='easy'?.86:difficulty==='hard'?1.12:1.035;
-  const attackBoost=difficulty==='easy'?0:(rivalDistance<175&&upcoming.severity<.23?(difficulty==='hard'?26:15):0);
-  const straightBonus=upcoming.distance>150?48:upcoming.distance>90?25:7;
-  const maxAiSpeed=difficulty==='hard'?246:difficulty==='normal'?236:211;
-  const targetSpeed=clamp((upcoming.safeSpeed+straightBonus)*aiSkill+attackBoost,82,maxAiSpeed);
-  car.speed+=clamp(targetSpeed-car.speed,-255,104)*dt;car.handbrake=false;
+  const desired=Math.atan2(target.y-car.y,target.x-car.x),error=wrapAngle(desired-car.heading);
+  const returnAngle=Math.atan2(before.y-car.y,before.x-car.x),returnError=wrapAngle(returnAngle-car.heading);
+  let steerTarget=clamp(error*1.86,-1,1);
+  if(Math.abs(before.offset)>ROAD_EDGE+7)steerTarget=clamp(steerTarget*.55+returnError*.85,-1,1);
+  car.steer+=(steerTarget-car.steer)*Math.min(1,dt*9.2);
+  const aiSkill=difficulty==='easy'?.88:difficulty==='hard'?1.13:1.045;
+  const attackBoost=difficulty==='easy'?0:(nearRace&&upcoming.severity<.31?(difficulty==='hard'?29:17):0);
+  const straightBonus=upcoming.distance>150?48:upcoming.distance>90?24:4;
+  const maxAiSpeed=difficulty==='hard'?246:difficulty==='normal'?238:220;
+  const targetSpeed=clamp((upcoming.safeSpeed+straightBonus)*aiSkill+attackBoost,78,maxAiSpeed);
+  car.speed+=clamp(targetSpeed-car.speed,-270,112)*dt;car.handbrake=false;
  }else{
   const throttle=keys[k.up]?1:0,brake=keys[k.down]?1:0,hand=!!keys[k.hand];car.handbrake=hand;
   const steering=(keys[k.right]?1:0)-(keys[k.left]?1:0);
