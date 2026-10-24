@@ -63,6 +63,7 @@ node tests/validate-integration.mjs
 node tests/validate-cpu.mjs
 node tests/validate-traffic.mjs
 node tests/validate-driving.mjs
+node tests/validate-steering-inertia.mjs
 node tests/validate-barriers.mjs
 ```
 
@@ -72,15 +73,19 @@ La prueba de CPU también verifica el objetivo de 25–45 s en Normal y usa el c
 
 Prueba opcional de navegador: `node tests/browser-smoke.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
-## Conducción — build 0.23
+## Conducción — build 0.24
 
 La aceleración del Balanced pasa de 76 a 110, el frenado de 192 a 230 y la escala real de movimiento de 0,62 a 0,84. Los otros tres modelos se ajustan en la misma dirección y conservan sus diferencias. A igual velocidad indicada, el coche recorre un 35,5 % más de distancia. La pérdida de agarre por exceso de velocidad es progresiva y conserva dirección; frenar sigue permitiendo cerrar mejor una curva. ESPACIO reduce velocidad aunque se mantenga W y ayuda a rotar el coche. La recuperación del derrape usa tiempo real, evitando cambios según los FPS.
+
+En 0.24, el giro acumula y descarga velocidad angular progresivamente. A velocidad alta se siente algo más pesado, pero conserva el giro máximo sostenido y el contravolante permite corregirlo. El freno de mano agiliza la rotación; los reinicios limpian la inercia y los impactos contra barreras la amortiguan. Esta integración de giro usa tiempo real.
 
 Los circuitos ahora tienen dimensiones de mundo independientes del lienzo. La cámara cercana conserva coches legibles y anticipa el camino; C o VISTA muestra el circuito completo. Dos jugadores usa dos cámaras independientes para evitar que los coches se vuelvan diminutos en un mapa grande. El minimapa muestra ambas posiciones y las ventanas de cámara.
 
 ## CPU
 
 El rival usa acelerador y freno con las mismas prestaciones del modelo Balanced, incluida la escala de desplazamiento. No recibe aumentos ocultos de agarre, velocidad ni aceleración. La dificultad cambia ritmo, margen de frenado, respuesta y cambio de línea. La velocidad de curva se calcula con el agarre real del sector, incluido hielo y tierra en circuitos mixtos.
+
+La competitividad de la CPU actual sigue pendiente de calibración frente a jugadores humanos: completar vueltas válidas no demuestra un ritmo competitivo. Se revisará su planificación en la fase 8; la ampliación a dos o tres rivales CPU requiere adaptar tráfico, contactos y clasificación en etapas posteriores.
 
 La CPU mantiene el lado elegido durante el ataque, limita el tiempo de un intento y no copia cada cambio lateral del rival al defender. Al quedar a la par, la separación física tiene prioridad sobre la defensa. Un doblado sigue siendo un obstáculo; ante un coche más rápido con una vuelta de ventaja, la CPU cede espacio. En tráfico bloqueado usa su frenado normal y puede rodear un coche detenido a baja velocidad si la trayectoria deja margen de contacto.
 
@@ -94,7 +99,7 @@ La CPU mantiene el lado elegido durante el ataque, limita el tiempo de un intent
 
 ## Validación conocida
 
-La build 0.23 supera las comprobaciones de sintaxis, geometría, integración y 42 carreras simuladas de CPU (126 vueltas). La prueba `validate-traffic.mjs` comprueba decisiones de ataque/defensa/doblaje y carreras de dos controladores en las 14 pistas. Chromium comprobó controles de teclado, pausa, reinicio, menú, carga de pistas, pantalla completa, HUD, resultados y modo local. La carrera de CPU en hielo se ejecutó acelerando la física desde la prueba, sin conducción humana. `validate-driving.mjs` verifica aceleración de los cuatro modelos, radio de giro, dirección a alta velocidad, freno de mano, agarres y cámara dentro de los límites de las 14 pistas.
+La build 0.24 supera las comprobaciones de sintaxis, geometría, integración y 42 carreras simuladas de CPU (126 vueltas). La prueba `validate-traffic.mjs` comprueba decisiones de ataque/defensa/doblaje y carreras de dos controladores en las 14 pistas. Chromium comprobó controles de teclado, pausa, reinicio, menú, carga de pistas, pantalla completa, HUD, resultados y modo local. La carrera de CPU en hielo se ejecutó acelerando la física desde la prueba, sin conducción humana. `validate-driving.mjs` verifica aceleración de los cuatro modelos, radio de giro, dirección a alta velocidad, freno de mano, agarres y cámara dentro de los límites de las 14 pistas.
 
 Las barreras de 0.21 siguen contornos cerrados del ancho de pista, sin los pliegues de las curvas interiores. Los segmentos usados para dibujarlas también resuelven los impactos del coche; los neumáticos tienen colisión en los círculos visibles y se descartan pilas que invadan otro ramal. La prueba de barreras comprueba 37 contornos, 11174 puntos y los cinco perfiles en las 14 pistas, además de impactos, coche detenido y rebote moderado.
 

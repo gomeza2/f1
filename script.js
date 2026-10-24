@@ -369,7 +369,7 @@ function resolveBarrierContact(car,previousX,previousY){
    impactFactor=Math.min(impactFactor,Math.hypot(reflectedX,reflectedY)*.94);
   }
  }
- if(impactFactor<1){car.speed*=clamp(impactFactor,.05,1);car.steer*=.65;}
+ if(impactFactor<1){car.speed*=clamp(impactFactor,.05,1);car.steer*=.65;car.yawRate=(car.yawRate||0)*.3;}
  if(hit&&car.flash<=0){playTone(125,.09,.04);car.flash=.12;}
  return hit;
 }
@@ -447,12 +447,12 @@ function setupCar(player,isAI=false){
  const model=isAI?'balanced':player===0?($('carModel')?.value||'balanced'):'balanced';
  const paint=CAR_PAINTS[$('carColor')?.value||'pink']||CAR_PAINTS.pink;
  return {player,isAI,model,color:isAI?'#ffc857':player===0?paint.hex:'#39e8e8',
-  x:0,y:0,heading:0,speed:0,steer:0,drift:0,handbrake:false,done:false,finishTime:null,newBestLap:false,
+  x:0,y:0,heading:0,yawRate:0,speed:0,steer:0,drift:0,handbrake:false,done:false,finishTime:null,newBestLap:false,
   progress:0,previousProgress:0,lap:0,lapTimes:[],lapStartTime:0,raceProgress:0,offroad:0,roadOffset:0,particles:[],flash:0};
 }
 function placeCar(car,progress,lateral){
  const p=sampleAt(progress),nx=-Math.sin(p.angle),ny=Math.cos(p.angle);
- car.x=p.x+nx*lateral;car.y=p.y+ny*lateral;car.heading=p.angle;
+ car.x=p.x+nx*lateral;car.y=p.y+ny*lateral;car.heading=p.angle;car.yawRate=0;
  car.progress=wrapDistance(progress);car.previousProgress=car.progress;car.raceProgress=car.progress;
  car.nextCheckpoint=0;car.checkpointPasses=0;car.lastCheckpointTime=0;car.aiManeuver=null;car.aiLane=lateral;
 }
@@ -637,6 +637,14 @@ function driveAI(car,before,model,dt){
  car.aiTargetSpeed=targetSpeed;
  return {throttle:car.speed<targetSpeed-2?1:0,brake:car.speed>targetSpeed+2?1:0,hand:false};
 }
+// Rotational inertia: build and release yaw smoothly, retaining full steady turn rate.
+// Integrate the first-order response exactly for this step, independent of FPS.
+function updateSteeringInertia(car,turnRate,maxSpeed,dt){
+ const target=car.steer*turnRate,response=car.handbrake?18:16-5*clamp(car.speed/maxSpeed,0,1);
+ const previous=car.yawRate||0,decay=Math.exp(-response*dt);
+ car.yawRate=target+(previous-target)*decay;
+ car.heading=wrapAngle(car.heading+target*dt+(previous-target)*(1-decay)/response);
+}
 function physics(car,i,dt){
  const before=nearestOnTrack(car.x,car.y),k=keyFor(i),localBend=curvatureAt(before.progress),upcoming=upcomingCorner(before.progress);
  const model=CAR_MODELS[car.model]||CAR_MODELS.balanced;
@@ -658,7 +666,7 @@ function physics(car,i,dt){
  const tooFast=Math.max(0,car.speed-localBend.safeSpeed);
  const drivingSurface=surfaceAtProgress(before.progress);
  const handling=vehicleHandling(car.speed,model,drivingSurface,localBend.safeSpeed,car.drift,car.handbrake);
- car.heading=wrapAngle(car.heading+car.steer*handling.turnRate*dt);
+ updateSteeringInertia(car,handling.turnRate,model.maxSpeed,dt);
  car.drift=clamp(Math.max(car.drift*Math.exp(-4.5*dt),tooFast/160),0,1);
  const oldProgress=car.progress,previousX=car.x,previousY=car.y;
  const move=car.speed*WORLD_SPEED_SCALE*dt;

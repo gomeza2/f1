@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.23**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.24**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -69,12 +69,13 @@ La interfaz identifica la build como **0.23**, continuando la base 0.17 del comm
 - Pendiente: probar el agarre y la salida de pista jugando.
 
 ### Fase 7 — Derrape y respuesta física
-**Mejora 0.20 implementada y comprobada automáticamente; sensación humana pendiente.**
+**Mejora de control de 0.20 e inercia de giro de 0.24 implementadas; sensación humana pendiente.**
 
 - Aceleración, frenado y desplazamiento aumentados en los cuatro modelos. Balanced 76→110 de aceleración, 192→230 de frenado y escala real .62→.84.
 - Dirección más rápida con pérdida progresiva de agarre al exceder la velocidad de curva; se evita el antiguo mínimo .14 que dejaba al coche casi sin giro.
 - Freno de mano reduce velocidad por sí mismo y ayuda a rotar, manteniendo la penalización por velocidad excesiva y diferencias de terreno.
 - Recuperación de derrape por tiempo real, sin depender de la cantidad de frames.
+- Inercia de giro en 0.24: velocidad angular progresiva, algo más de peso a alta velocidad, recuperación mediante contravolante y respuesta más rápida al usar freno de mano. Reinicios limpian la inercia y los impactos de vallas la amortiguan.
 - Física y planificación de curvas de CPU comparten `vehicleHandling`; no se compensan cambios con ventajas exclusivas del rival.
 - Pruebas reproducibles de aceleración, velocidad real, radio de giro, dirección rápida, freno de mano y terrenos; repetir carreras completas de CPU y tráfico tras el ajuste.
 - Pendiente: sensación del derrape con personas, contactos impredecibles y persistencia por versión de física si los récords dejan de ser comparables.
@@ -419,10 +420,44 @@ Se partió de `main` limpio y sincronizado con `70fe153`. Se continúa la fase 5
 - Prueba nueva de conservación de récords: Dusty v2 permanece intacto al guardar una vuelta de Dusty v3, incluso si el tiempo antiguo era menor.
 - Regresión de CPU: 42 carreras / 126 vueltas válidas, tres dificultades y referencia Normal dentro de 25–45 s. Tráfico: 14 carreras / 84 vueltas válidas; Dusty terminó con ambos coches sin contactos medidos. Chromium superó una carrera de Dusty, la de hielo, controles, vistas, fullscreen, dos jugadores y modos retro/rendimiento. Se inspeccionaron las dos capturas de Dusty. Sigue pendiente evaluación humana.
 
-### Continuación vigente con «siguiente»
+### Continuación prevista tras 0.23 (histórico)
 
 Partir del commit de 0.23. Próximo paso de fase 5: dar identidad a uno de los otros ocho originales, conservando pistas abiertas y tiempos de referencia 25–45 s. Dusty y Champion ya están rediseñados; no repetirlos como si fueran trabajo pendiente. Mantener el control de geometría, ritmo y récords por versión.
 
 ### Prioridad añadida por el usuario
 
 Antes de seguir ampliando pistas, pidió algo más de peso en las curvas. La etapa de Dusty se cierra aquí; el siguiente cambio es un ajuste acotado de inercia de giro (fase 7), conservando dirección recuperable y el objetivo 25–45 s. No agrandar más circuitos por ahora.
+
+## Avance — build 0.24 (24 de octubre de 2026)
+
+La fase de Dusty se cerró y se publicó en `main` como `1b78910`. A continuación se atendió la petición de algo más de peso en las curvas, sin agrandar pistas ni alterar las prestaciones del coche.
+
+### Inercia de giro (fase 7)
+
+- Estado `yawRate` en cada coche: la dirección acumula y descarga velocidad angular progresivamente en lugar de cambiarla instantáneamente.
+- Respuesta algo más pesada a velocidad alta y rotación más rápida con el freno de mano. Se conserva el mismo giro sostenido, aceleración, frenado, agarre y máxima velocidad.
+- Integración analítica de la respuesta de giro por paso de tiempo; la prueba del componente coincide a 30 y 120 FPS. Esto no afirma que todo el motor sea idéntico en todos los FPS.
+- El mismo paso físico se aplica a personas y CPU; no se añade ningún beneficio exclusivo al rival.
+- Colocar/reiniciar el coche deja la velocidad angular en cero. Los impactos contra vallas la amortiguan junto a la dirección y la velocidad lineal, para facilitar la recuperación.
+- `tests/validate-steering-inertia.mjs`: entrada progresiva, giro sostenido, descarga, contravolante, freno de mano, respuesta según velocidad, independencia temporal del componente y reinicio.
+- Los tamaños y geometrías de los 14 circuitos no cambian respecto a 0.23. Los récords por versión del trazado se conservan.
+
+### Feedback humano y próximos rivales — pendiente para fases 8–10
+
+- El usuario comunica una vuelta aproximada de 18 s y una CPU demasiado lenta/conservadora; no especifica el circuito. Ese feedback invalida usar el ritmo de referencia de la CPU como prueba de equilibrio humano.
+- Revisar ritmo real y trazada antes de declarar competitivo un nivel. Comparar con tiempos humanos; la prueba actual de 25–45 s solo comprueba una referencia de simulación.
+- Punto a investigar: `buildAiSpeedPlan()` limita su búsqueda superior a `bend.safeSpeed`, aunque el modelo físico actualizado puede permitir más velocidad. Medirlo frente a la física compartida, sin elevar máximas ni otorgar agarre o aceleración exclusivos.
+- Añadir en su etapa uno o dos rivales adicionales (dos o tres CPU en total), con actitudes más agresivas y riesgos razonables. No está implementado en 0.24.
+- Antes de ampliar parrilla: tráfico debe atender varios vecinos, contactos deben recorrer todos los pares y posiciones/puntos/resultados deben soportar más de dos coches. No basta con dibujar vehículos adicionales.
+- Petición vigente: no agrandar más las pistas por ahora. Mantener escapatorias y continuar por fases.
+
+### Comprobaciones de 0.24
+
+- Inercia y pruebas focalizadas de conducción, recuperación, tráfico, reinicio y giro: superadas.
+- Regresión completa: 42 carreras de CPU / 126 vueltas válidas y 14 carreras de tráfico / 84 vueltas válidas, sin salidas del ancho de conducción en las pruebas. Se conservan límites físicos y orden de dificultades. Referencia Normal: 28,91–44,14 s; sigue sin ser una calibración humana.
+- Chromium comprobó entrada de giro con D, descarga al soltar, contravolante con A y las funciones de carrera anteriores: todos superados. También pasó el componente de inercia a 30/120 FPS.
+- Geometría, identidad de Dusty, 70 perfiles, barreras, récords y archivos/IDs: superados. Quedan contactos residuales de tráfico; falta evaluación humana del peso del coche y calibración competitiva de CPU.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.24 y verificar el commit remoto. Siguiente fase: **8**, corregir ritmo y trazada de la CPU con mediciones y física compartida, incorporando el feedback de vueltas humanas de unos 18 s. Dejar la ampliación de parrilla para las fases de tráfico/personalidades una vez que el controlador sea competitivo. Conservar pistas, escapatorias e inercia de giro; no comenzar otra ampliación de tamaño.

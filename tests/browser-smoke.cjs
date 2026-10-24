@@ -33,6 +33,14 @@ const server=http.createServer((req,res)=>{
   await page.evaluate(()=>window.testGame.skipCountdown());
   await page.keyboard.down('w');await page.waitForTimeout(500);await page.keyboard.up('w');
   assert.ok(await page.evaluate(()=>window.testGame.cars[0].speed>0));
+  await page.keyboard.down('d');await page.waitForTimeout(180);await page.keyboard.up('d');
+  const turn=await page.evaluate(()=>({yaw:window.testGame.cars[0].yawRate,heading:window.testGame.cars[0].heading}));assert.ok(turn.yaw>0);
+  await page.waitForTimeout(400);
+  const release=await page.evaluate(()=>({yaw:window.testGame.cars[0].yawRate,heading:window.testGame.cars[0].heading}));
+  assert.ok(Math.abs(release.yaw)<Math.abs(turn.yaw),'Keyboard release did not damp rotation');
+  assert.ok(Math.atan2(Math.sin(release.heading-turn.heading),Math.cos(release.heading-turn.heading))>0,'Yaw stopped instantaneously');
+  await page.keyboard.down('a');await page.waitForTimeout(180);await page.keyboard.up('a');
+  assert.ok(await page.evaluate(()=>window.testGame.cars[0].yawRate<0),'Keyboard countersteer failed');
   await page.click('#pauseBtn');assert.ok(await page.evaluate(()=>window.testGame.paused));
   const pausedTime=await page.evaluate(()=>window.testGame.elapsed);await page.waitForTimeout(100);
   assert.equal(await page.evaluate(()=>window.testGame.elapsed),pausedTime);
@@ -92,7 +100,7 @@ const server=http.createServer((req,res)=>{
   if(process.env.SCREENSHOT_PATH)await page.screenshot({path:process.env.SCREENSHOT_PATH.replace('.png','-duo.png'),fullPage:true});
   for(const graphics of ['retro','lite']){await page.click('#backBtn');await page.selectOption('#graphics',graphics);await page.click('[data-mode="solo"]');assert.ok(await page.locator('#canvas1').isVisible());}
   assert.deepEqual(errors,[]);
-  console.log('PASS: Chromium, input, countdown, pause/resume, restart, menu, 14 tracks, fullscreen/aspect/HUD, world-sized caches, split/close/overview cameras, mobile map and landscape space, traffic overtake, Dusty Mesa pace/race, ice CPU race/results/next stage, local two-player and viewport resizing.');
+  console.log('PASS: Chromium, input/yaw/release/countersteer, countdown, pause/resume, restart, menu, 14 tracks, fullscreen/aspect/HUD, world-sized caches, split/close/overview cameras, mobile map and landscape space, traffic overtake, Dusty Mesa pace/race, ice CPU race/results/next stage, local two-player and viewport resizing.');
   console.log('Mobile checks cover visibility only; human handling, touch controls, audio and performance remain unverified.');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1}).finally(()=>server.close());
