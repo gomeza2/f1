@@ -58,6 +58,10 @@ const server=http.createServer((req,res)=>{
   await page.selectOption('#stageSelect','0');await page.click('[data-mode="solo"]');
   const traffic=await page.evaluate(()=>window.testGame.trafficScenario());assert.ok(traffic.passed);assert.ok(traffic.minDistance>=23);
   await page.click('#backBtn');
+  await page.selectOption('#stageSelect','2');await page.click('[data-mode="solo"]');
+  const dustyRace=await page.evaluate(()=>window.testGame.simulateRace());assert.equal(dustyRace.lap,3);
+  assert.ok(dustyRace.time/3>=25&&dustyRace.time/3<=45,'Dusty Mesa reference pace missed the target');
+  await page.click('#backBtn');
   await page.selectOption('#stageSelect','4');await page.click('[data-mode="solo"]');
   const race=await page.evaluate(()=>window.testGame.simulateRace());assert.equal(race.lap,3);
   await page.evaluate(()=>window.testGame.finishRace());assert.ok(await page.locator('#result').isVisible());
@@ -79,15 +83,16 @@ const server=http.createServer((req,res)=>{
   const mobile=await page.locator('#canvas1').boundingBox();assert.ok(mobile.height>=150,'Landscape fullscreen leaves too little driving space');
   await page.click('#fullscreenBtn');
   await page.setViewportSize({width:1440,height:1000});
-  await page.click('#backBtn');await page.selectOption('#stageSelect','9');await page.click('[data-mode="solo"]');await page.evaluate(()=>window.testGame.skipCountdown());
+  await page.click('#backBtn');await page.selectOption('#stageSelect','2');await page.click('[data-mode="solo"]');await page.evaluate(()=>window.testGame.skipCountdown());
   await page.click('#cameraBtn');assert.equal(await page.evaluate(()=>window.testGame.camera.zoom),await page.evaluate(()=>window.testGame.overview));
   if(process.env.SCREENSHOT_PATH)await page.screenshot({path:process.env.SCREENSHOT_PATH,fullPage:true});
   await page.click('#backBtn');await page.click('[data-mode="duo"]');await page.evaluate(()=>window.testGame.skipCountdown());
   assert.equal(await page.evaluate(()=>window.testGame.split),true);
   assert.ok(await page.evaluate(()=>window.testGame.separateViews()>50));
   if(process.env.SCREENSHOT_PATH)await page.screenshot({path:process.env.SCREENSHOT_PATH.replace('.png','-duo.png'),fullPage:true});
+  for(const graphics of ['retro','lite']){await page.click('#backBtn');await page.selectOption('#graphics',graphics);await page.click('[data-mode="solo"]');assert.ok(await page.locator('#canvas1').isVisible());}
   assert.deepEqual(errors,[]);
-  console.log('PASS: Chromium, input, countdown, pause/resume, restart, menu, 14 tracks, fullscreen/aspect/HUD, world-sized caches, split/close/overview cameras, mobile map and landscape space, traffic overtake, ice CPU race/results/next stage, local two-player and viewport resizing.');
+  console.log('PASS: Chromium, input, countdown, pause/resume, restart, menu, 14 tracks, fullscreen/aspect/HUD, world-sized caches, split/close/overview cameras, mobile map and landscape space, traffic overtake, Dusty Mesa pace/race, ice CPU race/results/next stage, local two-player and viewport resizing.');
   console.log('Mobile checks cover visibility only; human handling, touch controls, audio and performance remain unverified.');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1}).finally(()=>server.close());

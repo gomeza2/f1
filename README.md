@@ -29,9 +29,9 @@ Antes de correr podés elegir gráficos, dificultad, circuito, coche, color y pe
 
 ## Circuitos y superficies
 
-El registro conserva los 14 circuitos y los diez nombres originales. La build 0.22 amplía físicamente los recorridos: Champion Road tiene una nueva recta larga y un sector técnico, y Coastline Run, Rally Canyon, Meadow Run e Industrial Mix tienen ramales separados para que sus caminos no se superpongan. El coche y el ancho de conducción conservan su tamaño.
+El registro conserva los 14 circuitos y los diez nombres originales. La ampliación de 0.22 se conserva: Champion Road tiene una nueva recta larga y un sector técnico, y Coastline Run, Rally Canyon, Meadow Run e Industrial Mix tienen ramales separados para que sus caminos no se superpongan. El coche y el ancho de conducción conservan su tamaño. En 0.23, Dusty Mesa estrena un trazado triangular de tierra: recta rápida superior, “S” técnica al este y regreso diagonal. Sigue abierto y conserva su nombre y lugar en el campeonato.
 
-El objetivo es una vuelta de aproximadamente **25–45 segundos**. La referencia automática con Balanced y CPU Normal, sin tráfico, da **32,5–44,1 s** de media por vuelta según la pista. El tiempo humano depende del coche, la dificultad y la conducción; no se fuerza con límites de velocidad ni esperas artificiales.
+El objetivo es una vuelta de aproximadamente **25–45 segundos**. La referencia automática con Balanced y CPU Normal, sin tráfico, da **28,9–44,1 s** de media por vuelta según la pista. El tiempo humano depende del coche, la dificultad y la conducción; no se fuerza con límites de velocidad ni esperas artificiales.
 
 El perfil automático deja **siete pistas abiertas, cuatro con protección en curvas cerradas y tres con vallas parciales**. Sunset Circuit arranca sin muros. Podés seguir eligiendo vallas completas o cualquier otro perfil en el menú.
 
@@ -58,6 +58,7 @@ Con Node.js, desde la raíz y sin dependencias adicionales:
 ```sh
 node --check script.js
 node tests/validate-tracks.mjs
+node tests/validate-track-identity.mjs
 node tests/validate-integration.mjs
 node tests/validate-cpu.mjs
 node tests/validate-traffic.mjs
@@ -65,11 +66,13 @@ node tests/validate-driving.mjs
 node tests/validate-barriers.mjs
 ```
 
+La prueba de identidad detecta copias de un trazado aunque se escalen, giren o reflejen, y comprueba que Dusty Mesa se diferencia de las otras 13 pistas. Esto no evalúa la diversión ni sustituye jugar.
+
 La prueba de CPU también verifica el objetivo de 25–45 s en Normal y usa el código real en un entorno DOM simulado: completa tres vueltas con checkpoints en las 14 pistas y las tres dificultades, verifica prestaciones compartidas y prueba frenado ante tráfico y recuperación. No sustituye una carrera humana.
 
 Prueba opcional de navegador: `node tests/browser-smoke.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
-## Conducción — build 0.22
+## Conducción — build 0.23
 
 La aceleración del Balanced pasa de 76 a 110, el frenado de 192 a 230 y la escala real de movimiento de 0,62 a 0,84. Los otros tres modelos se ajustan en la misma dirección y conservan sus diferencias. A igual velocidad indicada, el coche recorre un 35,5 % más de distancia. La pérdida de agarre por exceso de velocidad es progresiva y conserva dirección; frenar sigue permitiendo cerrar mejor una curva. ESPACIO reduce velocidad aunque se mantenga W y ayuda a rotar el coche. La recuperación del derrape usa tiempo real, evitando cambios según los FPS.
 
@@ -91,13 +94,13 @@ La CPU mantiene el lado elegido durante el ataque, limita el tiempo de un intent
 
 ## Validación conocida
 
-La build 0.22 supera las comprobaciones de sintaxis, geometría, integración y 42 carreras simuladas de CPU (126 vueltas). La prueba `validate-traffic.mjs` comprueba decisiones de ataque/defensa/doblaje y carreras de dos controladores en las 14 pistas. Chromium comprobó controles de teclado, pausa, reinicio, menú, carga de pistas, pantalla completa, HUD, resultados y modo local. La carrera de CPU en hielo se ejecutó acelerando la física desde la prueba, sin conducción humana. `validate-driving.mjs` verifica aceleración de los cuatro modelos, radio de giro, dirección a alta velocidad, freno de mano, agarres y cámara dentro de los límites de las 14 pistas.
+La build 0.23 supera las comprobaciones de sintaxis, geometría, integración y 42 carreras simuladas de CPU (126 vueltas). La prueba `validate-traffic.mjs` comprueba decisiones de ataque/defensa/doblaje y carreras de dos controladores en las 14 pistas. Chromium comprobó controles de teclado, pausa, reinicio, menú, carga de pistas, pantalla completa, HUD, resultados y modo local. La carrera de CPU en hielo se ejecutó acelerando la física desde la prueba, sin conducción humana. `validate-driving.mjs` verifica aceleración de los cuatro modelos, radio de giro, dirección a alta velocidad, freno de mano, agarres y cámara dentro de los límites de las 14 pistas.
 
-Las barreras de 0.21 siguen contornos cerrados del ancho de pista, sin los pliegues de las curvas interiores. Los segmentos usados para dibujarlas también resuelven los impactos del coche; los neumáticos tienen colisión en los círculos visibles y se descartan pilas que invadan otro ramal. La prueba de barreras comprueba 37 contornos, 11206 puntos y los cinco perfiles en las 14 pistas, además de impactos, coche detenido y rebote moderado.
+Las barreras de 0.21 siguen contornos cerrados del ancho de pista, sin los pliegues de las curvas interiores. Los segmentos usados para dibujarlas también resuelven los impactos del coche; los neumáticos tienen colisión en los círculos visibles y se descartan pilas que invadan otro ramal. La prueba de barreras comprueba 37 contornos, 11174 puntos y los cinco perfiles en las 14 pistas, además de impactos, coche detenido y rebote moderado.
 
 Pendientes: balance contra personas, tráfico humano impredecible, nuevos perfiles personalizados, audio, rendimiento medido y conducción móvil. El minimapa ya permanece visible en pantallas pequeñas. Todavía no hay controles táctiles; las pruebas móviles comprueban distribución y visibilidad, sin conducción humana en un teléfono.
 
-La siguiente fase recomendada es **5: seguir diferenciando los trazados originales más parecidos**, conservando conducción, CPU, cámara y barreras. El registro detallado está en la hoja de ruta.
+La fase 5 continúa: Champion Road y Dusty Mesa ya tienen geometría propia; quedan ocho originales con estructuras similares por revisar, conservando conducción, CPU, cámara y barreras. El registro detallado está en la hoja de ruta.
 
 ## Hoja de ruta
 

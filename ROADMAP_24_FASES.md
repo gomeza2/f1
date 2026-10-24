@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.22**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.23**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -50,12 +50,14 @@ La interfaz identifica la build como **0.22**, continuando la base 0.17 del comm
 - Pendiente: perfiles personalizados/solo neumáticos, pruebas humanas contra todas las transiciones y validación integral de anchura en pistas cercanas a los bordes.
 
 ### Fase 5 — Variedad de circuitos
-**Parcial; 14 circuitos conservados y cargados en Chromium.**
+**Dos originales rediseñados; mejora de Dusty Mesa implementada en 0.23. Validación final registrada más abajo.**
 
-- Coastline Run, Rally Canyon, Meadow Run e Industrial Mix añaden recorridos más largos y ambientes propios.
-- Señales 100/50 y zonas PASS se conservan; dependen de curvatura y separación mínima.
-- Pendiente: comparar ritmo, rectas, anchuras y estrategia de cada trazado; varias pistas originales comparten una estructura similar.
-- En 0.22 Champion Road recibe un trazado nuevo; las otras pistas conservan su identidad y ganan espacio. Quedan nueve originales con estructuras parecidas para revisar.
+- Champion Road (0.22): recta larga y sector de curvas enlazadas, conservando su identidad de carrera final.
+- Dusty Mesa (0.23): silueta triangular, recta rápida arriba, “S” al este y regreso diagonal; tierra, perfil abierto y cinco checkpoints conservados.
+- La separación libre mínima entre ramales de Dusty pasa de 37,9 a 73,3; referencia Normal de 28,91 s por vuelta, dentro del objetivo 25–45 s.
+- Comprobación de identidad geométrica independiente de escala, traslación, giro, reflejo, sentido y colocación de la meta. El nuevo Dusty se distingue de las otras 13 pistas; la prueba detecta una copia transformada.
+- Récord de Dusty separado como versión 3; se conservan los datos de la versión 2. Las otras 13 pistas no cambian sus registros ni su geometría.
+- Pendiente: diferenciar los otros ocho originales, sin convertir la variedad en cambios de color ni perder las escapatorias; evaluación humana de ritmo y diversión.
 
 ### Fase 6 — Superficies mixtas
 **Primera capa implementada y corregida en build 0.16.**
@@ -387,6 +389,40 @@ Referencia: CPU Balanced, Normal, tres vueltas sin tráfico, paso 1/30 s; media 
 - Chromium: carga de las 14 pistas y cachés del tamaño del mundo, controles, cámaras cercana/general/dividida, minimapa, pausa, reinicio, menú, fullscreen y resize, adelantamiento y carrera en hielo, resultados y siguiente etapa comprobados.
 - Se inspeccionaron las capturas de Champion Road y de las dos cámaras. Falta conducción humana, prueba móvil física con controles táctiles, audio y medición de FPS/memoria. Hay más superficie cacheada que en 0.21.
 
-### Continuación vigente con «siguiente»
+### Continuación prevista tras 0.22 (histórico)
 
 Partir del commit remoto de 0.22 y mantener conducción rápida, escapatorias y objetivo de 25–45 s. Siguiente fase recomendada: **5**, diferenciar otro de los nueve trazados originales aún similares, usando las nuevas pruebas de ancho/ritmo antes de publicarlo. No volver al mundo fijo de 1000×640 ni reemplazar los récords de trazados anteriores.
+
+## Avance — build 0.23 (24 de octubre de 2026)
+
+Se partió de `main` limpio y sincronizado con `70fe153`. Se continúa la fase 5 sin alterar aceleración, giro, freno, perfiles automáticos ni el objetivo de 25–45 s pedido por el usuario.
+
+### Dusty Mesa: cambio real de geometría
+
+- Se sustituyó el recorrido de dos lóbulos parecido a los otros originales por un circuito triangular de 22 puntos: recta rápida superior, frenada hacia una “S” al este y una salida diagonal extensa.
+- Sigue usando tierra y escapatorias abiertas. El tamaño del mundo permanece 1400×896 y no se añadieron paredes ni se modificó la física para cambiar la dificultad.
+- Longitud: 3541→3487 unidades (-1,5 %). No se añadieron zigzags para inflar distancia. El ritmo cambia por la forma del recorrido y las rectas, no por un aumento artificial de velocidad.
+- Separación libre mínima de ramales: 37,9→73,3. Margen mínimo a los límites del mundo: 43,0. Sin cruces centrales en la validación muestreada; los cinco checkpoints siguen siendo accesibles.
+- Las tres vueltas de referencia en Normal fueron 29,03 / 28,83 / 28,87 s (media 28,91). La referencia de los 14 circuitos queda en 28,9–44,1 s. Tiempos de personas y otros coches pueden diferir.
+- Dusty cambia a versión de trazado 3. Récords anteriores conservados por separado; las otras 13 pistas mantienen la versión 2 y su forma.
+
+### Comprobación de identidad
+
+- `tests/helpers/track-shape.mjs` muestrea a distancia uniforme, normaliza la silueta y compara formas permitiendo giro, reflejo, escala y desplazamiento cíclico de la salida.
+- `tests/validate-track-identity.mjs` detecta una copia geométricamente transformada y exige distancia normalizada mayor a 0,15 entre Dusty y las otras 13 pistas. La más cercana fue Frostbite, con 0,264.
+- La medida sirve como detector de copias y regresión, no como calificación de diseño ni de diversión. Los ocho originales restantes no se declaran diferenciados por este test.
+
+### Validación de la etapa
+
+- Sintaxis e identidad de registros: comprobadas. Se conservan los 14 nombres, el orden, los siete perfiles abiertos y todas las opciones manuales.
+- Geometría y ancho: probados en las 14 pistas. Contactos y perfiles de barreras, conducción, cámaras y récords: comprobados con las pruebas existentes.
+- Prueba nueva de conservación de récords: Dusty v2 permanece intacto al guardar una vuelta de Dusty v3, incluso si el tiempo antiguo era menor.
+- Regresión de CPU: 42 carreras / 126 vueltas válidas, tres dificultades y referencia Normal dentro de 25–45 s. Tráfico: 14 carreras / 84 vueltas válidas; Dusty terminó con ambos coches sin contactos medidos. Chromium superó una carrera de Dusty, la de hielo, controles, vistas, fullscreen, dos jugadores y modos retro/rendimiento. Se inspeccionaron las dos capturas de Dusty. Sigue pendiente evaluación humana.
+
+### Continuación vigente con «siguiente»
+
+Partir del commit de 0.23. Próximo paso de fase 5: dar identidad a uno de los otros ocho originales, conservando pistas abiertas y tiempos de referencia 25–45 s. Dusty y Champion ya están rediseñados; no repetirlos como si fueran trabajo pendiente. Mantener el control de geometría, ritmo y récords por versión.
+
+### Prioridad añadida por el usuario
+
+Antes de seguir ampliando pistas, pidió algo más de peso en las curvas. La etapa de Dusty se cierra aquí; el siguiente cambio es un ajuste acotado de inercia de giro (fase 7), conservando dirección recuperable y el objetivo 25–45 s. No agrandar más circuitos por ahora.
