@@ -27,6 +27,6 @@ Soltar el acelerador reduce velocidad, pero las curvas cerradas piden anticipaci
 
 ## Hoja de ruta de mejoras
 
-El desarrollo está organizado en trece fases documentadas en [`ROADMAP_13_FASES.md`](ROADMAP_13_FASES.md). La build 0.13 inicia el trabajo de ampliación visual, selector de barreras, CPU más agresiva, textura procedural del terreno y marcas de derrape. Los récords personales continúan guardándose localmente en el navegador.
+El desarrollo está organizado en trece fases documentadas en [`ROADMAP_13_FASES.md`](ROADMAP_13_FASES.md). La build 0.13 inició el trabajo de ampliación visual, selector de barreras, CPU más agresiva, textura procedural del terreno y marcas de derrape. La build 0.14 agrega carteles de frenado antes de curvas exigentes, marcas de zonas de adelantamiento en rectas y un indicador de próxima curva/velocidad sugerida en el HUD. Los récords personales continúan guardándose localmente en el navegador.
 
 La sintaxis se revisa durante los cambios; la sensación de manejo, las colisiones y la composición en pantalla completa deben verificarse manualmente en un navegador real. El juego continúa usando Canvas 2D y conserva los sistemas de carrera existentes.
