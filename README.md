@@ -1,32 +1,62 @@
-# PIXEL GRAND PRIX — 2D Track Racer
+# PIXEL GRAND PRIX
 
-Juego arcade retro de carreras desde arriba, con circuitos cerrados, frenado exigente, rivales, dos jugadores local, barreras y campeonato.
+Juego web arcade de carreras 2D desde arriba, con identidad retro propia, circuitos de formas variadas, rivales controlados por CPU, derrapes, superficies y campeonato.
 
-## Cómo jugar
-Abrí `index.html` en un navegador moderno. Para publicarlo online, activá GitHub Pages en Settings → Pages.
+## Cómo ejecutar
+
+Abrí `index.html` en un navegador moderno. No necesita servidor ni instalación de dependencias para su versión básica.
+
+Para publicarlo, podés habilitar GitHub Pages desde **Settings → Pages** y usar la rama y carpeta en la que estén los archivos principales.
 
 ## Controles
-- **Jugador 1:** W acelera, S frena, A/D gira, ESPACIO freno de mano, R reinicia y ESC pausa.
-- **Jugador 2:** flechas para acelerar/frenar/girar, ENTER freno de mano.
-- Botón **Pantalla completa** para ocupar la pantalla; usalo otra vez o pulsá ESC para salir.
-- Podés elegir auto, color, gráficos, dificultad, circuito y perfil de barreras antes de iniciar.
-- **Vallas completas:** protección en ambos lados de todo el trazado. **Mitad vallas + neumáticos:** vallas en la primera mitad y curvas protegidas con neumáticos en la segunda.
-- Al derrapar aparecen marcas de neumáticos; al salir al terreno se generan partículas de polvo o pasto según el escenario.
 
-## Fases desarrolladas
-1–3. Menú, controles, física inicial y diez circuitos temáticos.
-4–5. Renovación 2D, vueltas, minimapa, rival CPU, colisiones entre autos, cronómetro y mejores vueltas.
-6–7. Sonidos de motor/choque y campeonato por puntos.
-8. Garaje con cuatro autos y seis pinturas.
-9. Asfalto más ancho, barreras exteriores, neumáticos en curvas, rebote al tocar el muro y penalización fuerte del pasto.
-10. Renderizado estático cacheado para mejorar rendimiento, opciones gráficas y equilibrio de dificultad.
-11. **Checkpoints, pista más estrecha y pantalla completa.** Tres checkpoints secuenciales por vuelta. Cada uno se valida al cruzar físicamente su línea en la dirección correcta; una vuelta solo cuenta al cruzar la meta después de pasar los tres en orden. Cortar camino o cruzar al revés no cuenta. Barreras de neumáticos solo en curvas más exigentes; otros sectores quedan despejados para permitir distintas trazadas. Se ajustó el ancho visual del asfalto a los límites físicos.
+- **Jugador 1:** W acelera, S frena, A/D gira, ESPACIO freno de mano.
+- **Jugador 2:** flechas para acelerar, frenar y girar; ENTER freno de mano.
+- **R:** reinicia la carrera actual.
+- **ESC:** pausa o reanuda la carrera. Si estás en pantalla completa, también permite salir.
+- **Pantalla completa:** botón en la cabecera.
 
-## Diseño de la conducción
-Soltar el acelerador reduce velocidad, pero las curvas cerradas piden anticipación y freno. El pasto frena mucho. Las barreras evitan que salgas indefinidamente del circuito, pero chocarlas cuesta velocidad. El modo normal busca ser competitivo; fácil reduce la fuerza del rival y difícil la aumenta.
+## Opciones
 
-## Hoja de ruta de mejoras
+Antes de correr podés elegir gráficos, dificultad, circuito, coche, color y perfil de barreras.
 
-El desarrollo está organizado en veinte fases documentadas en [`ROADMAP_20_FASES.md`](ROADMAP_20_FASES.md). La build 0.15 sumó los circuitos Coastline Run y Rally Canyon; la build 0.16 amplía el juego a 14 circuitos, agrega Meadow Run e Industrial Mix, asigna superficies y perfiles de barreras según cada pista y mueve la telemetría y el minimapa fuera del lienzo. La CPU también busca huecos, defiende su línea y mejora su recuperación. Los récords personales se guardan localmente en el navegador.
+- **Según circuito:** utiliza el perfil guardado para esa pista.
+- **Vallas completas:** barreras en ambos lados del recorrido.
+- **Mitad + neumáticos:** barreras en una mitad y neumáticos en curvas seleccionadas de la otra.
+- **Solo en curvas:** coloca barreras en sectores de mayor curvatura.
+- **Sin barreras:** deja zonas abiertas, pero la salida de pista sigue teniendo penalización y recuperación.
 
-La sintaxis se revisa durante los cambios; la sensación de manejo, las colisiones y la composición en pantalla completa deben verificarse manualmente en un navegador real. El juego continúa usando Canvas 2D y conserva los sistemas de carrera existentes.
+## Circuitos y superficies
+
+El registro actual contiene 14 circuitos: diez pistas originales y cuatro incorporaciones de trazado largo: Coastline Run, Rally Canyon, Meadow Run e Industrial Mix.
+
+Las superficies incluyen asfalto, tierra, pasto, hielo, volcánico y secciones mixtas. En las pistas mixtas, el agarre y los indicadores de terreno cambian según el sector. Las pistas tienen checkpoints secuenciales; cortar camino no debería contar como una vuelta válida.
+
+## Funcionalidades actuales
+
+- Carrera para un jugador contra CPU y modo local de dos jugadores.
+- Campeonato por carreras.
+- Cuenta regresiva, cronómetro, vueltas, checkpoints y resultados.
+- Récords de mejor vuelta guardados en `localStorage`.
+- Barreras, neumáticos, señales de frenado y sectores de adelantamiento.
+- CPU con anticipación de curvas y primeras reglas de defensa y búsqueda de línea.
+- Derrapes, marcas de neumáticos, partículas de terreno y efectos básicos de sonido.
+- HUD separado del lienzo de conducción, con velocidad, sector siguiente, checkpoints, mejor vuelta, terreno y minimapa.
+- Opciones de gráficos detallados, retro y rendimiento.
+
+## Estructura
+
+- `index.html`: menú, opciones, interfaz de carrera y telemetría.
+- `style.css`: diseño adaptable, modo de pantalla completa y estilos de la interfaz.
+- `script.js`: circuitos, conducción, CPU, superficies, colisiones, checkpoints, renderizado y audio.
+- `ROADMAP_24_FASES.md`: estado y prioridades del desarrollo.
+
+## Validación conocida
+
+Se revisaron la sintaxis de JavaScript, la correspondencia de los identificadores de interfaz, el número de circuitos y la geometría aproximada de los trazados con muestreo de segmentos. Estas comprobaciones automáticas no sustituyen jugar carreras completas en un navegador.
+
+Antes de considerar estable una versión, probá los 14 circuitos, cada perfil de barreras, las vueltas y checkpoints, el modo para dos jugadores, la pausa, el reinicio y el comportamiento de la CPU en rectas, curvas y superficies mixtas.
+
+## Hoja de ruta
+
+La planificación vigente está en [`ROADMAP_24_FASES.md`](ROADMAP_24_FASES.md). Las hojas anteriores se mantienen como referencias históricas; no describen necesariamente el estado actual.
