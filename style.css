@@ -133,3 +133,7 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--lime);outline-
   .shell:fullscreen .views canvas{width:100%;height:auto;max-height:100%}
   .shell:fullscreen .racebottom{font-size:7px}
 }
+
+/* Menú ampliado para incluir el perfil de barreras sin esconder el selector. */
+.settings{grid-template-columns:repeat(4,minmax(0,1fr));max-width:920px}
+@media(max-width:900px){.settings{grid-template-columns:repeat(2,minmax(0,1fr))}}
