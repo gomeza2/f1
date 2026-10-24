@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como 0.17, que incluye correcciones de la build 0.16. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.20**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -19,37 +19,38 @@ La interfaz identifica la build como 0.17, que incluye correcciones de la build 
 - Corregir regresiones sin rehacer innecesariamente el proyecto.
 
 ### Fase 2 — Pantalla completa y espacio de conducción
-**Primera capa implementada; probar en navegador.**
+**Cámara y distribución ampliadas en 0.20; pruebas automáticas de navegador disponibles.**
 
 - El lienzo utiliza una relación de aspecto fija.
 - El botón de pantalla completa ajusta el contenedor principal.
 - La telemetría principal se trasladó fuera del lienzo.
-- Pendiente: observar el tamaño real del circuito y la altura útil en distintas pantallas.
+- Vista cercana 1,35× con anticipación, alternativa de circuito completo y vista completa en dos jugadores. Minimap muestra el área visible.
+- Pantalla completa horizontal compacta y redibujado al redimensionar incluso en pausa.
+- Pendiente: conducción humana y diferentes navegadores/dispositivos físicos.
 
-### Fase 3 — Barreras por circuito
-**Primera capa implementada; pendiente de pruebas de colisión.**
+### Fase 3 — Geometría y recorrido de las pistas
+**Parcial; geometría central comprobada automáticamente.**
 
-- Perfil automático según la pista.
-- Vallas completas, media pista con neumáticos, barreras en curvas y configuración abierta.
-- Las colisiones consultan los tramos de barrera configurados.
-- Comprobar que no aparezcan huecos o colisiones invisibles en las transiciones.
+- 14 trazados registrados; las diez pistas originales conservan nombres y orden.
+- Muestreo finito, segmentos no degenerados, límites del lienzo y ausencia de cruces centrales comprobados con `tests/validate-tracks.mjs`.
+- Pendiente: validar el ancho completo del asfalto, proximidad entre ramales, radios interiores y escapatorias; una línea central válida no demuestra que las vallas desplazadas sean válidas.
 
-### Fase 4 — Señales de curva y zonas de adelantamiento
-**Primera capa implementada.**
+### Fase 4 — Barreras y perfiles de circuito
+**Parcial; selección de perfiles comprobada automáticamente.**
 
-- Carteles 100/50 antes de curvas seleccionadas.
-- Zonas marcadas para intentar adelantar.
-- Indicador de curva siguiente y velocidad objetivo.
-- Ajustar legibilidad y posiciones tras probar una vuelta completa.
+- Perfil automático según pista; vallas completas, mitad con neumáticos, curvas y abierto.
+- La física consulta los mismos rangos longitudinales que el renderizado.
+- `tests/validate-integration.mjs` prueba los 14 circuitos y las cinco opciones (70 combinaciones).
+- Pendiente: contacto por geometría real del coche y neumáticos, extremos de barreras y perfiles personalizados por tramo.
+- La captura de Frostbite confirma pliegues de vallas en curvas interiores cerradas: requiere validación de curvas desplazadas y corrección en esta fase.
 
-### Fase 5 — Geometría y longitud de las pistas
-**14 circuitos registrados; calidad del recorrido pendiente de juego real.**
+### Fase 5 — Variedad de circuitos
+**Parcial; 14 circuitos conservados y cargados en Chromium.**
 
-- Diez circuitos iniciales conservados.
-- Coastline Run y Rally Canyon tienen trazados más largos.
-- Meadow Run e Industrial Mix incorporan otras formas y ambientes.
-- La inspección geométrica automática de esta revisión no detectó cruces de línea central en los circuitos muestreados.
-- Pendiente: revisar anchura de pista, dificultad, sectores repetitivos y posibles atajos explotables.
+- Coastline Run, Rally Canyon, Meadow Run e Industrial Mix añaden recorridos más largos y ambientes propios.
+- Señales 100/50 y zonas PASS se conservan; dependen de curvatura y separación mínima.
+- Pendiente: comparar ritmo, rectas, anchuras y estrategia de cada trazado; varias pistas originales comparten una estructura similar.
+- No se añadieron ni renombraron pistas para esta actualización de CPU.
 
 ### Fase 6 — Superficies mixtas
 **Primera capa implementada y corregida en build 0.16.**
@@ -61,34 +62,46 @@ La interfaz identifica la build como 0.17, que incluye correcciones de la build 
 - Pendiente: probar el agarre y la salida de pista jugando.
 
 ### Fase 7 — Derrape y respuesta física
-**Primera capa implementada; calibración pendiente.**
+**Mejora 0.20 implementada y comprobada automáticamente; sensación humana pendiente.**
 
-- Marcas de neumáticos y partículas temporales.
-- El freno de mano modifica la respuesta de giro.
-- La pérdida de agarre depende del exceso de velocidad y del derrape.
-- Pendiente: evitar tanto el giro instantáneo como el derrape irrecuperable.
+- Aceleración, frenado y desplazamiento aumentados en los cuatro modelos. Balanced 76→110 de aceleración, 192→230 de frenado y escala real .62→.84.
+- Dirección más rápida con pérdida progresiva de agarre al exceder la velocidad de curva; se evita el antiguo mínimo .14 que dejaba al coche casi sin giro.
+- Freno de mano reduce velocidad por sí mismo y ayuda a rotar, manteniendo la penalización por velocidad excesiva y diferencias de terreno.
+- Recuperación de derrape por tiempo real, sin depender de la cantidad de frames.
+- Física y planificación de curvas de CPU comparten `vehicleHandling`; no se compensan cambios con ventajas exclusivas del rival.
+- Pruebas reproducibles de aceleración, velocidad real, radio de giro, dirección rápida, freno de mano y terrenos; repetir carreras completas de CPU y tráfico tras el ajuste.
+- Pendiente: sensación del derrape con personas, contactos impredecibles y persistencia por versión de física si los récords dejan de ser comparables.
 
-### Fase 8 — Trazada ideal de CPU
-**Primera capa implementada.**
+### Fase 8 — CPU y trazada ideal
+**Mejora 0.18 implementada y comprobada automáticamente; balance humano pendiente.**
 
-- Anticipación de curvas y velocidad objetivo.
-- Corrección de trayectoria cuando el rival se aleja del centro de la pista.
-- Pendiente: medir tiempos por vuelta y comprobar todos los circuitos y perfiles de dificultad.
+- Plan de velocidad por curvatura y agarre del sector, calculado al iniciar la carrera.
+- Frenado anticipado según distancia disponible y prestaciones del Balanced.
+- Aceleración, frenado, velocidad máxima, agarre y escala de movimiento compartidos con el jugador; eliminados bonos exclusivos de CPU.
+- Dirección con anticipación corta en curvas y cambios laterales graduales; recuperación del terreno abierto mediante conducción.
+- 42 simulaciones: 14 pistas × tres dificultades × tres vueltas válidas, con checkpoints reales; límites de velocidad/aceleración verificados.
+- Chromium completa una carrera de CPU en hielo mediante simulación acelerada de la física real y comprueba resultados y siguiente etapa.
+- Pendiente: carreras humanas, tráfico prolongado, salidas tras impactos y comparaciones con los cuatro modelos.
 
 ### Fase 9 — Adelantamientos y defensa
-**Primera capa implementada; requiere ajuste.**
+**Mejora 0.19 implementada; validación automática y de navegador registrada más abajo. Balance humano pendiente.**
 
-- Intención de buscar una línea lateral cuando hay un rival cerca.
-- Intención de defender una posición.
-- La revisión eliminó el ajuste circular incorrecto de la distancia de carrera cuando esta ya incluye vueltas.
-- Pendiente: probar situaciones de doblaje, contacto y coches muy próximos a la meta.
+- Maniobra persistente con estado de seguimiento, ataque, defensa, solapamiento y cesión; lado comprometido durante el ataque y una línea defensiva por aproximación.
+- Intentos infructuosos limitados a ocho segundos, con pausa de 1,5 s antes de volver a atacar.
+- Durante el solapamiento prima el lado ocupado físicamente por cada coche; la defensa no autoriza cerrar la línea exterior del rival.
+- Distancia física circular separada de la posición acumulada: reconoce obstáculos doblados y tráfico cerca de la meta; no confunde ramales alejados de una horquilla.
+- Frenado preventivo por velocidad relativa y espacio disponible, con prestaciones compartidas. Avance lento alrededor de un detenido solo con una trayectoria libre de contacto.
+- Prueba `tests/validate-traffic.mjs`: decisiones, conservación del lado, límite del intento, defensa, espacio, doblados, cesión, meta, reinicio, dos adelantamientos físicos y carreras completas de dos controladores.
+- Pendiente: calibración frente a personas, contactos tras movimientos impredecibles, todos los modelos y personalidades. Las pruebas de dos controladores no representan automáticamente a un jugador humano.
 
-### Fase 10 — Dificultades y personalidades de CPU
-**Pendiente.**
+### Fase 10 — Dificultad y personalidades de la CPU
+**Tres dificultades implementadas y medidas; personalidades pendientes.**
 
-- Diferenciar mejor fácil, normal y difícil mediante toma de decisiones, no solo velocidad.
-- Añadir perfiles defensivo, agresivo, consistente y especialista en rectas.
-- Evitar ventajas invisibles, choques injustos y teletransporte de recuperación.
+- Fácil: ritmo conservador, mayor margen de frenado y respuesta más lenta.
+- Normal: ritmo intermedio, menor margen y cambio lateral más rápido.
+- Difícil: mayor precisión y aprovechamiento del coche, respetando sus prestaciones.
+- En las 14 pistas las simulaciones verifican difícil más rápido que normal, y normal más rápido que fácil.
+- Pendiente: errores razonables y personalidades defensiva, agresiva y técnica; calibrar frente a personas.
 
 ### Fase 11 — Choques y recuperación
 **Primera capa implementada; pendiente de pruebas.**
@@ -131,7 +144,7 @@ La interfaz identifica la build como 0.17, que incluye correcciones de la build 
 **Primera capa implementada en build 0.16.**
 
 - Velocidad, velocidad objetivo, sector siguiente, checkpoints, mejor vuelta y terreno.
-- Minimap independiente del área de conducción.
+- Minimap independiente del área de conducción, visible también bajo 1050 px desde 0.20 y con marco de cámara.
 - Pendiente: comprobar la distribución responsive y el modo de pantalla completa.
 
 ### Fase 17 — Modos de carrera
@@ -207,3 +220,89 @@ La interfaz identifica la build como 0.17, que incluye correcciones de la build 
 - HUD: los indicadores se dibujan fuera del lienzo principal.
 
 Esta lista es una comprobación estática. No afirma que el juego haya sido probado en un navegador ni que todas las colisiones y decisiones de CPU estén perfectamente equilibradas.
+
+
+## Registro de auditoría — build 0.18 (24 de octubre de 2026)
+
+### Punto de partida y conservación
+
+- Rama remota inspeccionada: `main`, commit `a19be4b` (último mensaje: “Update phase 21 with the circuit validation tool”). Los cinco commits recientes ya incluían pruebas de geometría y documentación 0.17.
+- El workspace no contenía un checkout de este juego. La clonación falló por conexión al proxy; se recuperaron todos los archivos de esa revisión mediante el conector GitHub y se creó una copia de trabajo aislada en `work/f1`. No se sobrescribió trabajo local ajeno.
+- Revisados HTML, CSS, JavaScript, README, las hojas de 13, 16 y 24 fases y la prueba existente. No había AGENTS.md ni configuración de build en el árbol remoto.
+- La hoja de 24 fases ya existía: se actualiza en lugar de recrear el proyecto. Se corrigió la numeración de las fases 3–5 para coincidir con el documento maestro. Las hojas históricas se conservan.
+
+### Hallazgos y correcciones
+
+- La CPU tenía aceleración/frenado propios (112/270), máxima hasta 246 frente a 232 del Balanced y escala de movimiento .66 frente a .62; ahora comparte la física principal y el límite 232.
+- El controlador anterior no completó vueltas en Frostbite ni Rally Canyon en simulaciones de 300 s con paso 1/30 s. El nuevo completa tres vueltas válidas en ambos y en las otras doce pistas, en las tres dificultades.
+- Ataque/defensa usaban condiciones invertidas; corregidas sin declarar terminada la fase 9.
+- La anticipación de CPU y la física consultan una única tabla `SURFACE_GRIP`. Se conservan superficies, coches, campeonato, efectos, sonido y récords.
+
+### Evidencia y límites
+
+- Sintaxis: `node --check script.js`.
+- Geometría: `node tests/validate-tracks.mjs` (14 circuitos).
+- Integración: `node tests/validate-integration.mjs` (IDs, archivos locales, originales, perfiles y posiciones centrales de checkpoints). No demuestra alineación exacta de colisiones visibles.
+- CPU: `node tests/validate-cpu.mjs` (42 carreras sin tráfico, 126 vueltas válidas, velocidades, aceleración, orden de dificultad; además movimiento equivalente, frenado ante bloqueo y recuperación en circuito abierto sin teletransporte).
+- Navegador: `node tests/browser-smoke.cjs`, Chromium headless con Playwright. Comprueba teclado de ambos jugadores, cuenta regresiva, pausa/reanudación, reinicio, menú, carga de las 14 pistas, entrada/salida de pantalla completa, proporción del canvas y HUD exterior, carrera de CPU en hielo acelerada, resultados y siguiente etapa.
+- Redimensionado a 390×844 y 844×390: solo visibilidad del canvas, no usabilidad móvil completa. El minimapa se oculta bajo 1050 px y no hay controles táctiles: pendientes de fases 2/16/22.
+- Se inspeccionó una captura de Frostbite. El test bloquea Google Fonts para funcionar sin fuentes externas; la captura utiliza fuentes de respaldo.
+- Renderizado conserva cachés y topes de 1400 marcas/360 partículas. No se midieron FPS ni dispositivos lentos; audio y sensación de conducción humana siguen pendientes.
+
+### Continuación prevista tras 0.18 (histórico)
+
+Partir de esta build y comprobar la rama/commit reales. Prioridad siguiente: fase 9, maniobras persistentes y espacio entre coches, con pruebas de adelantamiento, defensa, solapamiento y doblaje. Después abordar las curvas de vallas y el minimapa responsive. No repetir la auditoría histórica ni marcar todas las fases terminadas.
+
+### Entrega y publicación
+
+El conector de GitHub permitió leer el repositorio, pero rechazó la creación del árbol de cambios con `403 Resource not accessible by integration`. No se creó commit remoto, rama ni PR y no se modificó GitHub Pages. Se entrega el proyecto completo y un parche sobre `a19be4b`; aplicar el parche en un checkout limpio de esa revisión permite continuar. La copia local usa un commit de snapshot propio porque el acceso Git por proxy falló; no representa un clon con todo el historial remoto.
+
+## Avance — build 0.19 (24 de octubre de 2026)
+
+- Base local limpia: `7cf3173`, rama `codex/cpu-fair-driving`. GitHub `main` continúa en `a19be4b`; no se descarta el avance local 0.18 ni se sobrescribe el remoto.
+- Se implementó la fase 9 sobre el controlador existente, conservando la física compartida, los 14 circuitos, todos los perfiles, coches, controles, campeonato y efectos.
+- Errores detectados por pruebas: la reacción lateral cambiaba con cada frame; los doblados quedaban fuera del detector; el frenado podía inmovilizar al coche sin espacio para completar una maniobra; la defensa podía acercarse a una línea exterior ya ocupada. Cada caso tiene ahora una comprobación reproducible.
+- La prueba de tráfico cuenta contactos antes de la resolución física, con tolerancia numérica, en lugar de contar separaciones que quedan exactamente en el límite de colisión.
+- No se agregaron dependencias al juego ni se cambiaron prestaciones para favorecer a la CPU.
+
+### Continuación prevista tras 0.19 (histórico)
+
+Revisar el estado real y partir de 0.19. Siguiente fase recomendada: **4**, resolver pliegues y cruces de las vallas interiores con geometría de curvas desplazadas y pruebas de colisión. Después abordar minimapa responsive y accesibilidad móvil. La fase 9 tiene implementación y comprobaciones técnicas; su balance frente a personas sigue pendiente.
+
+GitHub continúa sin cambios publicados: el permiso de escritura fue rechazado en la etapa anterior. El desarrollo sigue en la copia local y se conserva un parche acumulado desde `a19be4b`.
+
+### Comprobaciones de 0.19
+
+- Sintaxis, geometría de las 14 pistas, integración de IDs/archivos y 70 perfiles: superadas.
+- Regresión de CPU: 42 carreras sin tráfico, tres vueltas en cada una; límites compartidos y orden de dificultades conservados.
+- Tráfico: 14 carreras con dos controladores, ambos completan tres vueltas (84 vueltas adicionales). El máximo alejamiento del centro fue 30,2, dentro del límite de pista de 42.
+- Se detectaron contactos en cinco pistas (159 frames acumulados): Sunset 17, Neon 13, Pixel City 26, Rally Canyon 65 e Industrial 38. Se registran como pendiente de balance y colisiones; no se declara conducción sin contactos ni superioridad frente a una persona.
+- Dos adelantamientos físicos de coche detenido (misma vuelta y doblado) sin contacto, separación mínima 26,4 frente a umbral físico de 23.
+- Chromium: controles de ambos jugadores, pausa, reinicio, menú, carga de 14 pistas, pantalla completa/proporción, HUD exterior, adelantamiento físico, carrera de CPU en hielo, resultados y siguiente etapa. La prueba desactiva el hover decorativo para estabilizar clics; el primer intento agotó el tiempo esperando ese efecto.
+- La consulta actual al repositorio confirma `pull: true` y `push: false` para esta conexión. Hace falta habilitar escritura en la conexión de GitHub para publicar.
+
+## Avance — build 0.20 (24 de octubre de 2026)
+
+La petición posterior del usuario priorizó errores de manejo, poca velocidad y pista visualmente pequeña. Sobre el commit local `cb8a8fe` (0.19), se ajustaron conducción y cámara antes de abordar las vallas.
+
+- Control: una única función de agarre y giro para conducción y planificación de CPU; pérdida de adherencia progresiva, dirección más rápida, aceleración y frenado aumentados. A 100 en asfalto el radio de giro calculado es 38,5 unidades. El exceso de velocidad todavía ensancha la curva.
+- Velocidad real: .62→.84 unidades de desplazamiento por unidad de velocímetro, +35,5 %. Balanced alcanza 107,4 tras un segundo de acelerador; Corner 102,4; Speed 120,4; Rally 109,4.
+- Freno de mano: desacelera aunque se siga acelerando; la dirección gana rotación sin girar instantáneamente. Decaimiento del derrape independiente de FPS.
+- Cámara: cercana 1,35× por defecto, cambio con C/VISTA y visión completa para dos jugadores. No se alteró ni se infló la longitud real de los trazados. La ventana de cámara aparece en el minimapa.
+- Interfaz: minimapa conservado en móvil, distribución compacta para fullscreen horizontal y redibujado del canvas al redimensionar en pausa.
+- Nuevas comprobaciones: `tests/validate-driving.mjs`, ajustes en pruebas de CPU para usar prestaciones compartidas y ampliación de `browser-smoke.cjs` para cámara, minimapa y espacio horizontal.
+- Regresión: 42 carreras de CPU, 126 vueltas válidas; orden fácil/normal/difícil conservado. Otras 14 carreras con dos controladores, 84 vueltas válidas; todos terminaron y el máximo offset fue 29,9 frente al límite de pista 42.
+- Tráfico: contactos residuales en Neon (3 frames), Night (17), Jungle (25), Volcano (19), Pixel City (14), Thunder (7). Se miden y documentan; no se declara conducción libre de contactos. Los adelantamientos de detenido y doblado mantienen margen físico (mínimo 26,1; contacto a 23).
+- Pruebas de manejo no equivalen a una evaluación humana: sigue pendiente jugar con estos ajustes y calibrar frente a una persona, con sonido y dispositivos reales.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.20 y verificar rama/commit. Prioridad siguiente: geometría de las barreras interiores (fase 4), conservando la conducción más rápida, el margen de dirección y la cámara. Mantener las pruebas de las 14 pistas y tráfico. No repetir auditorías ya registradas ni reemplazar el avance local por `main` sin reconciliarlo.
+
+La publicación sigue pendiente de escritura en GitHub. La consulta del repositorio confirmó `pull: true`, `push: false`, y se solicitó al usuario habilitar acceso; no se afirma que se haya subido ningún commit ni que GitHub Pages esté actualizado.
+
+### Aclaración sobre la conexión y cierre local
+
+La documentación oficial consultada confirma que la app GitHub de ChatGPT es de lectura: https://help.openai.com/en/articles/11145903-connecting-github-to-chatgpt. La indicación inicial de simplemente habilitar escritura en esa app era insuficiente. Hay que configurar repositorio y acceso Git en Codex; cambiar la política de confirmaciones de un plugin no concede permisos del proveedor. La CLI de este entorno tampoco pudo autenticar correctamente.
+
+La build 0.20 quedó guardada en el commit local `a4d5ed4`. Chromium también superó el cambio de cámara con botón/C, minimapa visible a 390×844 y 844×390, pantalla completa horizontal con al menos 150 px de altura de conducción y las comprobaciones anteriores de controles, carrera y resultados. Se inspeccionó la captura de la vista cercana. Sin publicación remota ni actualización de Pages.

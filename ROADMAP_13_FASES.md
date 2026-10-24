@@ -107,3 +107,4 @@ Llevar el arcade retro existente a una versión más grande, competitiva y con m
 ## Estado actual
 
 Los commits de build 0.13 añaden la base para trazadas más grandes, dos perfiles de barreras, colisiones alineadas con los tramos de vallas, un rival más rápido que busca una línea lateral al acercarse, textura de terreno y efectos de derrape. Estos cambios están en etapa de comprobación manual; no se debe confundir la revisión de sintaxis con una prueba completa de jugabilidad.
+

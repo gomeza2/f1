@@ -24,10 +24,10 @@ const pointDistance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const LAPS_TO_WIN=3;
 const ROAD_EDGE=42, WALL_EDGE=66;
 const CAR_MODELS={
- balanced:{name:'BALANCED',maxSpeed:232,acceleration:76,braking:192,steering:1,grip:1,grass:1,description:'Equilibrado para aprender y competir.'},
- corner:{name:'CORNER KING',maxSpeed:218,acceleration:73,braking:215,steering:1.19,grip:1.15,grass:.86,description:'Más agarre y frenado; velocidad punta menor.'},
- speed:{name:'SPEED DEMON',maxSpeed:250,acceleration:86,braking:178,steering:.84,grip:.87,grass:1.12,description:'Rápido en rectas, difícil en curvas cerradas.'},
- rally:{name:'RALLY FOX',maxSpeed:222,acceleration:77,braking:207,steering:1.08,grip:1.04,grass:.57,description:'Pierde menos velocidad si toca el pasto.'}
+ balanced:{name:'BALANCED',maxSpeed:232,acceleration:110,braking:230,steering:1,grip:1,grass:1,description:'Equilibrado para aprender y competir.'},
+ corner:{name:'CORNER KING',maxSpeed:218,acceleration:105,braking:255,steering:1.19,grip:1.15,grass:.86,description:'Más agarre y frenado; velocidad punta menor.'},
+ speed:{name:'SPEED DEMON',maxSpeed:250,acceleration:123,braking:215,steering:.84,grip:.87,grass:1.12,description:'Rápido en rectas, difícil en curvas cerradas.'},
+ rally:{name:'RALLY FOX',maxSpeed:222,acceleration:112,braking:245,steering:1.08,grip:1.04,grass:.57,description:'Pierde menos velocidad si toca el pasto.'}
 };
 const CAR_PAINTS={
  pink:{name:'HOT PINK',hex:'#ff3d81'},cyan:{name:'NEON CYAN',hex:'#39e8e8'},
@@ -53,8 +53,10 @@ function makeTrack(def){
 }
 const tracks=trackDefs.map(makeTrack);
 const TRACK_SURFACES=['asphalt','asphalt','dirt','asphalt','ice','grass','volcanic','asphalt','mixed','asphalt','coastal','dirt','grass','mixed'];
+const SURFACE_GRIP={asphalt:1,dirt:.84,grass:.79,ice:.68,volcanic:.87,coastal:1};
 const TRACK_BARRIERS=['full','full','half','corners','full','open','half','full','corners','full','half','open','open','half'];
 tracks.forEach((item,index)=>{item.surface=TRACK_SURFACES[index]||'asphalt';item.defaultBarriers=TRACK_BARRIERS[index]||'full';item.dirtRanges=item.surface==='mixed'?[[item.length*.24,item.length*.33],[item.length*.66,item.length*.75]]:[];});
+let cameraMode='near';
 let stage=0,mode='solo',track=tracks[0],running=false,paused=false,raf=0,last=0,elapsed=0;
 let countdownRemaining=0,goFlashRemaining=0,countdownShown='';
 const BEST_LAPS_KEY='pixelGP.bestLaps.v1';
@@ -277,6 +279,7 @@ function resize(){
  const r=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2),quality=graphics==='retro'?.58:graphics==='lite'?.75:1;
  const width=Math.max(500,Math.round(r.width*dpr*quality)),height=Math.max(320,Math.round(width*640/1000));
  if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;backgroundCache=null;backgroundCacheKey='';trackSurfaceCache=null;trackSurfaceKey='';}
+ if(running)drawFrame();
 }
 function strokeTrackRange(context,startDistance,endDistance,color,width,dash=[]){
  context.save();context.beginPath();let first=true;
@@ -316,12 +319,12 @@ function placeCar(car,progress,lateral){
  const p=sampleAt(progress),nx=-Math.sin(p.angle),ny=Math.cos(p.angle);
  car.x=p.x+nx*lateral;car.y=p.y+ny*lateral;car.heading=p.angle;
  car.progress=wrapDistance(progress);car.previousProgress=car.progress;car.raceProgress=car.progress;
- car.nextCheckpoint=0;car.checkpointPasses=0;car.lastCheckpointTime=0;
+ car.nextCheckpoint=0;car.checkpointPasses=0;car.lastCheckpointTime=0;car.aiManeuver=null;car.aiLane=lateral;
 }
 function start(m,s=Number($('stageSelect').value),keepSeason=false){
  if(!keepSeason)resetChampionship();
  mode=m;stage=s;track=tracks[stage];graphics=$('graphics').value;difficulty=$('difficulty').value;
- backgroundCache=null;backgroundCacheKey='';trackSurfaceCache=null;trackSurfaceKey='';checkpoints=checkpointsForTrack();
+ backgroundCache=null;backgroundCacheKey='';trackSurfaceCache=null;trackSurfaceKey='';checkpoints=checkpointsForTrack();aiSpeedPlan=buildAiSpeedPlan();
  cars=[setupCar(0)];
  if(mode==='solo')cars.push(setupCar(1,true));else cars.push(setupCar(1));
  placeCar(cars[0],4,mode==='duo'?-18:-15);
@@ -332,13 +335,13 @@ function start(m,s=Number($('stageSelect').value),keepSeason=false){
  $('views').classList.toggle('pixelated',graphics==='retro');$('views').classList.toggle('performance',graphics==='lite');
  $('trackName').textContent=track.name;$('stageLabel').textContent=String(stage+1).padStart(2,'0');if($('trackCount'))$('trackCount').textContent=String(tracks.length).padStart(2,'0');
  $('helpText').textContent=mode==='duo'?'P1 WASD + ESPACIO · P2 FLECHAS + ENTER':'W acelerar · S frenar · A/D girar · ESPACIO freno de mano';
- $('status').textContent='PREPARADOS...';resize();initAudio();updateAudio();cancelAnimationFrame(raf);last=performance.now();raf=requestAnimationFrame(loop);
+ updateCameraButton();$('status').textContent='PREPARADOS...';resize();initAudio();updateAudio();cancelAnimationFrame(raf);last=performance.now();raf=requestAnimationFrame(loop);
 }
 for(let i=0;i<tracks.length;i++){const o=document.createElement('option');o.value=i;o.textContent=String(i+1).padStart(2,'0')+' — '+tracks[i].name;$('stageSelect').append(o);}
 function keyFor(i){return i===0?{up:'w',down:'s',left:'a',right:'d',hand:' '}:{up:'arrowup',down:'arrowdown',left:'arrowleft',right:'arrowright',hand:'enter'};}
 window.addEventListener('keydown',e=>{
  const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' ','enter'].includes(k))e.preventDefault();
- keys[k]=true;if(k==='escape'&&!e.repeat&&running)togglePause();if(k==='r'&&!e.repeat&&running)start(mode,stage,true);
+ keys[k]=true;if(k==='escape'&&!e.repeat&&running)togglePause();if(k==='r'&&!e.repeat&&running)start(mode,stage,true);if(k==='c'&&!e.repeat&&running)toggleCamera();
 });
 window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
 window.addEventListener('blur',()=>{keys=Object.create(null);});
@@ -376,65 +379,154 @@ function updateProgress(car,loc,fromX,fromY){
  car.offroad=Math.abs(loc.offset);car.roadOffset=loc.offset;car.nearest=loc;
  if(car.lap>=LAPS_TO_WIN&&!car.done){car.done=true;car.finishTime=elapsed;car.speed=0;}
 }
+// Difficulty changes driving decisions, never the vehicle specifications.
+const AI_DRIVERS={
+ easy:{pace:.82,brakingMargin:.62,response:5.8,laneSpeed:15},
+ normal:{pace:.92,brakingMargin:.76,response:7.5,laneSpeed:22},
+ hard:{pace:1,brakingMargin:.86,response:9.2,laneSpeed:28}
+};
+const WORLD_SPEED_SCALE=.84;
+function vehicleHandling(speed,model,surface,safeSpeed,drift=0,hand=false){
+ const excess=Math.max(0,speed-safeSpeed);
+ const speedLoss=Math.min(.5,excess*.0032);
+ const grip=clamp((1-speedLoss-drift*(hand?.05:.12))*model.grip*(SURFACE_GRIP[surface]||1),.38,1.15);
+ const turnRate=(.95+speed/235*2.9)*model.steering*grip*(hand?1.18:1);
+ return {grip,turnRate};
+}
+let aiSpeedPlan=[];
+function buildAiSpeedPlan(){
+ const model=CAR_MODELS.balanced,plan=[];
+ for(let d=0;d<track.length;d+=12){
+  const curvature=Math.abs(wrapAngle(sampleAt(d+12).angle-sampleAt(d-12).angle))/24;
+  const bend=curvatureAt(d),surface=surfaceAtProgress(d);
+  // Find a speed the shared steering physics can actually hold at this radius.
+  let low=18,high=Math.min(model.maxSpeed,bend.safeSpeed);
+  for(let step=0;step<10;step++){
+   const speed=(low+high)/2;
+   const turnRate=vehicleHandling(speed,model,surface,bend.safeSpeed).turnRate*.82;
+   if(speed*WORLD_SPEED_SCALE*curvature<=turnRate)low=speed;else high=speed;
+  }
+  plan.push({progress:d,speed:low});
+ }
+ return plan;
+}
+function aiTargetSpeed(progress,model,driver){
+ let target=model.maxSpeed*driver.pace;
+ // Backward braking envelope: speed is in dashboard units, distance in world units.
+ for(const point of aiSpeedPlan){
+  const distance=wrapDistance(point.progress-progress);
+  if(distance>240)continue;
+  const cornerSpeed=point.speed*driver.pace;
+  const allowed=Math.sqrt(cornerSpeed*cornerSpeed+2*model.braking*driver.brakingMargin*distance/WORLD_SPEED_SCALE);
+  target=Math.min(target,allowed);
+ }
+ return target;
+}
+// Keep physical proximity separate from race position: a lapped car is still solid.
+function aiTraffic(car,before,driver,dt){
+ const maneuver=car.aiManeuver||(car.aiManeuver={type:'clear',side:0,age:0,cooldown:0});
+ maneuver.age+=dt;maneuver.cooldown=Math.max(0,maneuver.cooldown-dt);
+ const other=cars.find(candidate=>candidate!==car&&!candidate.done);
+ const bend=curvatureAt(before.progress+35);
+ const idealLane=clamp(bend.turn*8,-10,10);
+ const clear=()=>{maneuver.type='clear';maneuver.side=0;maneuver.age=0;return {lane:idealLane,speedLimit:Infinity};};
+ if(!other)return clear();
+ const separation=Math.hypot(other.x-car.x,other.y-car.y);
+ if(separation>180)return clear();
+ const otherLoc=nearestOnTrack(other.x,other.y);
+ const gap=wrapDistance(otherLoc.progress-before.progress+track.length/2)-track.length/2;
+ // Neighbouring sections of a hairpin must not be treated as traffic in this lane.
+ if(Math.abs(gap)>170||Math.cos(otherLoc.angle-before.angle)<.35)return clear();
+ const raceGap=other.raceProgress-car.raceProgress;
+ const lapDifference=Math.round((raceGap-gap)/track.length);
+ const alongside=Math.abs(gap)<36&&separation<78;
+ const ahead=gap>0;
+ const chooseSide=()=>before.offset<otherLoc.offset?-1:before.offset>otherLoc.offset?1:otherLoc.offset>=0?-1:1;
+ function commit(type,side){
+  if(maneuver.type!==type){maneuver.type=type;maneuver.age=0;}
+  maneuver.side=side;
+ }
+ if(alongside){
+  // Freeze the side during overlap; never defend across a rival's occupied lane.
+  commit('alongside',maneuver.type==='alongside'?maneuver.side:chooseSide());
+ }else if(ahead){
+  if((maneuver.type==='pass'||maneuver.type==='alongside')&&maneuver.age<8){
+   commit('pass',maneuver.side);
+  }else if(maneuver.type==='pass'){
+   commit('follow',0);maneuver.cooldown=1.5;
+  }else if(gap<135&&bend.severity<.65&&maneuver.cooldown===0&&(car.speed>other.speed+4||(other.speed<30&&gap<55))){
+   commit('pass',chooseSide());
+  }else commit('follow',0);
+ }else if(gap>-85&&lapDifference>0&&other.speed>car.speed+4){
+  // A faster car with a lap in hand gets room rather than a defensive block.
+  commit('yield',maneuver.type==='yield'?maneuver.side:chooseSide());
+ }else if(gap>-100&&lapDifference===0&&difficulty!=='easy'&&(maneuver.type==='defend'||other.speed>car.speed+4)){
+  // One defensive line per approach; do not mirror repeated rival direction changes.
+  if(maneuver.type!=='defend'&&maneuver.type!=='alongside'&&maneuver.type!=='pass'){
+   commit('defend',otherLoc.offset>=0?1:-1);
+  }
+ }else return clear();
+ let lane=idealLane;
+ const laneRoom=28/(1+bend.severity*.25);
+ if(maneuver.type==='pass'||maneuver.type==='yield')lane=maneuver.side*laneRoom;
+ if(maneuver.type==='alongside')lane=clamp(otherLoc.offset+maneuver.side*27,-laneRoom,laneRoom);
+ if(maneuver.type==='defend')lane=maneuver.side*Math.min(18,laneRoom);
+ let speedLimit=Infinity;
+ if(ahead&&Math.abs(before.offset-otherLoc.offset)<24){
+  // Shared braking distance gives time to open a lane before reaching the rear bumper.
+  const closing=Math.max(0,car.speed-other.speed),buffer=30+closing*.2;
+  const available=Math.max(0,gap-buffer);
+  speedLimit=Math.sqrt(other.speed*other.speed+2*CAR_MODELS[car.model].braking*driver.brakingMargin*available/WORLD_SPEED_SCALE);
+  // A stopped obstacle must not deadlock steering: creep only along a clear ray.
+  const dx=other.x-car.x,dy=other.y-car.y;
+  const forward=dx*Math.cos(car.heading)+dy*Math.sin(car.heading);
+  const clearance=forward>0?Math.sqrt(Math.max(0,separation*separation-forward*forward)):separation;
+  if(other.speed<30&&clearance>24.5&&separation>25&&(maneuver.type==='pass'||maneuver.type==='alongside'))speedLimit=Math.max(speedLimit,18);
+ }
+ return {lane,speedLimit};
+}
+function driveAI(car,before,model,dt){
+ const driver=AI_DRIVERS[difficulty]||AI_DRIVERS.normal;
+ const traffic=aiTraffic(car,before,driver,dt);
+ let lookAhead=clamp(16+car.speed*.22,24,66);
+ if(car.speed<40&&car.aiManeuver.type!=='clear')lookAhead=Math.min(lookAhead,8+car.speed*.15);
+ const laneOffset=traffic.lane;
+ let targetSpeed=Math.min(aiTargetSpeed(before.progress,model,driver),traffic.speedLimit);
+ car.aiLane=(car.aiLane||0)+clamp(laneOffset-(car.aiLane||0),-driver.laneSpeed*dt,driver.laneSpeed*dt);
+ const targetBase=sampleAt(before.progress+lookAhead);
+ const target={x:targetBase.x-Math.sin(targetBase.angle)*car.aiLane,y:targetBase.y+Math.cos(targetBase.angle)*car.aiLane};
+ const error=wrapAngle(Math.atan2(target.y-car.y,target.x-car.x)-car.heading);
+ car.steer+=(clamp(error*2.6,-1,1)-car.steer)*Math.min(1,dt*driver.response);
+ if(Math.abs(before.offset)>ROAD_EDGE)targetSpeed=Math.min(targetSpeed,65);
+ if(Math.abs(error)>1.1)targetSpeed=Math.min(targetSpeed,45);
+ car.aiTargetSpeed=targetSpeed;
+ return {throttle:car.speed<targetSpeed-2?1:0,brake:car.speed>targetSpeed+2?1:0,hand:false};
+}
 function physics(car,i,dt){
  const before=nearestOnTrack(car.x,car.y),k=keyFor(i),localBend=curvatureAt(before.progress),upcoming=upcomingCorner(before.progress);
- const baseModel=CAR_MODELS[car.model]||CAR_MODELS.balanced;
- const model=car.isAI?{...baseModel,maxSpeed:difficulty==='hard'?246:difficulty==='normal'?238:220,steering:difficulty==='hard'?1.08:difficulty==='normal'?1.02:.98,grip:difficulty==='hard'?1.04:difficulty==='normal'?1:.97}:baseModel;
+ const model=CAR_MODELS[car.model]||CAR_MODELS.balanced;
+ let controls;
  if(car.isAI){
-  const player=cars[0],lookAhead=clamp(54+car.speed*.43,62,132),bendAhead=curvatureAt(before.progress+lookAhead);
-  let laneOffset=clamp(bendAhead.turn*46,-22,22);
-  const rivalDistance=player?Math.hypot(player.x-car.x,player.y-car.y):Infinity;
-  // raceProgress ya incorpora las vueltas completadas; no lo envolveremos por longitud,
-  // porque eso podría hacer que la CPU confundiera un coche doblado con un rival cercano.
-  const rawGap=player?player.raceProgress-car.raceProgress:Infinity;
-  const progressGap=Number.isFinite(rawGap)?rawGap:Infinity;
-  const nearRace=player&&rivalDistance<178&&Math.abs(progressGap)<220;
-  if(nearRace){
-   const playerLoc=nearestOnTrack(player.x,player.y);
-   const preferredSide=Math.abs(playerLoc.offset)>12?-Math.sign(playerLoc.offset):(bendAhead.turn>=0?-1:1);
-   if(progressGap>8){
-    // Si el jugador va adelante, la CPU ocupa una línea defensiva pero no lo embiste.
-    laneOffset=clamp(playerLoc.offset+preferredSide*9,-30,30);
-   }else{
-    // Si la CPU viene detrás o en paralelo, busca el hueco exterior para el adelantamiento.
-    laneOffset=preferredSide*clamp(26+rivalDistance*.025,28,34);
-   }
-   if(rivalDistance<47)laneOffset=preferredSide*34;
-  }
-  const targetBase=sampleAt(before.progress+lookAhead),nx=-Math.sin(targetBase.angle),ny=Math.cos(targetBase.angle);
-  const target={x:targetBase.x+nx*laneOffset,y:targetBase.y+ny*laneOffset};
-  const desired=Math.atan2(target.y-car.y,target.x-car.x),error=wrapAngle(desired-car.heading);
-  const returnAngle=Math.atan2(before.y-car.y,before.x-car.x),returnError=wrapAngle(returnAngle-car.heading);
-  let steerTarget=clamp(error*1.86,-1,1);
-  if(Math.abs(before.offset)>ROAD_EDGE+7)steerTarget=clamp(steerTarget*.55+returnError*.85,-1,1);
-  car.steer+=(steerTarget-car.steer)*Math.min(1,dt*9.2);
-  const aiSkill=difficulty==='easy'?.88:difficulty==='hard'?1.13:1.045;
-  const attackBoost=difficulty==='easy'?0:(nearRace&&upcoming.severity<.31?(difficulty==='hard'?29:17):0);
-  const straightBonus=upcoming.distance>150?48:upcoming.distance>90?24:4;
-  const maxAiSpeed=difficulty==='hard'?246:difficulty==='normal'?238:220;
-  const targetSpeed=clamp((upcoming.safeSpeed+straightBonus)*aiSkill+attackBoost,78,maxAiSpeed);
-  car.speed+=clamp(targetSpeed-car.speed,-270,112)*dt;car.handbrake=false;
+  controls=driveAI(car,before,model,dt);
  }else{
-  const throttle=keys[k.up]?1:0,brake=keys[k.down]?1:0,hand=!!keys[k.hand];car.handbrake=hand;
-  const steering=(keys[k.right]?1:0)-(keys[k.left]?1:0);
-  car.steer+=(steering-car.steer)*Math.min(1,dt*(hand?10:7));
-  car.speed+=throttle*model.acceleration*dt;
-  car.speed-=brake*(hand?model.braking*1.27:model.braking)*dt;
-  // Levantar el acelerador ayuda, pero las curvas cerradas igual exigen frenar temprano.
-  car.speed-=(throttle?2.6:20)*dt;
-  car.speed=clamp(car.speed,0,model.maxSpeed);
-  if(hand)car.drift=Math.min(1,Math.abs(car.steer)*car.speed/200);
+  const hand=!!keys[k.hand],steering=(keys[k.right]?1:0)-(keys[k.left]?1:0);
+  car.steer+=(steering-car.steer)*Math.min(1,dt*(hand?13:10));
+  controls={throttle:keys[k.up]?1:0,brake:keys[k.down]?1:0,hand};
  }
+ const {throttle,brake,hand}=controls;car.handbrake=hand;
+ car.speed+=throttle*model.acceleration*dt;
+ car.speed-=brake*(hand?model.braking*1.27:model.braking)*dt;
+ car.speed-=(throttle?2.6:20)*dt;
+ if(hand)car.speed-=model.braking*.55*dt;
+ if(hand)car.drift=Math.min(1,Math.abs(car.steer)*car.speed/200);
  car.speed=clamp(car.speed,0,model.maxSpeed);
  const tooFast=Math.max(0,car.speed-localBend.safeSpeed);
  const drivingSurface=surfaceAtProgress(before.progress);
- const surfaceGrip=({asphalt:1,dirt:.84,grass:.79,ice:.68,volcanic:.87})[drivingSurface]||1;
- const grip=clamp((1-tooFast*.006-(car.drift*(car.handbrake ? 0.07 : 0.2)))*model.grip*surfaceGrip,.14,1.08);
- const turnRate=(.6+car.speed/235*1.7)*model.steering*(car.handbrake?1.2:1);
- car.heading=wrapAngle(car.heading+car.steer*turnRate*grip*dt);
- car.drift=clamp(Math.max(car.drift*.92,tooFast/128),0,1);
+ const handling=vehicleHandling(car.speed,model,drivingSurface,localBend.safeSpeed,car.drift,car.handbrake);
+ car.heading=wrapAngle(car.heading+car.steer*handling.turnRate*dt);
+ car.drift=clamp(Math.max(car.drift*Math.exp(-4.5*dt),tooFast/160),0,1);
  const oldProgress=car.progress,previousX=car.x,previousY=car.y;
- const move=car.speed*(car.isAI?.66:.62)*dt;
+ const move=car.speed*WORLD_SPEED_SCALE*dt;
  car.x+=Math.cos(car.heading)*move;car.y+=Math.sin(car.heading)*move;
  let after=nearestOnTrack(car.x,car.y);
  // El pasto tiene mucha resistencia: penaliza fuerte, pero permite recuperar el auto.
@@ -624,6 +716,7 @@ function drawMiniMap(){
  strokeTrack(m,'#02060c',116);strokeTrack(m,track.surface==='dirt'?'#b28b61':track.surface==='grass'?'#74a94e':track.surface==='ice'?'#dffaff':'#5e6875',82);
  if(track.surface==='mixed')for(const [start,end] of track.dirtRanges)strokeTrackRange(m,start,end,'#ad8258',68);
  if(track.surface==='coastal')strokeTrackRange(m,track.length*.31,track.length*.37,'#c2a06b',68);
+ const view=raceCamera();if(view.zoom>1){m.strokeStyle='#39e8e8';m.lineWidth=7;m.strokeRect(view.x-500/view.zoom,view.y-320/view.zoom,1000/view.zoom,640/view.zoom);}
  cars.forEach(car=>{m.fillStyle=car.color;m.beginPath();m.arc(car.x,car.y,17,0,Math.PI*2);m.fill();});
  m.restore();m.strokeStyle='#5d6b8a';m.lineWidth=2;m.strokeRect(1,1,w-2,h-2);
 }
@@ -643,11 +736,25 @@ function updateTelemetry(){
  $('sectorChip').classList.toggle('warning',corner.severity>.24&&player.speed>safe+12);
  drawMiniMap();
 }
+function raceCamera(){
+ if(mode==='duo'||cameraMode==='overview'||!cars[0])return {zoom:1,x:500,y:320};
+ const car=cars[0],zoom=1.35,halfW=500/zoom,halfH=320/zoom;
+ return {zoom,x:clamp(car.x+Math.cos(car.heading)*28,halfW,1000-halfW),y:clamp(car.y+Math.sin(car.heading)*28,halfH,640-halfH)};
+}
+function updateCameraButton(){
+ $('cameraBtn').disabled=mode==='duo';
+ $('cameraBtn').textContent=mode==='duo'?'VISTA: DOS JUGADORES':cameraMode==='near'?'VISTA: CERCA':'VISTA: CIRCUITO';
+}
+function toggleCamera(){
+ if(mode==='duo')return;
+ cameraMode=cameraMode==='near'?'overview':'near';updateCameraButton();if(running)drawFrame();
+}
 function drawFrame(){
- const w=canvas.width,h=canvas.height;ctx.setTransform(w/1000,0,0,h/640,0,0);drawBackground(ctx);
+ const w=canvas.width,h=canvas.height;ctx.setTransform(w/1000,0,0,h/640,0,0);
+ const view=raceCamera();ctx.save();ctx.translate(500,320);ctx.scale(view.zoom,view.zoom);ctx.translate(-view.x,-view.y);drawBackground(ctx);
  const centerLineColor=track.surface==='dirt'?'#ead0a3':track.surface==='grass'?'#cce88d':track.surface==='ice'?'#f4ffff':track.surface==='volcanic'?'#df8060':'#eef0d85c';
  strokeTrack(ctx,centerLineColor,2.5,[18,22],-elapsed*13);
- drawGroundEffects(ctx);cars.slice().sort((a,b)=>a.speed-b.speed).forEach(car=>drawCar(ctx,car));
+ drawGroundEffects(ctx);cars.slice().sort((a,b)=>a.speed-b.speed).forEach(car=>drawCar(ctx,car));ctx.restore();
  if(countdownRemaining>0||goFlashRemaining>0){ctx.fillStyle='#050716b8';ctx.fillRect(0,0,1000,640);ctx.textAlign='center';ctx.fillStyle='#d7ff38';ctx.font='bold 88px monospace';ctx.fillText(countdownRemaining>0?String(Math.ceil(countdownRemaining)):'¡YA!',500,315);ctx.fillStyle='#f5f6ff';ctx.font='bold 17px monospace';ctx.fillText(countdownRemaining>0?'PREPARADOS...':'¡ACELERÁ!',500,360);}
  if(paused){ctx.fillStyle='#050716bb';ctx.fillRect(0,0,1000,640);ctx.fillStyle='#d7ff38';ctx.font='bold 40px monospace';ctx.textAlign='center';ctx.fillText('PAUSED',500,310);ctx.font='16px monospace';ctx.fillText('PRESS ESC TO RESUME',500,342);}
 }
@@ -686,6 +793,7 @@ function finishRace(){
  $('nextBtn').textContent=stage===tracks.length-1?'NUEVA TEMPORADA ↻':'SIGUIENTE CIRCUITO →';
  $('nextBtn').onclick=()=>stage===tracks.length-1?start(mode,0,false):start(mode,(stage+1)%tracks.length,true);
 }
+$('cameraBtn').onclick=toggleCamera;
 $('pauseBtn').onclick=togglePause;
 $('restartBtn').onclick=()=>start(mode,stage,true);
 $('backBtn').onclick=()=>{running=false;updateAudio();cancelAnimationFrame(raf);keys=Object.create(null);game.classList.add('hidden');menu.classList.remove('hidden');};

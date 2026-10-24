@@ -13,6 +13,7 @@ Para publicarlo, podés habilitar GitHub Pages desde **Settings → Pages** y us
 - **Jugador 1:** W acelera, S frena, A/D gira, ESPACIO freno de mano.
 - **Jugador 2:** flechas para acelerar, frenar y girar; ENTER freno de mano.
 - **R:** reinicia la carrera actual.
+- **C / botón VISTA:** alterna vista cercana y circuito completo. En dos jugadores se conserva la vista completa.
 - **ESC:** pausa o reanuda la carrera. Si estás en pantalla completa, también permite salir.
 - **Pantalla completa:** botón en la cabecera.
 
@@ -39,14 +40,41 @@ Las superficies incluyen asfalto, tierra, pasto, hielo, volcánico y secciones m
 - Cuenta regresiva, cronómetro, vueltas, checkpoints y resultados.
 - Récords de mejor vuelta guardados en `localStorage`.
 - Barreras, neumáticos, señales de frenado y sectores de adelantamiento.
-- CPU con anticipación de curvas y primeras reglas de defensa y búsqueda de línea.
+- CPU con frenado anticipado por curvatura y terreno, tres dificultades y física principal compartida con el Balanced del jugador.
+- Adelantamientos persistentes, una línea defensiva por aproximación, espacio durante el solapamiento y reconocimiento físico de doblados.
 - Derrapes, marcas de neumáticos, partículas de terreno y efectos básicos de sonido.
 - HUD separado del lienzo de conducción, con velocidad, sector siguiente, checkpoints, mejor vuelta, terreno y minimapa.
 - Opciones de gráficos detallados, retro y rendimiento.
+- Vista cercana por defecto, minimapa visible en pantallas pequeñas y distribución compacta en pantalla completa horizontal.
 
-## Validación geométrica (opcional)
+## Comprobaciones
 
-Con Node.js instalado, ejecutá `node tests/validate-tracks.mjs` desde la carpeta raíz. No necesita dependencias adicionales. El test lee las definiciones reales de los circuitos y comprueba nombres únicos, perfiles de superficie/barreras, muestras finitas, límites del lienzo y cruces de las líneas centrales.
+Con Node.js, desde la raíz y sin dependencias adicionales:
+
+```sh
+node --check script.js
+node tests/validate-tracks.mjs
+node tests/validate-integration.mjs
+node tests/validate-cpu.mjs
+node tests/validate-traffic.mjs
+node tests/validate-driving.mjs
+```
+
+La prueba de CPU usa el código real en un entorno DOM simulado: completa tres vueltas con checkpoints en las 14 pistas y las tres dificultades, verifica prestaciones compartidas y prueba frenado ante tráfico y recuperación. No sustituye una carrera humana.
+
+Prueba opcional de navegador: `node tests/browser-smoke.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
+
+## Conducción — build 0.20
+
+La aceleración del Balanced pasa de 76 a 110, el frenado de 192 a 230 y la escala real de movimiento de 0,62 a 0,84. Los otros tres modelos se ajustan en la misma dirección y conservan sus diferencias. A igual velocidad indicada, el coche recorre un 35,5 % más de distancia. La pérdida de agarre por exceso de velocidad es progresiva y conserva dirección; frenar sigue permitiendo cerrar mejor una curva. ESPACIO reduce velocidad aunque se mantenga W y ayuda a rotar el coche. La recuperación del derrape usa tiempo real, evitando cambios según los FPS.
+
+La cámara cercana amplía coche y pista un 35 % y muestra un sector del circuito con margen delante del coche. **No cambia la longitud geométrica de las pistas.** C o VISTA permite volver al circuito completo; dos jugadores usa siempre la vista completa para conservar ambos coches visibles. El minimapa señala el área visible.
+
+## CPU
+
+El rival usa acelerador y freno con las mismas prestaciones del modelo Balanced, incluida la escala de desplazamiento. No recibe aumentos ocultos de agarre, velocidad ni aceleración. La dificultad cambia ritmo, margen de frenado, respuesta y cambio de línea. La velocidad de curva se calcula con el agarre real del sector, incluido hielo y tierra en circuitos mixtos.
+
+La CPU mantiene el lado elegido durante el ataque, limita el tiempo de un intento y no copia cada cambio lateral del rival al defender. Al quedar a la par, la separación física tiene prioridad sobre la defensa. Un doblado sigue siendo un obstáculo; ante un coche más rápido con una vuelta de ventaja, la CPU cede espacio. En tráfico bloqueado usa su frenado normal y puede rodear un coche detenido a baja velocidad si la trayectoria deja margen de contacto.
 
 ## Estructura
 
@@ -54,14 +82,21 @@ Con Node.js instalado, ejecutá `node tests/validate-tracks.mjs` desde la carpet
 - `style.css`: diseño adaptable, modo de pantalla completa y estilos de la interfaz.
 - `script.js`: circuitos, conducción, CPU, superficies, colisiones, checkpoints, renderizado y audio.
 - `ROADMAP_24_FASES.md`: estado y prioridades del desarrollo.
-- `tests/validate-tracks.mjs`: comprobación geométrica reproducible de los circuitos (requiere Node.js solo para ejecutar la prueba).
+- `tests/`: validación de geometría, integración, CPU y prueba opcional de Chromium.
 
 ## Validación conocida
 
-Se revisaron la sintaxis de JavaScript, la correspondencia de los identificadores de interfaz, el número de circuitos y la geometría aproximada de los trazados con muestreo de segmentos. La revisión también corrigió el agarre por sector de los circuitos mixtos, los efectos de partículas por terreno, la textura volcánica y el cálculo de distancia de la CPU cuando hay vueltas acumuladas. Estas comprobaciones automáticas no sustituyen jugar carreras completas en un navegador.
+La build 0.20 supera las comprobaciones de sintaxis, geometría, integración y 42 carreras simuladas de CPU (126 vueltas). La prueba `validate-traffic.mjs` comprueba decisiones de ataque/defensa/doblaje y carreras de dos controladores en las 14 pistas. Chromium comprobó controles de teclado, pausa, reinicio, menú, carga de pistas, pantalla completa, HUD, resultados y modo local. La carrera de CPU en hielo se ejecutó acelerando la física desde la prueba, sin conducción humana. `validate-driving.mjs` verifica aceleración de los cuatro modelos, radio de giro, dirección a alta velocidad, freno de mano, agarres y cámara dentro de los límites de las 14 pistas.
 
-Antes de considerar estable una versión, probá los 14 circuitos, cada perfil de barreras, las vueltas y checkpoints, el modo para dos jugadores, la pausa, el reinicio y el comportamiento de la CPU en rectas, curvas y superficies mixtas.
+Pendientes: balance contra personas, tráfico humano impredecible, precisión de contacto en vallas y neumáticos, audio, rendimiento y conducción móvil. Las curvas interiores de algunas vallas forman pliegues visibles. El minimapa ya permanece visible en pantallas pequeñas. Todavía no hay controles táctiles; las pruebas móviles comprueban distribución y visibilidad, sin conducción humana en un teléfono.
+
+La siguiente fase recomendada es **4: corregir las curvas interiores de las vallas y su geometría física**, manteniendo la CPU y sus pruebas de tráfico. El registro detallado está en la hoja de ruta.
 
 ## Hoja de ruta
 
 La planificación vigente está en [`ROADMAP_24_FASES.md`](ROADMAP_24_FASES.md). Las hojas anteriores se mantienen como referencias históricas; no describen necesariamente el estado actual.
+
+
+## Publicación
+
+Los cambios actuales están guardados localmente. La conexión de GitHub consultada devuelve `pull: true` y `push: false`; todavía no se publicaron estas mejoras ni se actualizó GitHub Pages. La app GitHub de ChatGPT es de lectura; para publicar hay que configurar `gomeza2/f1` y el acceso Git de escritura en el entorno de Codex, con una cuenta autorizada. Cambiar las confirmaciones del plugin no otorga permiso de GitHub. Guía oficial: https://help.openai.com/en/articles/11145903-connecting-github-to-chatgpt
