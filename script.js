@@ -140,22 +140,46 @@ function upcomingCorner(progress){
  return best;
 }
 function buildTrackFeatures(){
- const braking=[];let lastCorner=-Infinity;
- // Buscar curvas que realmente necesitan levantar o frenar, con distancia suficiente entre avisos.
- for(let d=45;d<track.length;d+=24){
-  const bend=curvatureAt(d);
-  if(bend.severity<.24||d-lastCorner<112)continue;
-  lastCorner=d;
-  braking.push({cornerProgress:d,progress:wrapDistance(d-104),turn:bend.turn,severity:bend.severity,label:'100'});
-  braking.push({cornerProgress:d,progress:wrapDistance(d-49),turn:bend.turn,severity:bend.severity,label:'50'});
+ // Detectamos los vértices más duros y después escogemos un conjunto pequeño y bien espaciado.
+ const candidates=[];
+ for(let d=45;d<track.length;d+=28){const bend=curvatureAt(d);if(bend.severity>.30)candidates.push({progress:d,turn:bend.turn,severity:bend.severity});}
+ candidates.sort((a,b)=>b.severity-a.severity);
+ const corners=[];
+ for(const candidate of candidates){
+  const separated=corners.every(c=>{const delta=Math.abs(c.progress-candidate.progress);return Math.min(delta,track.length-delta)>225;});
+  if(separated)corners.push(candidate);
+  if(corners.length>=6)break;
  }
- const passing=[];let lastPassing=-Infinity;
- for(let d=100;d<track.length;d+=42){
-  const before=curvatureAt(d-34),here=curvatureAt(d),after=curvatureAt(d+34);
-  const nearCorner=braking.some(b=>{const delta=Math.abs(b.cornerProgress-d);return Math.min(delta,track.length-delta)<100;});
-  if(before.severity>.11||here.severity>.11||after.severity>.11||nearCorner||d-lastPassing<180)continue;
-  passing.push({progress:d});lastPassing=d;
-  if(passing.length>=5)break;
+ corners.sort((a,b)=>a.progress-b.progress);
+ const braking=[];
+ for(const corner of corners){
+  braking.push({cornerProgress:corner.progress,progress:wrapDistance(corner.progress-108),turn:corner.turn,severity:corner.severity,label:'100'});
+  braking.push({cornerProgress:corner.progress,progress:wrapDistance(corner.progress-54),turn:corner.turn,severity:corner.severity,label:'50'});
+ }
+ // Escoger tres sectores de ataque por circuito según la menor curvatura local y separarlos bastante.
+ const straightCandidates=[];
+ for(let d=80;d<track.length;d+=24){
+  const before=curvatureAt(d-55),here=curvatureAt(d),after=curvatureAt(d+55);
+  const score=(before.severity+here.severity+after.severity)/3;
+  const nearestCorner=corners.reduce((best,c)=>{const delta=Math.abs(c.progress-d);return Math.min(best,Math.min(delta,track.length-delta));},Infinity);
+  if(score<.42&&nearestCorner>125)straightCandidates.push({progress:d,score});
+ }
+ straightCandidates.sort((a,b)=>a.score-b.score);
+ const passing=[];
+ for(const candidate of straightCandidates){
+  const separated=passing.every(zone=>{const delta=Math.abs(zone.progress-candidate.progress);return Math.min(delta,track.length-delta)>track.length*.16;});
+  if(separated)passing.push({progress:candidate.progress,score:candidate.score});
+  if(passing.length>=3)break;
+ }
+ // Si el trazado es sinuoso, rellenar con sus tres sectores de menor curvatura,
+ // manteniendo la separación para que las señales no queden amontonadas.
+ if(passing.length<3){
+  for(let d=80;d<track.length;d+=24){
+   const here=curvatureAt(d),score=(curvatureAt(d-55).severity+here.severity+curvatureAt(d+55).severity)/3;
+   const separated=passing.every(zone=>{const delta=Math.abs(zone.progress-d);return Math.min(delta,track.length-delta)>track.length*.16;});
+   if(separated)passing.push({progress:d,score});
+   if(passing.length>=3)break;
+  }
  }
  return {braking,passing};
 }
@@ -544,7 +568,7 @@ function drawFrame(){
  const cornerName=cornerAhead.severity<.12?'RECTA':cornerAhead.turn>0?'CURVA DERECHA':'CURVA IZQUIERDA';
  ctx.fillStyle=cornerAhead.severity>.24?'#ffba63':'#d7ff38';ctx.font='bold 10px monospace';ctx.fillText(cornerName,642,43);
  ctx.fillStyle='#f4f5f9';ctx.font='bold 9px monospace';ctx.fillText(cornerAhead.severity<.12?'ZONA DE ATAQUE':(player.speed>cornerAhead.safeSpeed+12?'FRENA AHORA':'FRENA A '+Math.round(cornerAhead.safeSpeed)),642,60);
- if(cornerAhead.distance<155&&cornerAhead.severity>.22){ctx.fillStyle='#ffba63';ctx.font='bold 9px monospace';ctx.fillText(Math.round(cornerAhead.distance)+' M',748,28);}
+ if(cornerAhead.distance<155&&cornerAhead.severity>.22){ctx.fillStyle='#ffba63';ctx.font='bold 9px monospace';ctx.fillText('A '+Math.round(cornerAhead.distance),748,28);}
  if(player.offroad>ROAD_EDGE){ctx.fillStyle='#ffca70';ctx.font='bold 14px monospace';ctx.fillText('GRASS — LOW GRIP',285,32);}
  if(player.drift>.35){ctx.fillStyle='#0d1420e8';ctx.fillRect(820,14,165,27);ctx.fillStyle='#39e8e8';ctx.font='bold 12px monospace';ctx.fillText('SLIDE '+Math.round(player.drift*100)+'%',830,33);}
  drawMiniMap(ctx);
