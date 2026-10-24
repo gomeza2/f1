@@ -162,24 +162,14 @@ function buildTrackFeatures(){
   const before=curvatureAt(d-55),here=curvatureAt(d),after=curvatureAt(d+55);
   const score=(before.severity+here.severity+after.severity)/3;
   const nearestCorner=corners.reduce((best,c)=>{const delta=Math.abs(c.progress-d);return Math.min(best,Math.min(delta,track.length-delta));},Infinity);
-  if(score<.42&&nearestCorner>125)straightCandidates.push({progress:d,score});
+  if(score<.42&&nearestCorner>75)straightCandidates.push({progress:d,score});
  }
  straightCandidates.sort((a,b)=>a.score-b.score);
  const passing=[];
  for(const candidate of straightCandidates){
-  const separated=passing.every(zone=>{const delta=Math.abs(zone.progress-candidate.progress);return Math.min(delta,track.length-delta)>track.length*.16;});
+  const separated=passing.every(zone=>{const delta=Math.abs(zone.progress-candidate.progress);return Math.min(delta,track.length-delta)>track.length*.10;});
   if(separated)passing.push({progress:candidate.progress,score:candidate.score});
   if(passing.length>=3)break;
- }
- // Si el trazado es sinuoso, rellenar con sus tres sectores de menor curvatura,
- // manteniendo la separación para que las señales no queden amontonadas.
- if(passing.length<3){
-  for(let d=80;d<track.length;d+=24){
-   const here=curvatureAt(d),score=(curvatureAt(d-55).severity+here.severity+curvatureAt(d+55).severity)/3;
-   const separated=passing.every(zone=>{const delta=Math.abs(zone.progress-d);return Math.min(delta,track.length-delta)>track.length*.16;});
-   if(separated)passing.push({progress:d,score});
-   if(passing.length>=3)break;
-  }
  }
  return {braking,passing};
 }
