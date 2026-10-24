@@ -384,8 +384,10 @@ function physics(car,i,dt){
   const player=cars[0],lookAhead=clamp(54+car.speed*.43,62,132),bendAhead=curvatureAt(before.progress+lookAhead);
   let laneOffset=clamp(bendAhead.turn*46,-22,22);
   const rivalDistance=player?Math.hypot(player.x-car.x,player.y-car.y):Infinity;
+  // raceProgress ya incorpora las vueltas completadas; no lo envolveremos por longitud,
+  // porque eso podría hacer que la CPU confundiera un coche doblado con un rival cercano.
   const rawGap=player?player.raceProgress-car.raceProgress:Infinity;
-  const progressGap=Number.isFinite(rawGap)?(rawGap>track.length/2?rawGap-track.length:rawGap< -track.length/2?rawGap+track.length:rawGap):Infinity;
+  const progressGap=Number.isFinite(rawGap)?rawGap:Infinity;
   const nearRace=player&&rivalDistance<178&&Math.abs(progressGap)<220;
   if(nearRace){
    const playerLoc=nearestOnTrack(player.x,player.y);
@@ -506,10 +508,11 @@ function strokeTrack(context,color,width,dash=[],offset=0){
  context.setLineDash([]);
 }
 function renderGroundTexture(context){
- const desert=track.surface==='dirt'||track.surface==='volcanic';
+ const desert=track.surface==='dirt',volcanic=track.surface==='volcanic';
  for(let y=8;y<640;y+=17)for(let x=8;x<1000;x+=19){
   const seed=Math.abs(Math.sin(x*12.9898+y*78.233+stage*37.17)*43758.5453)%1;
-  if(desert){if(seed>.71){context.fillStyle=seed>.91?'#694c32':'#d1b47d';context.globalAlpha=seed>.91?.32:.18;context.beginPath();context.ellipse(x+(seed-.5)*9,y+(seed-.5)*6,2+seed*4,1+seed*2,seed*3,0,Math.PI*2);context.fill();}if(seed>.965){context.fillStyle='#665542';context.globalAlpha=.45;context.fillRect(x,y,2,2);}}
+  if(volcanic){if(seed>.69){context.fillStyle=seed>.94?'#d65d3e':seed>.82?'#211e25':'#5a4645';context.globalAlpha=seed>.94?.38:.24;context.beginPath();context.ellipse(x+(seed-.5)*9,y+(seed-.5)*6,2+seed*4,1+seed*2,seed*3,0,Math.PI*2);context.fill();}if(seed>.985){context.fillStyle='#ff7547';context.globalAlpha=.42;context.fillRect(x,y,2,2);}}
+  else if(desert){if(seed>.71){context.fillStyle=seed>.91?'#694c32':'#d1b47d';context.globalAlpha=seed>.91?.32:.18;context.beginPath();context.ellipse(x+(seed-.5)*9,y+(seed-.5)*6,2+seed*4,1+seed*2,seed*3,0,Math.PI*2);context.fill();}if(seed>.965){context.fillStyle='#665542';context.globalAlpha=.45;context.fillRect(x,y,2,2);}}
   else if(seed>.55){context.globalAlpha=stage===4?.14:.23;context.strokeStyle=seed>.82?'#d8e6bd':'#0b3a28';context.lineWidth=1;context.beginPath();context.moveTo(x,y+2);context.lineTo(x+(seed-.5)*5,y-2-seed*3);context.stroke();}context.globalAlpha=1;
  }
 }
