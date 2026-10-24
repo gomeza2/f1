@@ -25,6 +25,6 @@ Soltar el acelerador reduce velocidad, pero las curvas cerradas piden anticipaci
 
 ## Hoja de ruta de mejoras
 
-El desarrollo continuará en diez fases incrementales documentadas en [`ROADMAP_10_FASES.md`](ROADMAP_10_FASES.md). La fase 1 agrega una cuenta regresiva, récord personal por circuito guardado en el navegador, indicador de checkpoints y una respuesta más rápida del freno de mano. El registro se guarda localmente en este dispositivo y navegador; no necesita cuentas ni servidor.
+El desarrollo está organizado en trece fases documentadas en [`ROADMAP_13_FASES.md`](ROADMAP_13_FASES.md). La build 0.13 inicia el trabajo de ampliación visual, selector de barreras, CPU más agresiva, textura procedural del terreno y marcas de derrape. Los récords personales continúan guardándose localmente en el navegador.
 
-La sintaxis debe revisarse y la sensación de manejo debe validarse en un navegador real después de cada fase. El código actual conserva el enfoque Canvas 2D y los sistemas de carrera existentes.
+La sintaxis se revisa durante los cambios; la sensación de manejo, las colisiones y la composición en pantalla completa deben verificarse manualmente en un navegador real. El juego continúa usando Canvas 2D y conserva los sistemas de carrera existentes.
