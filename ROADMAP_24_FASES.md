@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como 0.16. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como 0.17, que incluye correcciones de la build 0.16. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -194,14 +194,14 @@ La interfaz identifica la build como 0.16. El código registra **14 circuitos**,
 - Comprobar que la versión de GitHub Pages carga todos los archivos.
 - Declarar una versión estable solo después de las pruebas completas.
 
-## Registro de auditoría — build 0.16
+## Registro de auditoría — build 0.17
 
 - JavaScript: comprobación de sintaxis superada.
 - Integración de interfaz: no se encontraron referencias de JavaScript a IDs inexistentes en el HTML en la inspección estática.
 - Circuitos: 14 registros.
 - Geometría: el muestreo de segmentos no detectó intersecciones de línea central en los 14 circuitos.
-- Superficies: arreglada la selección de agarre por sector en pistas mixtas.
-- CPU: corregida la comparación circular de la distancia de carrera que podía confundir coches separados por una vuelta.
+- Superficies: arreglada la selección de agarre por sector en pistas mixtas, el etiquetado local del HUD, los tramos de minimapa y los efectos de partículas según material.
+- CPU: corregida la comparación de distancia para respetar las vueltas acumuladas y no confundir coches separados por una vuelta.
 - HUD: los indicadores se dibujan fuera del lienzo principal.
 
 Esta lista es una comprobación estática. No afirma que el juego haya sido probado en un navegador ni que todas las colisiones y decisiones de CPU estén perfectamente equilibradas.
