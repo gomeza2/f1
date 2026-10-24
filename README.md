@@ -44,12 +44,17 @@ Las superficies incluyen asfalto, tierra, pasto, hielo, volcánico y secciones m
 - HUD separado del lienzo de conducción, con velocidad, sector siguiente, checkpoints, mejor vuelta, terreno y minimapa.
 - Opciones de gráficos detallados, retro y rendimiento.
 
+## Validación geométrica (opcional)
+
+Con Node.js instalado, ejecutá `node tests/validate-tracks.mjs` desde la carpeta raíz. No necesita dependencias adicionales. El test lee las definiciones reales de los circuitos y comprueba nombres únicos, perfiles de superficie/barreras, muestras finitas, límites del lienzo y cruces de las líneas centrales.
+
 ## Estructura
 
 - `index.html`: menú, opciones, interfaz de carrera y telemetría.
 - `style.css`: diseño adaptable, modo de pantalla completa y estilos de la interfaz.
 - `script.js`: circuitos, conducción, CPU, superficies, colisiones, checkpoints, renderizado y audio.
 - `ROADMAP_24_FASES.md`: estado y prioridades del desarrollo.
+- `tests/validate-tracks.mjs`: comprobación geométrica reproducible de los circuitos (requiere Node.js solo para ejecutar la prueba).
 
 ## Validación conocida
 
