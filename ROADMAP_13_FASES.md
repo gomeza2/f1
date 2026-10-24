@@ -37,10 +37,12 @@ Llevar el arcade retro existente a una versión más grande, competitiva y con m
 - Dejar más espacio de recuperación en el tramo sin vallas, sin permitir escapar indefinidamente del circuito.
 
 ## Fase 4 — Pistas y escenarios con identidad
-- Diferenciar mejor los diez circuitos con curvas lentas, curvas rápidas, rectas y cambios de ritmo.
-- Añadir señalización de frenado y zonas de adelantamiento.
-- Dar más personalidad a la vegetación, el desierto, el hielo, la ciudad nocturna y el volcán.
-- Revisar que las distintas líneas de carrera sigan siendo posibles en cada trazado.
+**Primera capa implementada en build 0.14; falta probar su legibilidad visual en el navegador.**
+- Carteles de frenado "100" y "50" situados antes de curvas pronunciadas.
+- Marcas verdes de zona de adelantamiento en rectas con baja curvatura.
+- HUD con aviso de curva izquierda/derecha o recta, distancia aproximada y orientación de frenado.
+- Diferenciar mejor los diez circuitos con personalidad ambiental; la siguiente pasada debe revisar trazados, señales y posiciones para evitar repeticiones o solapamientos.
+- Validar que los carteles no distraigan ni oculten límites, checkpoints o coches.
 
 ## Fase 5 — Tierra, pasto y superficie
 **Primera capa implementada en build 0.13.**
