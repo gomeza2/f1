@@ -111,6 +111,12 @@ function standingsText(){
  return 'CAMPEONATO · P1 '+championship.player1+' PTS · P2 '+championship.player2+' PTS';
 }
 const wrapDistance=d=>((d%track.length)+track.length)%track.length;
+function surfaceAtProgress(distance){
+ const d=wrapDistance(distance);
+ if(track.surface==='mixed')return (track.dirtRanges||[]).some(([start,end])=>d>=start&&d<=end)?'dirt':'asphalt';
+ if(track.surface==='coastal'&&d>=track.length*.31&&d<=track.length*.37)return 'dirt';
+ return track.surface||'asphalt';
+}
 function sampleAt(distance){
  const d=wrapDistance(distance),s=track.samples;let lo=0,hi=s.length-1;
  while(lo<hi){const mid=(lo+hi+1)>>1;if(s[mid].d<=d)lo=mid;else hi=mid-1;}
@@ -419,7 +425,8 @@ function physics(car,i,dt){
  }
  car.speed=clamp(car.speed,0,model.maxSpeed);
  const tooFast=Math.max(0,car.speed-localBend.safeSpeed);
- const surfaceGrip=({asphalt:1,dirt:.84,grass:.79,ice:.68,volcanic:.87,mixed:.96,coastal:.98})[track.surface]||1;
+ const drivingSurface=surfaceAtProgress(before.progress);
+ const surfaceGrip=({asphalt:1,dirt:.84,grass:.79,ice:.68,volcanic:.87})[drivingSurface]||1;
  const grip=clamp((1-tooFast*.006-(car.drift*(car.handbrake ? 0.07 : 0.2)))*model.grip*surfaceGrip,.14,1.08);
  const turnRate=(.6+car.speed/235*1.7)*model.steering*(car.handbrake?1.2:1);
  car.heading=wrapAngle(car.heading+car.steer*turnRate*grip*dt);
@@ -431,8 +438,9 @@ function physics(car,i,dt){
  // El pasto tiene mucha resistencia: penaliza fuerte, pero permite recuperar el auto.
  let roadEdge=Math.max(0,Math.abs(after.offset)-ROAD_EDGE);
  if(roadEdge>0){
-  const baseDrag=track.surface==='grass'?34:track.surface==='ice'?58:(track.surface==='dirt'||track.surface==='volcanic')?54:82;
-  const edgeDrag=track.surface==='grass'?2.2:(track.surface==='dirt'||track.surface==='volcanic')?2.8:4.6;
+  const runoffMaterial=track.surface==='dirt'?'dirt':track.surface==='volcanic'?'volcanic':track.surface==='ice'?'ice':track.surface==='coastal'?'coastal':'grass';
+  const baseDrag=runoffMaterial==='grass'?34:runoffMaterial==='ice'?58:(runoffMaterial==='dirt'||runoffMaterial==='volcanic'||runoffMaterial==='coastal')?54:82;
+  const edgeDrag=runoffMaterial==='grass'?2.2:(runoffMaterial==='dirt'||runoffMaterial==='volcanic'||runoffMaterial==='coastal')?2.8:4.6;
   car.speed=Math.max(14,car.speed-(baseDrag+roadEdge*edgeDrag)*model.grass*dt);
   car.drift=Math.max(car.drift,.28);
  }
@@ -458,8 +466,12 @@ function physics(car,i,dt){
   car.skidTimer=.045;if(skidMarks.length>1400)skidMarks.splice(0,skidMarks.length-1400);
  }
  if((skidding||roadEdge>3)&&car.speed>38&&Math.random()<dt*(roadEdge>3?34:20)&&terrainParticles.length<360){
-  const rearX=car.x-Math.cos(car.heading)*13,rearY=car.y-Math.sin(car.heading)*13,spread=(Math.random()-.5)*14,dirt=roadEdge>3;
-  terrainParticles.push({x:rearX-Math.sin(car.heading)*spread,y:rearY+Math.cos(car.heading)*spread,vx:(Math.random()-.5)*34-Math.cos(car.heading)*(dirt?12:5),vy:(Math.random()-.5)*34-Math.sin(car.heading)*(dirt?12:5),life:dirt?.62:.46,max:dirt?.62:.46,size:dirt?2+Math.random()*4:2+Math.random()*3,color:dirt?(stage===5?'#65a34e':'#ad8053'):(roadEdge>3?'#6e9958':'#aeb6c5')});
+  const rearX=car.x-Math.cos(car.heading)*13,rearY=car.y-Math.sin(car.heading)*13,spread=(Math.random()-.5)*14;
+  const runoffMaterial=track.surface==='dirt'?'dirt':track.surface==='volcanic'?'volcanic':track.surface==='ice'?'snow':track.surface==='coastal'?'sand':'grass';
+  const particleMaterial=roadEdge>3?runoffMaterial:surfaceAtProgress(after.progress);
+  const particleStyle={dirt:{color:'#ad8053',life:.62,size:3},volcanic:{color:'#cf603c',life:.58,size:3},snow:{color:'#d9f1f6',life:.46,size:2},sand:{color:'#c9ad7a',life:.58,size:3},grass:{color:'#6e9958',life:.46,size:2},asphalt:{color:'#aeb6c5',life:.46,size:2}}[particleMaterial]||{color:'#aeb6c5',life:.46,size:2};
+  const life=particleStyle.life;
+  terrainParticles.push({x:rearX-Math.sin(car.heading)*spread,y:rearY+Math.cos(car.heading)*spread,vx:(Math.random()-.5)*34-Math.cos(car.heading)*(roadEdge>3?12:5),vy:(Math.random()-.5)*34-Math.sin(car.heading)*(roadEdge>3?12:5),life,max:life,size:particleStyle.size+Math.random()*2,color:particleStyle.color});
  }
  car.particles=car.particles.filter(p=>(p.life-=dt)>0);if(car.flash>0)car.flash-=dt;
 }
@@ -607,19 +619,22 @@ function drawMiniMap(){
  const scale=Math.min((w-12)/1000,(h-12)/640),ox=(w-1000*scale)/2,oy=(h-640*scale)/2;
  m.save();m.setTransform(scale,0,0,scale,ox,oy);
  strokeTrack(m,'#02060c',116);strokeTrack(m,track.surface==='dirt'?'#b28b61':track.surface==='grass'?'#74a94e':track.surface==='ice'?'#dffaff':'#5e6875',82);
+ if(track.surface==='mixed')for(const [start,end] of track.dirtRanges)strokeTrackRange(m,start,end,'#ad8258',68);
+ if(track.surface==='coastal')strokeTrackRange(m,track.length*.31,track.length*.37,'#c2a06b',68);
  cars.forEach(car=>{m.fillStyle=car.color;m.beginPath();m.arc(car.x,car.y,17,0,Math.PI*2);m.fill();});
  m.restore();m.strokeStyle='#5d6b8a';m.lineWidth=2;m.strokeRect(1,1,w-2,h-2);
 }
 function updateTelemetry(){
  const player=cars[0];if(!player)return;
  const safe=curvatureAt(player.progress+28).safeSpeed,corner=upcomingCorner(player.progress);
- const names={asphalt:'ASFALTO',dirt:'TIERRA',grass:'PASTO',ice:'HIELO',volcanic:'VOLCÁN',mixed:'MIXTA',coastal:'COSTA'};
+ const names={asphalt:'ASFALTO',dirt:'TIERRA',grass:'PASTO',ice:'HIELO',volcanic:'VOLCÁN',coastal:'COSTA'};
+ const currentSurface=surfaceAtProgress(player.progress);
  const cornerName=corner.severity<.12?'RECTA':corner.turn>0?'CURVA DERECHA':'CURVA IZQUIERDA';
  $('speedValue').textContent=Math.round(player.speed)+' km/h';$('targetSpeedValue').textContent=Math.round(safe)+' km/h';
  $('sectorValue').textContent=cornerName+(corner.severity>.22?' · A '+Math.round(corner.distance):'');
  $('cpValue').textContent=Math.min(player.checkpointPasses||0,checkpoints.length)+' / '+checkpoints.length;
  const best=bestLapRecords[track.name];$('bestLapValue').textContent=best?format(best):'--:--.-';
- $('surfaceValue').textContent=(Math.abs(player.roadOffset)>ROAD_EDGE?'FUERA · ':'')+(names[track.surface]||'ASFALTO');
+ $('surfaceValue').textContent=(Math.abs(player.roadOffset)>ROAD_EDGE?'FUERA · ':'')+(names[currentSurface]||'ASFALTO');
  $('driftValue').textContent=player.drift>.35?'DERRAPE '+Math.round(player.drift*100)+'%':'AGARRE';
  $('targetSpeedChip').classList.toggle('warning',player.speed>safe+15);
  $('sectorChip').classList.toggle('warning',corner.severity>.24&&player.speed>safe+12);
@@ -627,7 +642,8 @@ function updateTelemetry(){
 }
 function drawFrame(){
  const w=canvas.width,h=canvas.height;ctx.setTransform(w/1000,0,0,h/640,0,0);drawBackground(ctx);
- strokeTrack(ctx,'#eef0d85c',2.5,[18,22],-elapsed*13);
+ const centerLineColor=track.surface==='dirt'?'#ead0a3':track.surface==='grass'?'#cce88d':track.surface==='ice'?'#f4ffff':track.surface==='volcanic'?'#df8060':'#eef0d85c';
+ strokeTrack(ctx,centerLineColor,2.5,[18,22],-elapsed*13);
  drawGroundEffects(ctx);cars.slice().sort((a,b)=>a.speed-b.speed).forEach(car=>drawCar(ctx,car));
  if(countdownRemaining>0||goFlashRemaining>0){ctx.fillStyle='#050716b8';ctx.fillRect(0,0,1000,640);ctx.textAlign='center';ctx.fillStyle='#d7ff38';ctx.font='bold 88px monospace';ctx.fillText(countdownRemaining>0?String(Math.ceil(countdownRemaining)):'¡YA!',500,315);ctx.fillStyle='#f5f6ff';ctx.font='bold 17px monospace';ctx.fillText(countdownRemaining>0?'PREPARADOS...':'¡ACELERÁ!',500,360);}
  if(paused){ctx.fillStyle='#050716bb';ctx.fillRect(0,0,1000,640);ctx.fillStyle='#d7ff38';ctx.font='bold 40px monospace';ctx.textAlign='center';ctx.fillText('PAUSED',500,310);ctx.font='16px monospace';ctx.fillText('PRESS ESC TO RESUME',500,342);}
