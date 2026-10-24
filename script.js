@@ -280,7 +280,8 @@ function updateProgress(car,loc,fromX,fromY){
 }
 function physics(car,i,dt){
  const before=nearestOnTrack(car.x,car.y),k=keyFor(i),localBend=curvatureAt(before.progress),upcoming=upcomingCorner(before.progress);
- const model=CAR_MODELS[car.model]||CAR_MODELS.balanced;
+ const baseModel=CAR_MODELS[car.model]||CAR_MODELS.balanced;
+ const model=car.isAI?{...baseModel,maxSpeed:difficulty==='hard'?246:difficulty==='normal'?238:220,steering:difficulty==='hard'?1.08:difficulty==='normal'?1.02:.98,grip:difficulty==='hard'?1.04:difficulty==='normal'?1:.97}:baseModel;
  if(car.isAI){
   const player=cars[0],lookAhead=clamp(48+car.speed*.4,58,118),bendAhead=curvatureAt(before.progress+lookAhead);
   let laneOffset=clamp(bendAhead.turn*43,-20,20);
