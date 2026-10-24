@@ -23,4 +23,8 @@ Abrí `index.html` en un navegador moderno. Para publicarlo online, activá GitH
 ## Diseño de la conducción
 Soltar el acelerador reduce velocidad, pero las curvas cerradas piden anticipación y freno. El pasto frena mucho. Las barreras evitan que salgas indefinidamente del circuito, pero chocarlas cuesta velocidad. El modo normal busca ser competitivo; fácil reduce la fuerza del rival y difícil la aumenta.
 
-El proyecto sigue en desarrollo. Se comprueba la sintaxis y se hacen pruebas simuladas, pero hace falta probar visualmente en un navegador real para confirmar la sensación del manejo y el ajuste de checkpoints.
+## Hoja de ruta de mejoras
+
+El desarrollo continuará en diez fases incrementales documentadas en [`ROADMAP_10_FASES.md`](ROADMAP_10_FASES.md). La fase 1 agrega una cuenta regresiva, récord personal por circuito guardado en el navegador, indicador de checkpoints y una respuesta más rápida del freno de mano. El registro se guarda localmente en este dispositivo y navegador; no necesita cuentas ni servidor.
+
+La sintaxis debe revisarse y la sensación de manejo debe validarse en un navegador real después de cada fase. El código actual conserva el enfoque Canvas 2D y los sistemas de carrera existentes.
