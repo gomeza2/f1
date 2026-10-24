@@ -164,10 +164,11 @@ La interfaz identifica la build como 0.17, que incluye correcciones de la build 
 - Guardado local de pistas y validación antes de jugar.
 
 ### Fase 21 — Validación de circuitos
-**Pruebas geométricas parciales realizadas manualmente; herramienta persistente pendiente.**
+**Primera herramienta reproducible añadida; prueba local disponible.**
 
-- Convertir la comprobación de cruces en una prueba reproducible.
-- Detectar segmentos cercanos, curvas agudas, anchuras insuficientes y checkpoints mal ubicados.
+- `tests/validate-tracks.mjs` lee las definiciones reales y comprueba perfiles, dimensiones, longitud, muestras finitas y cruces de línea central.
+- Ejecutar `node tests/validate-tracks.mjs` desde un checkout local para repetir la validación.
+- Próximo paso: detectar segmentos demasiado cercanos, curvas agudas, anchuras insuficientes y checkpoints mal ubicados.
 - Validar que cada barrera tenga colisión correspondiente.
 
 ### Fase 22 — Rendimiento y accesibilidad
@@ -197,6 +198,7 @@ La interfaz identifica la build como 0.17, que incluye correcciones de la build 
 ## Registro de auditoría — build 0.17
 
 - JavaScript: comprobación de sintaxis superada.
+- Se agregó `tests/validate-tracks.mjs` como prueba geométrica reproducible, sin dependencias externas.
 - Integración de interfaz: no se encontraron referencias de JavaScript a IDs inexistentes en el HTML en la inspección estática.
 - Circuitos: 14 registros.
 - Geometría: el muestreo de segmentos no detectó intersecciones de línea central en los 14 circuitos.
