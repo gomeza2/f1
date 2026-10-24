@@ -601,35 +601,34 @@ function drawCar(context,car){
  }
  context.globalAlpha=1;
 }
-function drawMiniMap(context){
- context.save();context.translate(800,500);context.scale(.18,.18);
- context.fillStyle='#111725dd';context.fillRect(-12,-12,1024,664);
- strokeTrack(context,'#05070c',142);strokeTrack(context,'#5d6574',88);
- cars.forEach(car=>{context.fillStyle=car.color;context.beginPath();context.arc(car.x,car.y,19,0,Math.PI*2);context.fill();});
- context.restore();
- context.fillStyle='#111725e8';context.fillRect(795,480,190,18);context.fillStyle='#d7ff38';context.font='bold 10px monospace';context.textAlign='left';context.fillText('CIRCUIT MAP',806,493);
+function drawMiniMap(){
+ const mini=$('miniMap');if(!mini)return;const m=mini.getContext('2d'),w=mini.width,h=mini.height;
+ m.clearRect(0,0,w,h);m.fillStyle='#0c1322';m.fillRect(0,0,w,h);
+ const scale=Math.min((w-12)/1000,(h-12)/640),ox=(w-1000*scale)/2,oy=(h-640*scale)/2;
+ m.save();m.setTransform(scale,0,0,scale,ox,oy);
+ strokeTrack(m,'#02060c',116);strokeTrack(m,track.surface==='dirt'?'#b28b61':track.surface==='grass'?'#74a94e':track.surface==='ice'?'#dffaff':'#5e6875',82);
+ cars.forEach(car=>{m.fillStyle=car.color;m.beginPath();m.arc(car.x,car.y,17,0,Math.PI*2);m.fill();});
+ m.restore();m.strokeStyle='#5d6b8a';m.lineWidth=2;m.strokeRect(1,1,w-2,h-2);
+}
+function updateTelemetry(){
+ const player=cars[0];if(!player)return;
+ const safe=curvatureAt(player.progress+28).safeSpeed,corner=upcomingCorner(player.progress);
+ const names={asphalt:'ASFALTO',dirt:'TIERRA',grass:'PASTO',ice:'HIELO',volcanic:'VOLCÁN',mixed:'MIXTA',coastal:'COSTA'};
+ const cornerName=corner.severity<.12?'RECTA':corner.turn>0?'CURVA DERECHA':'CURVA IZQUIERDA';
+ $('speedValue').textContent=Math.round(player.speed)+' km/h';$('targetSpeedValue').textContent=Math.round(safe)+' km/h';
+ $('sectorValue').textContent=cornerName+(corner.severity>.22?' · A '+Math.round(corner.distance):'');
+ $('cpValue').textContent=Math.min(player.checkpointPasses||0,checkpoints.length)+' / '+checkpoints.length;
+ const best=bestLapRecords[track.name];$('bestLapValue').textContent=best?format(best):'--:--.-';
+ $('surfaceValue').textContent=(Math.abs(player.roadOffset)>ROAD_EDGE?'FUERA · ':'')+(names[track.surface]||'ASFALTO');
+ $('driftValue').textContent=player.drift>.35?'DERRAPE '+Math.round(player.drift*100)+'%':'AGARRE';
+ $('targetSpeedChip').classList.toggle('warning',player.speed>safe+15);
+ $('sectorChip').classList.toggle('warning',corner.severity>.24&&player.speed>safe+12);
+ drawMiniMap();
 }
 function drawFrame(){
  const w=canvas.width,h=canvas.height;ctx.setTransform(w/1000,0,0,h/640,0,0);drawBackground(ctx);
  strokeTrack(ctx,'#eef0d85c',2.5,[18,22],-elapsed*13);
- const player=cars[0];
  drawGroundEffects(ctx);cars.slice().sort((a,b)=>a.speed-b.speed).forEach(car=>drawCar(ctx,car));
- ctx.fillStyle='#101725ed';ctx.fillRect(14,14,290,88);ctx.textAlign='left';ctx.font='bold 13px monospace';
- ctx.fillStyle=player.color;ctx.fillText('SPEED  '+Math.round(player.speed)+' KM/H',26,35);
- const safe=curvatureAt(player.progress+28).safeSpeed;
- ctx.fillStyle=player.speed>safe+15?'#ff706d':'#d7ff38';ctx.fillText('TARGET SPEED  '+Math.round(safe),26,56);
- ctx.fillStyle='#e9edf9';ctx.font='bold 11px monospace';ctx.fillText('LAP '+Math.min(LAPS_TO_WIN,player.lap+1)+'/'+LAPS_TO_WIN,26,73);
- const bestLap=bestLapRecords[track.name];ctx.fillStyle='#b9c4df';ctx.font='bold 10px monospace';ctx.fillText('BEST '+(bestLap?format(bestLap):'--:--.-')+'   CP '+Math.min(player.checkpointPasses||0,checkpoints.length)+'/'+checkpoints.length,26,92);
- const cornerAhead=upcomingCorner(player.progress);
- ctx.fillStyle='#101725ed';ctx.fillRect(632,14,166,58);ctx.strokeStyle=cornerAhead.severity>.24?'#ffba63':'#c8ff54';ctx.lineWidth=2;ctx.strokeRect(632,14,166,58);
- ctx.fillStyle='#aab6d4';ctx.font='bold 9px monospace';ctx.textAlign='left';ctx.fillText('SIGUIENTE SECTOR',642,28);
- const cornerName=cornerAhead.severity<.12?'RECTA':cornerAhead.turn>0?'CURVA DERECHA':'CURVA IZQUIERDA';
- ctx.fillStyle=cornerAhead.severity>.24?'#ffba63':'#d7ff38';ctx.font='bold 10px monospace';ctx.fillText(cornerName,642,43);
- ctx.fillStyle='#f4f5f9';ctx.font='bold 9px monospace';ctx.fillText(cornerAhead.severity<.12?'ZONA DE ATAQUE':(player.speed>cornerAhead.safeSpeed+12?'FRENA AHORA':'FRENA A '+Math.round(cornerAhead.safeSpeed)),642,60);
- if(cornerAhead.distance<155&&cornerAhead.severity>.22){ctx.fillStyle='#ffba63';ctx.font='bold 9px monospace';ctx.fillText('A '+Math.round(cornerAhead.distance),748,28);}
- if(player.offroad>ROAD_EDGE){ctx.fillStyle='#ffca70';ctx.font='bold 14px monospace';ctx.fillText('GRASS — LOW GRIP',285,32);}
- if(player.drift>.35){ctx.fillStyle='#0d1420e8';ctx.fillRect(820,14,165,27);ctx.fillStyle='#39e8e8';ctx.font='bold 12px monospace';ctx.fillText('SLIDE '+Math.round(player.drift*100)+'%',830,33);}
- drawMiniMap(ctx);
  if(countdownRemaining>0||goFlashRemaining>0){ctx.fillStyle='#050716b8';ctx.fillRect(0,0,1000,640);ctx.textAlign='center';ctx.fillStyle='#d7ff38';ctx.font='bold 88px monospace';ctx.fillText(countdownRemaining>0?String(Math.ceil(countdownRemaining)):'¡YA!',500,315);ctx.fillStyle='#f5f6ff';ctx.font='bold 17px monospace';ctx.fillText(countdownRemaining>0?'PREPARADOS...':'¡ACELERÁ!',500,360);}
  if(paused){ctx.fillStyle='#050716bb';ctx.fillRect(0,0,1000,640);ctx.fillStyle='#d7ff38';ctx.font='bold 40px monospace';ctx.textAlign='center';ctx.fillText('PAUSED',500,310);ctx.font='16px monospace';ctx.fillText('PRESS ESC TO RESUME',500,342);}
 }
@@ -647,7 +646,7 @@ function loop(now){
  }
  if(goFlashRemaining>0&&countdownRemaining<=0)goFlashRemaining=Math.max(0,goFlashRemaining-dt);
  $('timer').textContent=format(elapsed);$('lap').textContent=Math.min(LAPS_TO_WIN,cars[0].lap+1)+'/'+LAPS_TO_WIN;
- updateGroundEffects(dt);updateAudio();drawFrame();
+ updateGroundEffects(dt);updateAudio();drawFrame();updateTelemetry();
  const finishers=cars.filter(car=>car.done);
  if(cars.every(car=>car.done)){finishRace();return;}
  if(finishers.length&&elapsed-Math.min(...finishers.map(car=>car.finishTime))>18){finishRace();return;}
