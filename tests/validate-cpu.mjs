@@ -20,6 +20,10 @@ for(const difficulty of (process.argv.includes('--focused')?[]:['easy','normal',
   assert.equal(ai.lap,3,`${game.track.name}/${difficulty}: did not finish three valid laps in 300s`);
   assert.equal(ai.lapTimes.length,3);
   times.push(ai.finishTime);
+  if(difficulty==='normal'){
+   const lap=ai.finishTime/3;assert.ok(lap>=25&&lap<=45,`${game.track.name}: reference lap ${lap.toFixed(2)}s outside the 25–45s goal`);
+   console.log(`PACE: ${game.track.name}, mean lap ${lap.toFixed(2)}s.`);
+  }
  }
  results.set(difficulty,times);
  console.log(`PASS: ${difficulty}, ${times.length} circuits, three laps each, shared speed/acceleration limits.`);

@@ -21,9 +21,10 @@ export function loadGame() {
   };
   vm.createContext(sandbox);
   const source = readFileSync(new URL('../../script.js', import.meta.url), 'utf8');
-  const expose = `globalThis.testGame={start,physics,placeCar,setupCar,aiTraffic,AI_DRIVERS,CAR_MODELS,WORLD_SPEED_SCALE,vehicleHandling,raceCamera,toggleCamera,sampleAt,nearestOnTrack,curvatureAt,resolveCollisions,guardrailActive,barrierContoursForTrack,resolveBarrierContact,projectToSegment,closestSegments,
+  const expose = `globalThis.testGame={start,physics,placeCar,setupCar,aiTraffic,AI_DRIVERS,CAR_MODELS,WORLD_SPEED_SCALE,vehicleHandling,raceCamera,toggleCamera,overviewZoom,usesSplitScreen,lapRecordKey,saveBestLap,
+    get bestLapRecords(){return bestLapRecords},sampleAt,nearestOnTrack,curvatureAt,resolveCollisions,guardrailActive,barrierContoursForTrack,resolveBarrierContact,projectToSegment,closestSegments,
     get physicalBarriers(){return physicalBarriers},get guardrailPaths(){return guardrailPaths},
-    get tracks(){return tracks},get cars(){return cars},get track(){return track},
+    get checkpoints(){return checkpoints},get tracks(){return tracks},get cars(){return cars},get track(){return track},
     tick(dt){elapsed+=dt;cars.forEach((car,i)=>{if(!car.done)physics(car,i,dt)});const contact=cars.every(car=>!car.done)&&Math.hypot(cars[0].x-cars[1].x,cars[0].y-cars[1].y)<23-1e-6;resolveCollisions(dt);return contact},
     setKeys(value){keys=value},setDifficulty(value){difficulty=value}};`;
   vm.runInContext(source.replace(/\}\)\(\);\s*$/, expose + '})();'), sandbox);

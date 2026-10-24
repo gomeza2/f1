@@ -33,11 +33,25 @@ for(let stage=0;stage<game.tracks.length;stage++){
  for(let d=0;d<game.track.length;d+=100){
   game.placeCar(game.cars[0],d,0);const camera=game.raceCamera(),car=game.cars[0];
   assert.equal(camera.zoom,1.35);
-  assert.ok(camera.x-500/camera.zoom>=-1e-6&&camera.x+500/camera.zoom<=1000+1e-6);
-  assert.ok(camera.y-320/camera.zoom>=-1e-6&&camera.y+320/camera.zoom<=640+1e-6);
+  assert.ok(camera.x-500/camera.zoom>=-1e-6&&camera.x+500/camera.zoom<=game.track.worldWidth+1e-6);
+  assert.ok(camera.y-320/camera.zoom>=-1e-6&&camera.y+320/camera.zoom<=game.track.worldHeight+1e-6);
   assert.ok(Math.abs(car.x-camera.x)*camera.zoom<500&&Math.abs(car.y-camera.y)*camera.zoom<320,'Camera lost the player');
  }
 }
-game.toggleCamera();assert.equal(game.raceCamera().zoom,1);
-game.start('duo',0);assert.equal(game.raceCamera().zoom,1,'Two-player mode must show both cars');
+game.toggleCamera();assert.equal(game.raceCamera().zoom,game.overviewZoom());
+game.start('duo',0);assert.equal(game.raceCamera().zoom,1.1,'Two-player mode must keep cars readable in separate views');
 console.log(`PASS: responsive high-speed steering, normal-speed radius ${radius.toFixed(1)}, surface grip, real speed, handbrake and camera bounds on all tracks.`);
+
+game.start('duo',13);assert.equal(game.usesSplitScreen(),true);assert.equal(game.raceCamera(0).zoom,1.1);assert.equal(game.raceCamera(1).zoom,1.1);
+
+// Previous layouts remain stored but cannot compete with a longer redesigned layout.
+game.start('solo',9);const key=game.lapRecordKey();
+game.bestLapRecords['CHAMPION ROAD']=12;
+assert.equal(game.bestLapRecords[key],undefined);
+assert.ok(game.saveBestLap(key,35));assert.equal(game.bestLapRecords['CHAMPION ROAD'],12);
+assert.equal(game.bestLapRecords[key],35);assert.equal(game.saveBestLap(key,40),false);
+console.log('PASS: independent split cameras and versioned records without deleting old layouts.');
+
+game.start('duo',13);game.placeCar(game.cars[1],game.track.length/2,0);
+const firstView=game.raceCamera(0),secondView=game.raceCamera(1);
+assert.ok(Math.hypot(firstView.x-secondView.x,firstView.y-secondView.y)>50,'Split cameras are still locked to the same car');

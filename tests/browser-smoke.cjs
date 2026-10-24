@@ -6,7 +6,7 @@ const path = require('node:path');
 const assert = require('node:assert/strict');
 const root=path.resolve(__dirname,'..');
 const source=fs.readFileSync(path.join(root,'script.js'),'utf8');
-const bridge=`window.testGame={get cars(){return cars},get elapsed(){return elapsed},get paused(){return paused},get countdown(){return countdownRemaining},get running(){return running},get camera(){return raceCamera()},skipCountdown(){countdownRemaining=0},simulateRace(){cancelAnimationFrame(raf);cars[0].done=true;for(let i=0;i<9000&&!cars[1].done;i++){elapsed+=1/30;physics(cars[1],1,1/30)}drawFrame();updateTelemetry();return {lap:cars[1].lap,time:cars[1].finishTime}},trafficScenario(){cancelAnimationFrame(raf);placeCar(cars[0],170,0);placeCar(cars[1],110,0);cars[1].speed=90;let minDistance=Infinity;for(let i=0;i<900&&cars[1].progress<210;i++){elapsed+=1/60;physics(cars[1],1,1/60);minDistance=Math.min(minDistance,Math.hypot(cars[0].x-cars[1].x,cars[0].y-cars[1].y))}drawFrame();return {passed:cars[1].progress>=210,minDistance}},finishRace};`;
+const bridge=`window.testGame={get cars(){return cars},get elapsed(){return elapsed},get paused(){return paused},get countdown(){return countdownRemaining},get running(){return running},get camera(){return raceCamera()},get overview(){return overviewZoom()},get split(){return usesSplitScreen()},get world(){return {width:track.worldWidth,height:track.worldHeight}},separateViews(){placeCar(cars[1],track.length/2,0);drawFrame();updateTelemetry();return Math.hypot(raceCamera(0).x-raceCamera(1).x,raceCamera(0).y-raceCamera(1).y)},get buffers(){return {backgroundWidth:backgroundCache?.width,surfaceWidth:trackSurfaceCache?.width}},skipCountdown(){countdownRemaining=0},simulateRace(){cancelAnimationFrame(raf);cars[0].done=true;for(let i=0;i<9000&&!cars[1].done;i++){elapsed+=1/30;physics(cars[1],1,1/30)}drawFrame();updateTelemetry();return {lap:cars[1].lap,time:cars[1].finishTime}},trafficScenario(){cancelAnimationFrame(raf);placeCar(cars[0],170,0);placeCar(cars[1],110,0);cars[1].speed=90;let minDistance=Infinity;for(let i=0;i<900&&cars[1].progress<210;i++){elapsed+=1/60;physics(cars[1],1,1/60);minDistance=Math.min(minDistance,Math.hypot(cars[0].x-cars[1].x,cars[0].y-cars[1].y))}drawFrame();return {passed:cars[1].progress>=210,minDistance}},finishRace};`;
 const server=http.createServer((req,res)=>{
  const name=req.url==='/'?'index.html':req.url.slice(1);
  if(!['index.html','style.css','script.js'].includes(name)){res.writeHead(404).end();return}
@@ -28,7 +28,7 @@ const server=http.createServer((req,res)=>{
   await page.click('[data-mode="solo"]');
   assert.ok(await page.evaluate(()=>window.testGame.countdown>0));
   assert.equal(await page.evaluate(()=>window.testGame.camera.zoom),1.35);
-  await page.click('#cameraBtn');assert.equal(await page.evaluate(()=>window.testGame.camera.zoom),1);
+  await page.click('#cameraBtn');assert.equal(await page.evaluate(()=>window.testGame.camera.zoom),await page.evaluate(()=>window.testGame.overview));
   await page.keyboard.press('c');assert.equal(await page.evaluate(()=>window.testGame.camera.zoom),1.35);
   await page.evaluate(()=>window.testGame.skipCountdown());
   await page.keyboard.down('w');await page.waitForTimeout(500);await page.keyboard.up('w');
@@ -51,6 +51,8 @@ const server=http.createServer((req,res)=>{
   for(let stage=0;stage<14;stage++){
    await page.selectOption('#stageSelect',String(stage));await page.click('[data-mode="solo"]');
    assert.ok((await page.locator('#trackName').textContent()).length>0);
+   const buffers=await page.evaluate(()=>({world:window.testGame.world,buffers:window.testGame.buffers}));
+   assert.equal(buffers.world.width,buffers.buffers.backgroundWidth);assert.equal(buffers.world.width,buffers.buffers.surfaceWidth);
    await page.click('#backBtn');
   }
   await page.selectOption('#stageSelect','0');await page.click('[data-mode="solo"]');
@@ -62,7 +64,7 @@ const server=http.createServer((req,res)=>{
   await page.click('#nextBtn');assert.equal(await page.locator('#trackName').textContent(),'JUNGLE SPRINT');
   await page.click('#backBtn');await page.click('[data-mode="duo"]');
   assert.equal(await page.evaluate(()=>window.testGame.cars.some(c=>c.isAI)),false);
-  assert.equal(await page.evaluate(()=>window.testGame.camera.zoom),1);
+  assert.equal(await page.evaluate(()=>window.testGame.camera.zoom),1.1);assert.equal(await page.evaluate(()=>window.testGame.split),true);
   assert.ok(await page.locator('#cameraBtn').isDisabled());
   await page.evaluate(()=>window.testGame.skipCountdown());
   await page.keyboard.down('ArrowUp');await page.waitForTimeout(300);await page.keyboard.up('ArrowUp');
@@ -77,10 +79,15 @@ const server=http.createServer((req,res)=>{
   const mobile=await page.locator('#canvas1').boundingBox();assert.ok(mobile.height>=150,'Landscape fullscreen leaves too little driving space');
   await page.click('#fullscreenBtn');
   await page.setViewportSize({width:1440,height:1000});
-  await page.click('#backBtn');await page.selectOption('#stageSelect','0');await page.click('[data-mode="solo"]');await page.evaluate(()=>window.testGame.skipCountdown());
+  await page.click('#backBtn');await page.selectOption('#stageSelect','9');await page.click('[data-mode="solo"]');await page.evaluate(()=>window.testGame.skipCountdown());
+  await page.click('#cameraBtn');assert.equal(await page.evaluate(()=>window.testGame.camera.zoom),await page.evaluate(()=>window.testGame.overview));
   if(process.env.SCREENSHOT_PATH)await page.screenshot({path:process.env.SCREENSHOT_PATH,fullPage:true});
+  await page.click('#backBtn');await page.click('[data-mode="duo"]');await page.evaluate(()=>window.testGame.skipCountdown());
+  assert.equal(await page.evaluate(()=>window.testGame.split),true);
+  assert.ok(await page.evaluate(()=>window.testGame.separateViews()>50));
+  if(process.env.SCREENSHOT_PATH)await page.screenshot({path:process.env.SCREENSHOT_PATH.replace('.png','-duo.png'),fullPage:true});
   assert.deepEqual(errors,[]);
-  console.log('PASS: Chromium, input, countdown, pause/resume, restart, menu, 14 tracks, fullscreen/aspect/HUD, close/overview cameras, mobile map and landscape space, traffic overtake, ice CPU race/results/next stage, local two-player and viewport resizing.');
+  console.log('PASS: Chromium, input, countdown, pause/resume, restart, menu, 14 tracks, fullscreen/aspect/HUD, world-sized caches, split/close/overview cameras, mobile map and landscape space, traffic overtake, ice CPU race/results/next stage, local two-player and viewport resizing.');
   console.log('Mobile checks cover visibility only; human handling, touch controls, audio and performance remain unverified.');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1}).finally(()=>server.close());

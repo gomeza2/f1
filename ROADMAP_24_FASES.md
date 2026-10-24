@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.21**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.22**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -29,11 +29,15 @@ La interfaz identifica la build como **0.21**, continuando la base 0.17 del comm
 - Pendiente: conducción humana y diferentes navegadores/dispositivos físicos.
 
 ### Fase 3 — Geometría y recorrido de las pistas
-**Parcial; geometría central comprobada automáticamente.**
+**Primera mejora completa implementada en 0.22 y comprobada automáticamente; balance humano pendiente.**
 
-- 14 trazados registrados; las diez pistas originales conservan nombres y orden.
-- Muestreo finito, segmentos no degenerados, límites del lienzo y ausencia de cruces centrales comprobados con `tests/validate-tracks.mjs`.
-- Pendiente: validar el ancho completo del asfalto, proximidad entre ramales, radios interiores y escapatorias; una línea central válida no demuestra que las vallas desplazadas sean válidas.
+- Mundos ampliados a 1400×896 o 1300×832, independientes del canvas. Se conservan tamaño del coche, ancho de conducción y prestaciones de 0.21.
+- Champion Road rediseñado: recta larga, frenadas y sector técnico; los 14 nombres y el orden del campeonato se conservan.
+- Coastline, Meadow e Industrial separan además los pares de ramales conflictivos. Cuatro trazados largos antes tenían distancia central 62–75 frente a ancho 84; ahora todas las pistas superan el margen de seguridad del test.
+- Validación del ancho completo, límites del mundo y proximidad no local entre segmentos, con casos sintéticos que prueban que el detector encuentra solapes sin cruce central.
+- Entre cinco y siete checkpoints por longitud y récords separados por versión de trazado, conservando los datos anteriores.
+- Objetivo pedido por el usuario: vuelta aproximada 25–45 s; referencia de CPU Normal 32,5–44,1 s. No se ralentiza artificialmente el coche para obtenerlo.
+- Pendiente: evaluación humana de ritmo y dificultad y continuar dando identidad geométrica a los otros nueve originales.
 
 ### Fase 4 — Barreras y perfiles de circuito
 **Geometría y colisiones corregidas en 0.21; perfiles personalizados pendientes.**
@@ -41,7 +45,7 @@ La interfaz identifica la build como **0.21**, continuando la base 0.17 del comm
 - Contornos del ancho de pista sustituyen el desplazamiento directo de normales, que formaba bucles cuando el radio de curva era menor a 55.
 - Contornos muestreados cada cuatro unidades, calculados una vez por pista y reutilizados en todos los perfiles. Render y colisión comparten los mismos segmentos y extremos.
 - Colisión del coche mediante cápsula de 30×20 unidades; neumáticos mediante los círculos dibujados, incluido su borde. Impactos normales pierden energía y conservan un rebote pequeño, sin generar velocidad en un coche detenido.
-- Pilas de neumáticos descartadas cuando invaden otro ramal. Perfiles automático, completo, mitad, curvas y abierto conservados.
+- Pilas de neumáticos descartadas cuando invaden otro ramal. Perfiles automático, completo, mitad, curvas y abierto conservados. En 0.22 el automático prioriza escapatorias: siete abiertos, cuatro de curvas cerradas y tres parciales; completo queda como elección explícita.
 - `tests/validate-barriers.mjs`: 14 pistas, cinco opciones, 31 contornos cerrados, 7747 puntos, contacto visible, impactos frontales y coche parado. `validate-integration.mjs` conserva la prueba de las 70 configuraciones.
 - Pendiente: perfiles personalizados/solo neumáticos, pruebas humanas contra todas las transiciones y validación integral de anchura en pistas cercanas a los bordes.
 
@@ -51,7 +55,7 @@ La interfaz identifica la build como **0.21**, continuando la base 0.17 del comm
 - Coastline Run, Rally Canyon, Meadow Run e Industrial Mix añaden recorridos más largos y ambientes propios.
 - Señales 100/50 y zonas PASS se conservan; dependen de curvatura y separación mínima.
 - Pendiente: comparar ritmo, rectas, anchuras y estrategia de cada trazado; varias pistas originales comparten una estructura similar.
-- No se añadieron ni renombraron pistas para esta actualización de CPU.
+- En 0.22 Champion Road recibe un trazado nuevo; las otras pistas conservan su identidad y ganan espacio. Quedan nueve originales con estructuras parecidas para revisar.
 
 ### Fase 6 — Superficies mixtas
 **Primera capa implementada y corregida en build 0.16.**
@@ -333,6 +337,56 @@ La build 0.20 quedó guardada en el commit local `a4d5ed4`. Chromium también su
 - Chromium: controles, reinicio, pausa, menú, 14 pistas, fullscreen/proporción, cámaras, minimapa móvil, espacio horizontal, adelantamiento y carrera de CPU en hielo, resultados y siguiente etapa: superados.
 - Se inspeccionó la captura de Sunset: desaparecieron los pliegues visibles que tenía 0.20. Falta prueba humana de conducción, audio y rendimiento en dispositivos físicos.
 
-### Continuación vigente con «siguiente»
+### Continuación prevista tras 0.21 (histórico)
 
 Verificar la revisión remota y partir de 0.21. Siguiente mejora recomendada: fase 3, medir anchura/proximidad entre ramales y dar variedad geométrica a los circuitos originales más similares. Mantener el control rápido, la respuesta de dirección, los 14 registros, el modo local, las barreras compartidas y la batería de carreras.
+
+## Avance — build 0.22 (24 de octubre de 2026)
+
+Se partió de `main` limpio, commit remoto `d51220a`. La petición adicional fue explícita: más espacio libre, menos muros y vueltas aproximadas de 25–45 s. Se terminó esta etapa antes de abrir otra fase.
+
+### Cambios implementados
+
+- Tamaño físico del mundo separado del viewport, conservando ancho de pista de 84 y coches de las mismas dimensiones. Fondos, texturas, decoración, contornos de barreras y minimapa cubren ahora todo el mundo.
+- Ampliación de recorridos y rediseño de Champion Road con recta prolongada y curvas enlazadas. Se mantienen los 14 registros, las superficies, modelos, controles, campeonato y sonidos.
+- Ajustes locales en ramales de Coastline/Meadow/Industrial y simplificación de dos ondulaciones de Meadow para equilibrar distancia y duración. Se descartó un primer diseño demasiado largo, que medía 47–59 s por vuelta.
+- Validación del ancho conducible, margen a los bordes y separación de sectores alejados al menos 180 unidades por la ruta. Se analizan extremos, proyecciones e interiores de segmentos para no omitir pares paralelos.
+- La regresión sintética detectó un error del primer detector: solo medía extremos de líneas paralelas y podía descartar el solape interior como si fuera una curva local. Se añadió muestreo interior y la prueba reproduce solapes, cruces y salida de límites.
+- Automático: Sunset, Dusty, Jungle, Thunder, Coastline, Rally y Meadow abiertos; Night, Frostbite, Volcano y Champion solo en curvas cerradas; Neon, Pixel City e Industrial parciales. El jugador conserva todas las opciones manuales.
+- Pantalla dividida en el modo local, con cámara independiente y vuelta propia, para conservar tamaño y lectura del coche. Las cámaras comparten cachés, sin duplicar física ni carreras.
+- Checkpoints de 5 a 7, separados por recorrido; tiempos guardados por versión de trazado. Los récords anteriores no se borran ni se comparan con el circuito ampliado.
+
+### Ritmo comprobado
+
+Referencia: CPU Balanced, Normal, tres vueltas sin tráfico, paso 1/30 s; media por vuelta. Se verifica automáticamente el rango 25–45 s. No constituye una garantía del tiempo de cada persona.
+
+| Circuito | Longitud anterior → actual (unidades de mundo) | Media por vuelta |
+|---|---:|---:|
+| Sunset Circuit | 2552 → 3572 | 35,76 s |
+| Neon Harbor | 2419 → 3387 | 32,51 s |
+| Dusty Mesa | 2529 → 3541 | 36,42 s |
+| Night Run | 2724 → 3813 | 39,66 s |
+| Frostbite GP | 2446 → 3424 | 36,76 s |
+| Jungle Sprint | 2490 → 3485 | 37,00 s |
+| Volcano Ring | 2487 → 3481 | 34,84 s |
+| Pixel City | 2425 → 3395 | 34,34 s |
+| Thunder Valley | 2509 → 3513 | 34,79 s |
+| Champion Road | 2538 → 4974 | 44,13 s |
+| Coastline Run | 3275 → 4261 | 43,06 s |
+| Rally Canyon | 3081 → 4005 | 43,61 s |
+| Meadow Run | 3137 → 4060 | 43,17 s |
+| Industrial Mix | 3056 → 3970 | 42,14 s |
+
+### Evidencia y límites
+
+- Sintaxis, IDs y archivos locales: comprobados. Los diez nombres originales y los 14 registros se mantienen.
+- Geometría: sin cruces centrales muestreados, margen mínimo de pista a bordes 29,2 y separación libre mínima entre ramales 9,8. Las curvas cercanas a lo largo de la propia ruta se excluyen de la prueba de ramales.
+- Barreras: 37 contornos cerrados, 11206 sondas, cinco perfiles por cada pista, contactos y rebote comprobados. El perfil completo continúa disponible.
+- Conducción: aceleración, giro, freno de mano, agarre, límites de cámara y separación de récords comprobados.
+- Regresión de CPU: 42 carreras / 126 vueltas válidas; orden de dificultad y límites físicos conservados. Tráfico: 14 carreras de dos controladores / 84 vueltas válidas, con contactos medidos; no se declara ausencia de choques.
+- Chromium: carga de las 14 pistas y cachés del tamaño del mundo, controles, cámaras cercana/general/dividida, minimapa, pausa, reinicio, menú, fullscreen y resize, adelantamiento y carrera en hielo, resultados y siguiente etapa comprobados.
+- Se inspeccionaron las capturas de Champion Road y de las dos cámaras. Falta conducción humana, prueba móvil física con controles táctiles, audio y medición de FPS/memoria. Hay más superficie cacheada que en 0.21.
+
+### Continuación vigente con «siguiente»
+
+Partir del commit remoto de 0.22 y mantener conducción rápida, escapatorias y objetivo de 25–45 s. Siguiente fase recomendada: **5**, diferenciar otro de los nueve trazados originales aún similares, usando las nuevas pruebas de ancho/ritmo antes de publicarlo. No volver al mundo fijo de 1000×640 ni reemplazar los récords de trazados anteriores.
