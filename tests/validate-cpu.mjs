@@ -1,19 +1,24 @@
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import { loadGame } from './helpers/game-harness.mjs';
 const {game,element}=loadGame();
 const dt=1/30;
 const results=new Map();
+const baseline=JSON.parse(readFileSync(new URL('./fixtures/cpu-0.24.json',import.meta.url),'utf8')).tracks;
 for(const difficulty of (process.argv.includes('--focused')?[]:['easy','normal','hard'])){
  element('difficulty').value=difficulty;
  const times=[];
  for(let stage=0;stage<game.tracks.length;stage++){
   game.start('solo',stage);game.cars[0].done=true;
-  const ai=game.cars[1];
+  const ai=game.cars[1];let handbrakeFrames=0;
   for(let frame=0;frame<300/dt&&!ai.done;frame++){
-   const speed=ai.speed;
+   const speed=ai.speed,x=ai.x,y=ai.y;
    game.tick(dt);
    assert.ok(Number.isFinite(ai.x)&&Number.isFinite(ai.y)&&Number.isFinite(ai.speed));
    assert.ok(ai.speed<=232,'CPU exceeded Balanced top speed');
+   if(ai.flash<=0)assert.ok(Math.hypot(ai.x-x,ai.y-y)<=232*game.WORLD_SPEED_SCALE*dt+1e-6,'CPU jumped along its line');
+   if(ai.handbrake){handbrakeFrames++;assert.ok(ai.speed-speed<=(game.CAR_MODELS.balanced.acceleration-game.CAR_MODELS.balanced.braking*.55-2.6)*dt+1e-6,'CPU used handbrake without paying its speed cost');}
+   if(difficulty==='easy')assert.equal(ai.handbrake,false);
    assert.ok(ai.speed-speed<=game.CAR_MODELS.balanced.acceleration*dt+1e-6,'CPU exceeded Balanced acceleration');
    assert.ok(ai.offroad<42,`${game.track.name}/${difficulty}: CPU left the racing surface`);
   }
@@ -21,9 +26,12 @@ for(const difficulty of (process.argv.includes('--focused')?[]:['easy','normal',
   assert.equal(ai.lapTimes.length,3);
   times.push(ai.finishTime);
   if(difficulty==='normal'){
-   const lap=ai.finishTime/3;assert.ok(lap>=25&&lap<=45,`${game.track.name}: reference lap ${lap.toFixed(2)}s outside the 25–45s goal`);
-   console.log(`PACE: ${game.track.name}, mean lap ${lap.toFixed(2)}s.`);
+   const lap=ai.finishTime/3,previous=baseline[game.track.name];
+   if(previous?.layoutVersion===game.track.layoutVersion)assert.ok(lap<=previous.normalLap*.8,`${game.track.name}: pace did not improve at least 20% over 0.24 (${lap.toFixed(2)}s)`);
+   console.log(`PACE: ${game.track.name}, mean lap ${lap.toFixed(2)}s; handbrake frames ${handbrakeFrames}.`);
   }
+  if(difficulty!=='easy'&&(stage===0||stage===2))assert.ok(handbrakeFrames>0,'The driver did not use its controlled drift tactic');
+
  }
  results.set(difficulty,times);
  console.log(`PASS: ${difficulty}, ${times.length} circuits, three laps each, shared speed/acceleration limits.`);

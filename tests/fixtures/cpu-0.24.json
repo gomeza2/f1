@@ -1,0 +1,20 @@
+{
+  "commit": "c1f71352cecf2f6ac390ad8685abe60a61560597",
+  "conditions": "Balanced CPU, Normal, three laps without traffic, dt=1/30, same grid placement",
+  "tracks": {
+    "SUNSET CIRCUIT": {"layoutVersion": 2, "normalLap": 35.84},
+    "NEON HARBOR": {"layoutVersion": 2, "normalLap": 32.66},
+    "DUSTY MESA": {"layoutVersion": 3, "normalLap": 28.91},
+    "NIGHT RUN": {"layoutVersion": 2, "normalLap": 39.74},
+    "FROSTBITE GP": {"layoutVersion": 2, "normalLap": 36.89},
+    "JUNGLE SPRINT": {"layoutVersion": 2, "normalLap": 37.16},
+    "VOLCANO RING": {"layoutVersion": 2, "normalLap": 34.92},
+    "PIXEL CITY": {"layoutVersion": 2, "normalLap": 34.41},
+    "THUNDER VALLEY": {"layoutVersion": 2, "normalLap": 34.90},
+    "CHAMPION ROAD": {"layoutVersion": 2, "normalLap": 44.14},
+    "COASTLINE RUN": {"layoutVersion": 2, "normalLap": 43.09},
+    "RALLY CANYON": {"layoutVersion": 2, "normalLap": 43.81},
+    "MEADOW RUN": {"layoutVersion": 2, "normalLap": 43.41},
+    "INDUSTRIAL MIX": {"layoutVersion": 2, "normalLap": 42.39}
+  }
+}

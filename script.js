@@ -516,9 +516,9 @@ function updateProgress(car,loc,fromX,fromY){
 }
 // Difficulty changes driving decisions, never the vehicle specifications.
 const AI_DRIVERS={
- easy:{pace:.82,brakingMargin:.62,response:5.8,laneSpeed:15},
- normal:{pace:.92,brakingMargin:.76,response:7.5,laneSpeed:22},
- hard:{pace:1,brakingMargin:.86,response:9.2,laneSpeed:28}
+ easy:{pace:.82,brakingMargin:.62,response:5.8,laneSpeed:15,handbrake:false},
+ normal:{pace:.97,brakingMargin:.90,response:7.5,laneSpeed:22,handbrake:true},
+ hard:{pace:1,brakingMargin:.98,response:9.2,laneSpeed:28,handbrake:true}
 };
 const WORLD_SPEED_SCALE=.84;
 function vehicleHandling(speed,model,surface,safeSpeed,drift=0,hand=false){
@@ -535,23 +535,28 @@ function buildAiSpeedPlan(){
   const curvature=Math.abs(wrapAngle(sampleAt(d+12).angle-sampleAt(d-12).angle))/24;
   const bend=curvatureAt(d),surface=surfaceAtProgress(d);
   // Find a speed the shared steering physics can actually hold at this radius.
-  let low=18,high=Math.min(model.maxSpeed,bend.safeSpeed);
-  for(let step=0;step<10;step++){
-   const speed=(low+high)/2;
-   const turnRate=vehicleHandling(speed,model,surface,bend.safeSpeed).turnRate*.82;
-   if(speed*WORLD_SPEED_SCALE*curvature<=turnRate)low=speed;else high=speed;
+  function limit(hand){
+   let low=18,high=model.maxSpeed;
+   for(let step=0;step<10;step++){
+    const speed=(low+high)/2;
+    const expectedDrift=hand?clamp(speed/200,0,1):clamp(Math.max(0,speed-bend.safeSpeed)/160,0,1);
+    const turnRate=vehicleHandling(speed,model,surface,bend.safeSpeed,expectedDrift,hand).turnRate*.96;
+    if(speed*WORLD_SPEED_SCALE*curvature<=turnRate)low=speed;else high=speed;
+   }
+   return low;
   }
-  plan.push({progress:d,speed:low});
+  plan.push({progress:d,speed:limit(false),driftSpeed:limit(true),curvature});
  }
  return plan;
 }
-function aiTargetSpeed(progress,model,driver){
+function aiTargetSpeed(progress,model,driver,allowHandbrake=false){
  let target=model.maxSpeed*driver.pace;
  // Backward braking envelope: speed is in dashboard units, distance in world units.
  for(const point of aiSpeedPlan){
   const distance=wrapDistance(point.progress-progress);
   if(distance>240)continue;
-  const cornerSpeed=point.speed*driver.pace;
+  const planned=allowHandbrake&&point.curvature>1/180?Math.max(point.speed,point.driftSpeed*.98):point.speed;
+  const cornerSpeed=planned*driver.pace;
   const allowed=Math.sqrt(cornerSpeed*cornerSpeed+2*model.braking*driver.brakingMargin*distance/WORLD_SPEED_SCALE);
   target=Math.min(target,allowed);
  }
@@ -623,19 +628,26 @@ function aiTraffic(car,before,driver,dt){
 function driveAI(car,before,model,dt){
  const driver=AI_DRIVERS[difficulty]||AI_DRIVERS.normal;
  const traffic=aiTraffic(car,before,driver,dt);
- let lookAhead=clamp(16+car.speed*.22,24,66);
+ let lookAhead=clamp(28+car.speed*.27,32,94);
  if(car.speed<40&&car.aiManeuver.type!=='clear')lookAhead=Math.min(lookAhead,8+car.speed*.15);
  const laneOffset=traffic.lane;
- let targetSpeed=Math.min(aiTargetSpeed(before.progress,model,driver),traffic.speedLimit);
+ const allowHandbrake=driver.handbrake&&car.aiManeuver.type==='clear'&&Math.abs(before.offset)<ROAD_EDGE-8;
+ let targetSpeed=Math.min(aiTargetSpeed(before.progress,model,driver,allowHandbrake),traffic.speedLimit);
  car.aiLane=(car.aiLane||0)+clamp(laneOffset-(car.aiLane||0),-driver.laneSpeed*dt,driver.laneSpeed*dt);
  const targetBase=sampleAt(before.progress+lookAhead);
  const target={x:targetBase.x-Math.sin(targetBase.angle)*car.aiLane,y:targetBase.y+Math.cos(targetBase.angle)*car.aiLane};
  const error=wrapAngle(Math.atan2(target.y-car.y,target.x-car.x)-car.heading);
- car.steer+=(clamp(error*2.6,-1,1)-car.steer)*Math.min(1,dt*driver.response);
+ const handling=vehicleHandling(car.speed,model,surfaceAtProgress(before.progress),curvatureAt(before.progress).safeSpeed,car.drift);
+ const targetDistance=Math.max(10,Math.hypot(target.x-car.x,target.y-car.y));
+ const requiredYaw=2*car.speed*WORLD_SPEED_SCALE*Math.sin(error)/targetDistance;
+ const hand=allowHandbrake&&car.speed>90&&Math.abs(car.steer)>.3&&Math.abs(requiredYaw)>handling.turnRate*(car.handbrake?.72:.9);
+ const turnRate=hand?vehicleHandling(car.speed,model,surfaceAtProgress(before.progress),curvatureAt(before.progress).safeSpeed,clamp(Math.abs(car.steer)*car.speed/200,0,1),true).turnRate:handling.turnRate;
+ const steerTarget=car.speed<60?error*2.6:requiredYaw/turnRate+error*.2;
+ car.steer+=(clamp(steerTarget,-1,1)-car.steer)*Math.min(1,dt*driver.response);
  if(Math.abs(before.offset)>ROAD_EDGE)targetSpeed=Math.min(targetSpeed,65);
  if(Math.abs(error)>1.1)targetSpeed=Math.min(targetSpeed,45);
  car.aiTargetSpeed=targetSpeed;
- return {throttle:car.speed<targetSpeed-2?1:0,brake:car.speed>targetSpeed+2?1:0,hand:false};
+ return {throttle:car.speed<targetSpeed-2?1:0,brake:car.speed>targetSpeed+2?1:0,hand};
 }
 // Rotational inertia: build and release yaw smoothly, retaining full steady turn rate.
 // Integrate the first-order response exactly for this step, independent of FPS.

@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.24**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.25**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -81,15 +81,14 @@ La interfaz identifica la build como **0.24**, continuando la base 0.17 del comm
 - Pendiente: sensación del derrape con personas, contactos impredecibles y persistencia por versión de física si los récords dejan de ser comparables.
 
 ### Fase 8 — CPU y trazada ideal
-**Mejora 0.18 implementada y comprobada automáticamente; balance humano pendiente.**
+**Mejora de ritmo y controlador implementada en 0.25; contraste humano y tráfico agresivo pendientes.**
 
-- Plan de velocidad por curvatura y agarre del sector, calculado al iniciar la carrera.
-- Frenado anticipado según distancia disponible y prestaciones del Balanced.
-- Aceleración, frenado, velocidad máxima, agarre y escala de movimiento compartidos con el jugador; eliminados bonos exclusivos de CPU.
-- Dirección con anticipación corta en curvas y cambios laterales graduales; recuperación del terreno abierto mediante conducción.
-- 42 simulaciones: 14 pistas × tres dificultades × tres vueltas válidas, con checkpoints reales; límites de velocidad/aceleración verificados.
-- Chromium completa una carrera de CPU en hielo mediante simulación acelerada de la física real y comprueba resultados y siguiente etapa.
-- Pendiente: carreras humanas, tráfico prolongado, salidas tras impactos y comparaciones con los cuatro modelos.
+- Se elimina el techo antiguo de velocidad orientativa por curva. La búsqueda usa el modelo físico compartido y contempla el agarre perdido por exceso de velocidad y el derrape.
+- Anticipación de trayectoria según velocidad, giro calculado desde la curvatura necesaria y capacidad de dirección real; frena más tarde con márgenes dentro del frenado disponible.
+- Normal/Difícil usan freno de mano para curvas exigentes con espacio libre, con su coste físico real. Fácil no lo usa. En tráfico cercano se conserva una respuesta más cauta.
+- Normal mejora al menos 20 % frente al benchmark de 0.24 en las 14 pistas; techo de 232 del Balanced, aceleración, movimiento y coste del freno de mano comprobados.
+- Dusty: Normal 19,40 s / Difícil 18,82; Sunset: Normal 22,39 / Difícil 21,58. El usuario declara unos 18 s en ambas, por lo que no se declara resuelto todo el balance humano.
+- Pendiente: mayor agresividad y adaptación de línea en tráfico (fase 9), otros modelos/riesgos y más rivales (fase 10), medición frente a conducción humana real.
 
 ### Fase 9 — Adelantamientos y defensa
 **Mejora 0.19 implementada; validación automática y de navegador registrada más abajo. Balance humano pendiente.**
@@ -458,6 +457,42 @@ La fase de Dusty se cerró y se publicó en `main` como `1b78910`. A continuaci�
 - Chromium comprobó entrada de giro con D, descarga al soltar, contravolante con A y las funciones de carrera anteriores: todos superados. También pasó el componente de inercia a 30/120 FPS.
 - Geometría, identidad de Dusty, 70 perfiles, barreras, récords y archivos/IDs: superados. Quedan contactos residuales de tráfico; falta evaluación humana del peso del coche y calibración competitiva de CPU.
 
-### Continuación vigente con «siguiente»
+### Continuación prevista tras 0.24 (histórico)
 
 Partir de 0.24 y verificar el commit remoto. Siguiente fase: **8**, corregir ritmo y trazada de la CPU con mediciones y física compartida, incorporando el feedback de vueltas humanas de unos 18 s. Dejar la ampliación de parrilla para las fases de tráfico/personalidades una vez que el controlador sea competitivo. Conservar pistas, escapatorias e inercia de giro; no comenzar otra ampliación de tamaño.
+
+## Avance — build 0.25 (24 de octubre de 2026)
+
+Base limpia: `main`, `c1f7135`. Se atendió la fase 8 y el feedback concreto: el usuario obtiene unos 18 s en Dusty Mesa y Sunset y deja muy atrás a la CPU. Se mantiene un rival; no se agrandaron circuitos ni se alteró la física del jugador.
+
+### Causa y corrección
+
+- La planificación anterior buscaba velocidad solo hasta `bend.safeSpeed`, un valor orientativo heredado de una física anterior. Era un límite innecesario, incluso cuando el coche podía sostener más velocidad.
+- Ahora se evalúa el intervalo completo hasta la máxima real del Balanced (232), usando `vehicleHandling`, superficie, exceso de velocidad y derrape esperado. El margen de dirección deja capacidad de corrección.
+- El volante se calcula con la velocidad, la distancia al objetivo, el error de orientación y el giro físico disponible. El objetivo se mira más lejos al circular rápido, aprovechando la inercia de 0.24.
+- Normal aprovecha más el ritmo disponible y frena más cerca de la curva; Difícil usa márgenes menores. Ningún perfil modifica máxima, aceleración, agarre, desplazamiento o velocidad angular del vehículo.
+- Se calcula también el paso por curva con freno de mano; Normal/Difícil lo aplican cuando la demanda de giro lo justifica y no hay un rival próximo. La pérdida de velocidad se produce en la física común y está verificada por frame.
+- Se conserva la recuperación normal y no se teletransporta ni se añade avance exclusivo al rival.
+
+### Mediciones y límites
+
+- Referencia sin tráfico, tres vueltas, paso 1/30 s: Normal mejora entre 26,5 % y 40,4 % en las 14 pistas frente a 0.24. Hay un benchmark versionado en `tests/fixtures/cpu-0.24.json` con el commit y las condiciones.
+- Dusty pasa de 28,91 a 19,40 s en Normal; Difícil mide 18,82. Sunset pasa de 35,84 a 22,39; Difícil mide 21,58. El rival se acerca al ritmo comunicado por el usuario, pero sigue por detrás de sus 18 s en Sunset.
+- Se reemplazó el mínimo de 25 s en el test de CPU por mejora de ritmo y controles físicos. La duración de diseño de una pista no puede imponerse frenando artificialmente al rival para cumplir un test.
+- El test comprueba por frame máxima, aceleración, distancia recorrida, agarre de pista y pérdida de velocidad al usar freno de mano. Fácil mantiene el freno de mano desactivado.
+- Un experimento de optimización de línea se descartó porque empeoraba las vueltas de varias pistas. No se conserva otro controlador ni una segunda ruta incompatible en el juego.
+- Quedan diferencias entre aire libre y tráfico: el freno de mano se reserva cuando existe espacio. No se declara que la CPU ya sea invencible ni que gane a una persona concreta.
+
+### Comprobaciones
+
+- Regresión: 42 carreras / 126 vueltas válidas, tres dificultades ordenadas y límites físicos compartidos; al menos 20 % de mejora Normal frente a 0.24 en cada pista comparable.
+- Tráfico: 14 carreras / 84 vueltas válidas, ambos coches terminan y el máximo offset medido fue 38,5 dentro del ancho de 42; contactos residuales medidos, sin afirmar ausencia de choques.
+- Sintaxis, geometría, identidad de Dusty, IDs/archivos, 70 perfiles, conducción, inercia, récords y barreras: superados. Chromium superó controles, giro, pausa, reinicio, menú, cámaras, fullscreen, carga de 14 pistas, carreras en Dusty/hielo, resultados y modos gráficos. Falta calibración frente a personas.
+
+### Cambio solicitado de interfaz — siguiente etapa
+
+El usuario pidió retirar velocidad objetivo, próxima curva y terreno del HUD; conservar velocidad actual, checkpoints, tiempo de vuelta y mejor tiempo; dar más superficie visible al juego. Se cierra primero esta mejora de CPU y después se simplifica el HUD (fases 2/16). Se conservan escapatorias y la posibilidad de salir un poco de pista: no se castiga al jugador con reglas distintas de las del rival.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.25 y verificar la revisión remota. La limpieza de interfaz solicitada tiene prioridad inmediata. Después continuar ataque/defensa de fase 9 y soporte para uno o dos rivales adicionales; el ritmo de aire libre ya fue revisado. Conservar tamaño de circuitos, inercia, perfiles abiertos y física compartida.
