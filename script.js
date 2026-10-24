@@ -392,8 +392,8 @@ function renderGroundTexture(context){
 function drawOffsetGuardrail(context,startD,endD,side){
  const points=[];for(let d=startD;d<endD;d+=6){const p=sampleAt(d),nx=-Math.sin(p.angle),ny=Math.cos(p.angle);points.push({x:p.x+nx*side*55,y:p.y+ny*side*55,angle:p.angle,d});}
  const tail=sampleAt(endD),tnx=-Math.sin(tail.angle),tny=Math.cos(tail.angle);points.push({x:tail.x+tnx*side*55,y:tail.y+tny*side*55,angle:tail.angle,d:endD});if(points.length<2)return;
- const path=new Path2D();path.moveTo(points[0].x,points[0].y);for(let i=1;i<points.length;i++)path.lineTo(points[i].x,points[i].y);
- context.save();context.lineCap='round';context.lineJoin='round';context.setLineDash([]);context.strokeStyle='#202732';context.lineWidth=11;context.stroke(path);context.strokeStyle='#9ba7b7';context.lineWidth=6;context.stroke(path);context.strokeStyle='#e7eef6';context.lineWidth=2;context.stroke(path);context.setLineDash([7,13]);context.strokeStyle='#e0b84f';context.lineWidth=2;context.stroke(path);context.setLineDash([]);
+ const trace=()=>{context.beginPath();context.moveTo(points[0].x,points[0].y);for(let i=1;i<points.length;i++)context.lineTo(points[i].x,points[i].y);};
+ context.save();context.lineCap='round';context.lineJoin='round';context.setLineDash([]);context.strokeStyle='#202732';context.lineWidth=11;trace();context.stroke();context.strokeStyle='#9ba7b7';context.lineWidth=6;trace();context.stroke();context.strokeStyle='#e7eef6';context.lineWidth=2;trace();context.stroke();context.setLineDash([7,13]);context.strokeStyle='#e0b84f';context.lineWidth=2;trace();context.stroke();context.setLineDash([]);
  for(let d=startD;d<endD;d+=24){const p=sampleAt(d),nx=-Math.sin(p.angle),ny=Math.cos(p.angle),x=p.x+nx*side*55,y=p.y+ny*side*55;context.save();context.translate(x,y);context.rotate(p.angle);context.fillStyle='#171c25';context.fillRect(-2,-6,4,12);context.fillStyle='#c8d0dc';context.fillRect(-1,-5,2,10);context.restore();}context.restore();
 }
 function drawGuardrails(context){for(const [startD,endD] of guardrailRanges){drawOffsetGuardrail(context,startD,endD,-1);drawOffsetGuardrail(context,startD,endD,1);}}
