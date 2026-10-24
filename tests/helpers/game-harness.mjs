@@ -15,13 +15,13 @@ export function loadGame() {
     return elements.get(id);
   }
   const sandbox = {
-    document: { getElementById: element, createElement: () => element(Symbol()), querySelectorAll: () => [], addEventListener() {} },
+    document: { body:element('body'),getElementById: element, createElement: () => element(Symbol()), querySelectorAll: () => [], addEventListener() {} },
     window: { addEventListener() {} }, localStorage: { getItem: () => null, setItem() {} },
     performance: { now: () => 0 }, requestAnimationFrame: () => 1, cancelAnimationFrame() {}, console,
   };
   vm.createContext(sandbox);
   const source = readFileSync(new URL('../../script.js', import.meta.url), 'utf8');
-  const expose = `globalThis.testGame={start,physics,placeCar,setupCar,aiTraffic,AI_DRIVERS,CAR_MODELS,WORLD_SPEED_SCALE,vehicleHandling,updateSteeringInertia,raceCamera,toggleCamera,overviewZoom,usesSplitScreen,lapRecordKey,saveBestLap,
+  const expose = `globalThis.testGame={start,physics,placeCar,setupCar,aiTraffic,AI_DRIVERS,CAR_MODELS,WORLD_SPEED_SCALE,vehicleHandling,updateSteeringInertia,raceCamera,toggleCamera,overviewZoom,usesSplitScreen,lapRecordKey,saveBestLap,currentLapTime,updateTelemetry,
     get bestLapRecords(){return bestLapRecords},sampleAt,nearestOnTrack,curvatureAt,resolveCollisions,guardrailActive,barrierContoursForTrack,resolveBarrierContact,projectToSegment,closestSegments,
     get physicalBarriers(){return physicalBarriers},get guardrailPaths(){return guardrailPaths},
     get checkpoints(){return checkpoints},get tracks(){return tracks},get cars(){return cars},get track(){return track},

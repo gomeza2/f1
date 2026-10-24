@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.25**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.26**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -19,13 +19,13 @@ La interfaz identifica la build como **0.25**, continuando la base 0.17 del comm
 - Corregir regresiones sin rehacer innecesariamente el proyecto.
 
 ### Fase 2 — Pantalla completa y espacio de conducción
-**Cámara y distribución ampliadas en 0.20; pruebas automáticas de navegador disponibles.**
+**Cámara ampliada en 0.20 y espacio de ventana/pantalla completa ajustado en 0.26; comprobado en Chromium.**
 
 - El lienzo utiliza una relación de aspecto fija.
 - El botón de pantalla completa ajusta el contenedor principal.
 - La telemetría principal se trasladó fuera del lienzo.
-- Vista cercana 1,35× con anticipación, alternativa de circuito completo y vista completa en dos jugadores. Minimap muestra el área visible.
-- Pantalla completa horizontal compacta y redibujado al redimensionar incluso en pausa.
+- Vista cercana 1,35× con anticipación, alternativa de circuito completo y cámaras divididas independientes en dos jugadores. Minimap muestra el área visible.
+- Ventana de carrera de hasta 1600 px de ancho, alto disponible sin scroll y franja compacta de datos. Pantalla completa horizontal y redibujado al redimensionar incluso en pausa.
 - Pendiente: conducción humana y diferentes navegadores/dispositivos físicos.
 
 ### Fase 3 — Geometría y recorrido de las pistas
@@ -64,7 +64,7 @@ La interfaz identifica la build como **0.25**, continuando la base 0.17 del comm
 
 - Superficies de asfalto, tierra, pasto, hielo y volcánico.
 - Los sectores de tierra de circuitos mixtos aplican una adherencia específica.
-- El HUD cambia la etiqueta según el sector.
+- Agarres, partículas y minimapa usan el material del sector. La etiqueta de terreno se retiró del HUD en 0.26 a pedido del usuario.
 - El minimapa indica los segmentos visuales de tierra.
 - Pendiente: probar el agarre y la salida de pista jugando.
 
@@ -148,11 +148,12 @@ La interfaz identifica la build como **0.25**, continuando la base 0.17 del comm
 - Pendiente: probar en distintos navegadores y equilibrar volumen, variedad y latencia.
 
 ### Fase 16 — HUD y minimapa
-**Primera capa implementada en build 0.16.**
+**Simplificación solicitada implementada en 0.26; comprobada automáticamente y en Chromium.**
 
-- Velocidad, velocidad objetivo, sector siguiente, checkpoints, mejor vuelta y terreno.
+- Velocidad actual, vueltas, checkpoints, cronómetro de vuelta, mejor tiempo y minimapa. Se retiraron velocidad objetivo, próxima curva, terreno y porcentaje de derrape.
+- Cronómetro relativo al inicio de cada vuelta; conserva la última al finalizar. El resultado mantiene tiempo total.
 - Minimap independiente del área de conducción, visible también bajo 1050 px desde 0.20 y con marco de cámara.
-- Pendiente: comprobar la distribución responsive y el modo de pantalla completa.
+- Chromium verifica proporción, ausencia de scroll, HUD exterior y visibilidad en escritorio, móvil vertical/horizontal y pantalla completa. Pendiente: dispositivos físicos, controles táctiles y conducción humana.
 
 ### Fase 17 — Modos de carrera
 **Base implementada; expansión pendiente.**
@@ -496,3 +497,26 @@ El usuario pidió retirar velocidad objetivo, próxima curva y terreno del HUD; 
 ### Continuación vigente con «siguiente»
 
 Partir de 0.25 y verificar la revisión remota. La limpieza de interfaz solicitada tiene prioridad inmediata. Después continuar ataque/defensa de fase 9 y soporte para uno o dos rivales adicionales; el ritmo de aire libre ya fue revisado. Conservar tamaño de circuitos, inercia, perfiles abiertos y física compartida.
+
+
+## Avance — build 0.26 (24 de octubre de 2026)
+
+### Fases 2/16 — Espacio visible y datos esenciales
+
+- Se retiraron las tarjetas de velocidad recomendada, próxima curva, terreno y derrape; se conservan velocidad, checkpoints, vueltas, mejor vuelta y minimapa.
+- El cronómetro del HUD ahora mide la vuelta actual, en lugar del acumulado de carrera. Se reinicia tras una vuelta válida y mantiene el último tiempo cuando termina el jugador. Resultados y clasificación siguen usando el total.
+- La carrera ajusta su alto a la ventana tanto en vista normal como en fullscreen. Contenedor ampliado a 1600 px; se compactan encabezado y controles y se ocultan pie y ayuda secundaria durante la conducción.
+- Se conserva la proporción 1000:640. En pantallas con otra relación pueden quedar bandas; no se deforma el circuito ni se reduce la escala del mundo para encajarlo.
+- ResizeObserver ajusta el lienzo al contenedor, también en pausa. Cambiar tamaño no invalida los fondos del mundo; búfer limitado a 2560 px de ancho. Salir o terminar restaura el menú.
+- Se conservan geometría, superficies, perfiles abiertos, checkpoints y física compartida. No se añade una penalización exclusiva al jugador por salir un poco del asfalto.
+
+### Comprobaciones
+
+- Sintaxis JavaScript, identificadores HTML, archivos referenciados, diez originales y 14 registros, geometría y separación entre ramales: superados.
+- Conducción de cuatro modelos, terrenos, freno de mano, inercia y cámaras; pruebas de barreras y casos focalizados de CPU: superados.
+- Chromium: datos eliminados, tres tarjetas esenciales, cronómetro de vuelta/reinicio/fin, ausencia de scroll, proporción, HUD exterior, menú y resultado, fullscreen, resize, móvil vertical/horizontal, 14 pistas, dos jugadores, gráficos retro/rendimiento y carreras CPU en Dusty y hielo: superados.
+- Capturas de escritorio y cámaras divididas revisadas. No equivalen a conducción humana, prueba de audio ni medición de rendimiento en teléfonos. No se repiten las 42 carreras de 0.25: este cambio no modifica el controlador ni la física.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.26 y verificar rama/commit remoto. Próxima etapa: fase 9, revisar ataques, defensa y contactos antes de ampliar la parrilla con uno o dos rivales adicionales en fase 10. Sigue pendiente contrastar Sunset y Dusty contra las vueltas humanas de unos 18 s y el uso de escapatorias; no considerar equilibrado el juego solo por las simulaciones. La siguiente ampliación física de trazados debe conservar zonas abiertas y validar duración humana, geometría y checkpoints; esta etapa mejora el área visible de la web.

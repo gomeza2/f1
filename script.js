@@ -411,9 +411,12 @@ function decorationsForTrack(){
  return list;
 }
 function resize(){
- const r=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2),quality=graphics==='retro'?.58:graphics==='lite'?.75:1;
- const width=Math.max(500,Math.round(r.width*dpr*quality)),height=Math.max(320,Math.round(width*640/1000));
- if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;backgroundCache=null;backgroundCacheKey='';trackSurfaceCache=null;trackSurfaceKey='';}
+ const bounds=$('views').getBoundingClientRect(),availableWidth=Math.max(1,bounds.width-8),availableHeight=Math.max(1,bounds.height-8);
+ const cssWidth=Math.min(availableWidth,availableHeight*1000/640);
+ canvas.style.width=cssWidth+'px';canvas.style.height=cssWidth*640/1000+'px';
+ const dpr=Math.min(window.devicePixelRatio||1,2),quality=graphics==='retro'?.58:graphics==='lite'?.75:1;
+ const width=Math.min(2560,Math.max(500,Math.round(cssWidth*dpr*quality))),height=Math.round(width*640/1000);
+ if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}
  if(running)drawFrame();
 }
 function strokeTrackRange(context,startDistance,endDistance,color,width,dash=[]){
@@ -466,11 +469,11 @@ function start(m,s=Number($('stageSelect').value),keepSeason=false){
  placeCar(cars[1],mode==='solo'?78:4,mode==='solo'?16:18);
  const requestedBarrierMode=$('barrierMode')?.value||'auto';barrierMode=requestedBarrierMode==='auto'?track.defaultBarriers:requestedBarrierMode;guardrailRanges=guardrailRangesForTrack();trackFeatures=buildTrackFeatures();
  decorations=decorationsForTrack();tireBarriers=barriersForTrack();buildPhysicalBarriers();skidMarks=[];terrainParticles=[];elapsed=0;countdownRemaining=3;goFlashRemaining=0;countdownShown='';paused=false;running=true;keys=Object.create(null);
- menu.classList.add('hidden');result.classList.add('hidden');game.classList.remove('hidden');
+ document.body.classList.add('racing');menu.classList.add('hidden');result.classList.add('hidden');game.classList.remove('hidden');
  $('views').classList.toggle('pixelated',graphics==='retro');$('views').classList.toggle('performance',graphics==='lite');
  $('trackName').textContent=track.name;$('stageLabel').textContent=String(stage+1).padStart(2,'0');if($('trackCount'))$('trackCount').textContent=String(tracks.length).padStart(2,'0');
  $('helpText').textContent=mode==='duo'?'P1 WASD + ESPACIO · P2 FLECHAS + ENTER':'W acelerar · S frenar · A/D girar · ESPACIO freno de mano';
- updateCameraButton();$('status').textContent='PREPARADOS...';resize();initAudio();updateAudio();cancelAnimationFrame(raf);last=performance.now();raf=requestAnimationFrame(loop);
+ updateCameraButton();$('status').textContent='PREPARADOS...';updateTelemetry();resize();initAudio();updateAudio();cancelAnimationFrame(raf);last=performance.now();raf=requestAnimationFrame(loop);
 }
 for(let i=0;i<tracks.length;i++){const o=document.createElement('option');o.value=i;o.textContent=String(i+1).padStart(2,'0')+' — '+tracks[i].name+(tracks[i].length>3900?' · GP LARGO':'');$('stageSelect').append(o);}
 function keyFor(i){return i===0?{up:'w',down:'s',left:'a',right:'d',hand:' '}:{up:'arrowup',down:'arrowdown',left:'arrowleft',right:'arrowright',hand:'enter'};}
@@ -880,20 +883,16 @@ function drawMiniMap(){
  cars.forEach(car=>{m.fillStyle=car.color;m.beginPath();m.arc(car.x,car.y,Math.max(17,2.6/scale),0,Math.PI*2);m.fill();});
  m.restore();m.strokeStyle='#5d6b8a';m.lineWidth=2;m.strokeRect(1,1,w-2,h-2);
 }
+function currentLapTime(car){
+ if(car.done)return car.lapTimes[car.lapTimes.length-1]||0;
+ return Math.max(0,elapsed-car.lapStartTime);
+}
 function updateTelemetry(){
  const player=cars[0];if(!player)return;
- const safe=curvatureAt(player.progress+28).safeSpeed,corner=upcomingCorner(player.progress);
- const names={asphalt:'ASFALTO',dirt:'TIERRA',grass:'PASTO',ice:'HIELO',volcanic:'VOLCÁN',coastal:'COSTA'};
- const currentSurface=surfaceAtProgress(player.progress);
- const cornerName=corner.severity<.12?'RECTA':corner.turn>0?'CURVA DERECHA':'CURVA IZQUIERDA';
- $('speedValue').textContent=Math.round(player.speed)+' km/h';$('targetSpeedValue').textContent=Math.round(safe)+' km/h';
- $('sectorValue').textContent=cornerName+(corner.severity>.22?' · A '+Math.round(corner.distance):'');
+ $('speedValue').textContent=Math.round(player.speed)+' km/h';
  $('cpValue').textContent=Math.min(player.checkpointPasses||0,checkpoints.length)+' / '+checkpoints.length;
  const best=bestLapRecords[lapRecordKey()];$('bestLapValue').textContent=best?format(best):'--:--.-';
- $('surfaceValue').textContent=(Math.abs(player.roadOffset)>ROAD_EDGE?'FUERA · ':'')+(names[currentSurface]||'ASFALTO');
- $('driftValue').textContent=player.drift>.35?'DERRAPE '+Math.round(player.drift*100)+'%':'AGARRE';
- $('targetSpeedChip').classList.toggle('warning',player.speed>safe+15);
- $('sectorChip').classList.toggle('warning',corner.severity>.24&&player.speed>safe+12);
+ $('timer').textContent=format(currentLapTime(player));$('lap').textContent=Math.min(LAPS_TO_WIN,player.lap+1)+'/'+LAPS_TO_WIN;
  drawMiniMap();
 }
 function overviewZoom(){return Math.min(1000/track.worldWidth,640/track.worldHeight);}
@@ -909,7 +908,7 @@ function updateCameraButton(){
 }
 function toggleCamera(){
  if(mode==='duo')return;
- cameraMode=cameraMode==='near'?'overview':'near';updateCameraButton();if(running)drawFrame();
+ cameraMode=cameraMode==='near'?'overview':'near';updateCameraButton();if(running)resize();
 }
 function drawDrivingView(left,width,player){
  const view=raceCamera(player,width);ctx.save();ctx.beginPath();ctx.rect(left,0,width,640);ctx.clip();
@@ -940,7 +939,6 @@ function loop(now){
   resolveCollisions(dt);
  }
  if(goFlashRemaining>0&&countdownRemaining<=0)goFlashRemaining=Math.max(0,goFlashRemaining-dt);
- $('timer').textContent=format(elapsed);$('lap').textContent=Math.min(LAPS_TO_WIN,cars[0].lap+1)+'/'+LAPS_TO_WIN;
  updateGroundEffects(dt);updateAudio();drawFrame();updateTelemetry();
  const finishers=cars.filter(car=>car.done);
  if(cars.every(car=>car.done)){finishRace();return;}
@@ -949,7 +947,7 @@ function loop(now){
 }
 function format(t){const m=Math.floor(t/60),s=(t%60).toFixed(1).padStart(4,'0');return String(m).padStart(2,'0')+':'+s;}
 function finishRace(){
- running=false;cancelAnimationFrame(raf);game.classList.add('hidden');result.classList.remove('hidden');
+ running=false;document.body.classList.remove('racing');cancelAnimationFrame(raf);game.classList.add('hidden');result.classList.remove('hidden');
  const winner=[...cars].sort((a,b)=>(a.finishTime??Infinity)-(b.finishTime??Infinity))[0];
  awardPoints(winner);updateAudio();
  if(stage===tracks.length-1)$('resultTitle').textContent='¡CAMPEONATO TERMINADO!';
@@ -965,7 +963,7 @@ function finishRace(){
 $('cameraBtn').onclick=toggleCamera;
 $('pauseBtn').onclick=togglePause;
 $('restartBtn').onclick=()=>start(mode,stage,true);
-$('backBtn').onclick=()=>{running=false;updateAudio();cancelAnimationFrame(raf);keys=Object.create(null);game.classList.add('hidden');menu.classList.remove('hidden');};
+$('backBtn').onclick=()=>{running=false;document.body.classList.remove('racing');updateAudio();cancelAnimationFrame(raf);keys=Object.create(null);game.classList.add('hidden');menu.classList.remove('hidden');};
 $('menuBtn').onclick=()=>{result.classList.add('hidden');menu.classList.remove('hidden');};
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>start(b.dataset.mode));
 $('soundBtn').onclick=()=>{soundEnabled=!soundEnabled;$('soundBtn').textContent='♫ SONIDO: '+(soundEnabled?'ON':'OFF');if(soundEnabled){initAudio();if(audioContext&&audioContext.state==='suspended')audioContext.resume().catch(()=>{});}updateAudio();};
@@ -991,4 +989,5 @@ $('carColor').addEventListener('change',updateGaragePreview);
 updateGaragePreview();
 $('difficulty').addEventListener('change',()=>{difficulty=$('difficulty').value;});
 window.addEventListener('resize',()=>{if(running)resize();});
+if(typeof ResizeObserver!=='undefined'){const observer=new ResizeObserver(()=>{if(running)resize();});observer.observe($('views'));}
 })();
