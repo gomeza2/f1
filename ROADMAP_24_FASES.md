@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.20**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.21**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -36,13 +36,14 @@ La interfaz identifica la build como **0.20**, continuando la base 0.17 del comm
 - Pendiente: validar el ancho completo del asfalto, proximidad entre ramales, radios interiores y escapatorias; una línea central válida no demuestra que las vallas desplazadas sean válidas.
 
 ### Fase 4 — Barreras y perfiles de circuito
-**Parcial; selección de perfiles comprobada automáticamente.**
+**Geometría y colisiones corregidas en 0.21; perfiles personalizados pendientes.**
 
-- Perfil automático según pista; vallas completas, mitad con neumáticos, curvas y abierto.
-- La física consulta los mismos rangos longitudinales que el renderizado.
-- `tests/validate-integration.mjs` prueba los 14 circuitos y las cinco opciones (70 combinaciones).
-- Pendiente: contacto por geometría real del coche y neumáticos, extremos de barreras y perfiles personalizados por tramo.
-- La captura de Frostbite confirma pliegues de vallas en curvas interiores cerradas: requiere validación de curvas desplazadas y corrección en esta fase.
+- Contornos del ancho de pista sustituyen el desplazamiento directo de normales, que formaba bucles cuando el radio de curva era menor a 55.
+- Contornos muestreados cada cuatro unidades, calculados una vez por pista y reutilizados en todos los perfiles. Render y colisión comparten los mismos segmentos y extremos.
+- Colisión del coche mediante cápsula de 30×20 unidades; neumáticos mediante los círculos dibujados, incluido su borde. Impactos normales pierden energía y conservan un rebote pequeño, sin generar velocidad en un coche detenido.
+- Pilas de neumáticos descartadas cuando invaden otro ramal. Perfiles automático, completo, mitad, curvas y abierto conservados.
+- `tests/validate-barriers.mjs`: 14 pistas, cinco opciones, 31 contornos cerrados, 7747 puntos, contacto visible, impactos frontales y coche parado. `validate-integration.mjs` conserva la prueba de las 70 configuraciones.
+- Pendiente: perfiles personalizados/solo neumáticos, pruebas humanas contra todas las transiciones y validación integral de anchura en pistas cercanas a los bordes.
 
 ### Fase 5 — Variedad de circuitos
 **Parcial; 14 circuitos conservados y cargados en Chromium.**
@@ -295,7 +296,7 @@ La petición posterior del usuario priorizó errores de manejo, poca velocidad y
 - Tráfico: contactos residuales en Neon (3 frames), Night (17), Jungle (25), Volcano (19), Pixel City (14), Thunder (7). Se miden y documentan; no se declara conducción libre de contactos. Los adelantamientos de detenido y doblado mantienen margen físico (mínimo 26,1; contacto a 23).
 - Pruebas de manejo no equivalen a una evaluación humana: sigue pendiente jugar con estos ajustes y calibrar frente a una persona, con sonido y dispositivos reales.
 
-### Continuación vigente con «siguiente»
+### Continuación prevista tras 0.20 (histórico)
 
 Partir de 0.20 y verificar rama/commit. Prioridad siguiente: geometría de las barreras interiores (fase 4), conservando la conducción más rápida, el margen de dirección y la cámara. Mantener las pruebas de las 14 pistas y tráfico. No repetir auditorías ya registradas ni reemplazar el avance local por `main` sin reconciliarlo.
 
@@ -306,3 +307,32 @@ La publicación sigue pendiente de escritura en GitHub. La consulta del reposito
 La documentación oficial consultada confirma que la app GitHub de ChatGPT es de lectura: https://help.openai.com/en/articles/11145903-connecting-github-to-chatgpt. La indicación inicial de simplemente habilitar escritura en esa app era insuficiente. Hay que configurar repositorio y acceso Git en Codex; cambiar la política de confirmaciones de un plugin no concede permisos del proveedor. La CLI de este entorno tampoco pudo autenticar correctamente.
 
 La build 0.20 quedó guardada en el commit local `a4d5ed4`. Chromium también superó el cambio de cámara con botón/C, minimapa visible a 390×844 y 844×390, pantalla completa horizontal con al menos 150 px de altura de conducción y las comprobaciones anteriores de controles, carrera y resultados. Se inspeccionó la captura de la vista cercana. Sin publicación remota ni actualización de Pages.
+
+## Avance — build 0.21 (24 de octubre de 2026)
+
+### Recuperación y publicación
+
+- Se conservó íntegro el avance local 0.18–0.20. El remoto seguía en `a19be4b`.
+- Un clon nuevo permitió conservar el historial Git real. El avance acumulado 0.20 se subió y verificó en `codex/pixel-gp-020`, commit `372426d2601ba5a752bb5f5eabf151b5dc7eb94d`.
+- La CLI de API continuó fallando, pero la autenticación de Git mediante el helper del entorno sí permitió escribir. Los informes anteriores de “sin publicación” describen las etapas históricas, no la capacidad actual de Git.
+
+### Cambio concreto
+
+- Corregidos bucles de vallas internas mediante contornos del buffer de la pista, extraídos con triángulos de una cuadrícula y un índice espacial para limitar cálculos.
+- Vallas visibles y físicas usan la misma geometría; el coche respeta su orientación y tamaño aproximado de carrocería/ruedas. Neumáticos consultados como círculos físicos reales, sin el antiguo choque por distancia longitudinal y lateral.
+- Se conserva la recuperación de circuitos abiertos; sus perfiles no generan barreras invisibles.
+- Coche detenido no recibe velocidad por una colisión y los impactos frontales ya no aplican rebotes al 50 % de la velocidad de llegada.
+- Sin dependencias nuevas. Contornos y fondo se cachean; consultas de colisión usan celdas espaciales cercanas al coche.
+
+### Comprobaciones
+
+- Sintaxis y geometría central: correctas. IDs, archivos, diez originales, 14 registros y 70 perfiles: correctos.
+- Barreras: 31 contornos cerrados y 7747 sondas sin plegarse sobre la pista; cinco perfiles en cada pista, casos de coche detenido, impacto frontal, círculos de neumáticos y segmentos cruzados.
+- Conducción: cuatro coches, aceleración, agarre por terreno, freno de mano y cámara: superados.
+- CPU: 42 carreras sin tráfico (126 vueltas válidas); tres dificultades y prestaciones compartidas conservadas. Tráfico: 14 carreras de dos controladores (84 vueltas), con contactos residuales medidos; no se declara ausencia de choques entre coches.
+- Chromium: controles, reinicio, pausa, menú, 14 pistas, fullscreen/proporción, cámaras, minimapa móvil, espacio horizontal, adelantamiento y carrera de CPU en hielo, resultados y siguiente etapa: superados.
+- Se inspeccionó la captura de Sunset: desaparecieron los pliegues visibles que tenía 0.20. Falta prueba humana de conducción, audio y rendimiento en dispositivos físicos.
+
+### Continuación vigente con «siguiente»
+
+Verificar la revisión remota y partir de 0.21. Siguiente mejora recomendada: fase 3, medir anchura/proximidad entre ramales y dar variedad geométrica a los circuitos originales más similares. Mantener el control rápido, la respuesta de dirección, los 14 registros, el modo local, las barreras compartidas y la batería de carreras.

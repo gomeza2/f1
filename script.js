@@ -64,6 +64,7 @@ function readBestLapRecords(){try{const value=JSON.parse(localStorage.getItem(BE
 let bestLapRecords=readBestLapRecords();
 function saveBestLap(trackName,time){if(!Number.isFinite(time)||time<=0)return false;const previous=bestLapRecords[trackName];if(Number.isFinite(previous)&&previous<=time)return false;bestLapRecords[trackName]=time;try{localStorage.setItem(BEST_LAPS_KEY,JSON.stringify(bestLapRecords));}catch(error){}return true;}
 let keys=Object.create(null),cars=[],graphics='high',difficulty='normal',decorations=[],tireBarriers=[],checkpoints=[];
+let guardrailPaths=[],physicalBarriers=[],barrierBuckets=new Map();
 let barrierMode='auto',guardrailRanges=[],skidMarks=[],terrainParticles=[],trackFeatures={braking:[],passing:[]};
 let backgroundCache=null,backgroundCacheKey='',trackSurfaceCache=null,trackSurfaceKey='';
 let soundEnabled=true,audioContext=null,engineOsc=null,engineFilter=null,engineGain=null,lastCrashSoundAt=0;
@@ -233,13 +234,144 @@ function barriersForTrack(){
  // En el perfil mixto, los neumáticos protegen algunas curvas del tramo abierto.
  for(let d=track.length*.5;d<track.length;d+=10){const bend=curvatureAt(d);if(bend.severity<.2)continue;
   const p=sampleAt(d),nx=-Math.sin(p.angle),ny=Math.cos(p.angle),outside=bend.turn>0?-1:1;
-  list.push({x:p.x+nx*outside*57,y:p.y+ny*outside*57,angle:p.angle,progress:d,side:outside});
+  const tire={x:p.x+nx*outside*57,y:p.y+ny*outside*57,angle:p.angle,progress:d,side:outside};
+  if(nearestOnTrack(tire.x,tire.y).distance>=52)list.push(tire);
  }return list;
 }
-function tireBarrierContact(loc){
- if(!tireBarriers.length||Math.abs(loc.offset)<47)return false;const side=Math.sign(loc.offset)||1;
- return tireBarriers.some(t=>{const diff=Math.abs(t.progress-loc.progress),around=Math.min(diff,track.length-diff);return t.side===side&&around<15;});
+// Trace the boundary of the road's 55-unit buffer. Offset normals alone fold
+// back on themselves when a corner radius is smaller than the fence offset.
+const barrierContourCache=new WeakMap();
+function projectToSegment(x,y,a,b){
+ const dx=b.x-a.x,dy=b.y-a.y,lengthSq=dx*dx+dy*dy;
+ const t=lengthSq?clamp(((x-a.x)*dx+(y-a.y)*dy)/lengthSq,0,1):0;
+ const px=a.x+dx*t,py=a.y+dy*t;
+ return {x:px,y:py,t,distanceSq:(x-px)**2+(y-py)**2};
 }
+function barrierContoursForTrack(){
+ if(barrierContourCache.has(track))return barrierContourCache.get(track);
+ const buckets=new Map(),cell=32,radius=55,step=4;
+ for(let i=0;i<track.samples.length;i++){
+  const a=track.samples[i],b=track.samples[(i+1)%track.samples.length],segment={a,b};
+  for(let y=Math.floor((Math.min(a.y,b.y)-64)/cell);y<=Math.floor((Math.max(a.y,b.y)+64)/cell);y++){
+   for(let x=Math.floor((Math.min(a.x,b.x)-64)/cell);x<=Math.floor((Math.max(a.x,b.x)+64)/cell);x++){
+    const key=x+','+y;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(segment);
+   }
+  }
+ }
+ function nearest(x,y){
+  let distanceSq=64*64,progress=0;
+  for(const {a,b} of buckets.get(Math.floor(x/cell)+','+Math.floor(y/cell))||[]){
+   const p=projectToSegment(x,y,a,b);
+   if(p.distanceSq<distanceSq){distanceSq=p.distanceSq;progress=a.d+p.t*pointDistance(a,b);}
+  }
+  return {distanceSq,progress};
+ }
+ const width=283,height=193,values=new Float64Array(width*height);
+ const vertex=index=>({x:-64+(index%width)*step,y:-64+Math.floor(index/width)*step});
+ for(let i=0;i<values.length;i++){
+  const p=vertex(i),value=nearest(p.x,p.y).distanceSq-radius*radius;
+  values[i]=Math.abs(value)<1e-7?1e-7:value;
+ }
+ const crossings=new Map(),links=new Map();
+ function crossing(a,b){
+  const key=a<b?a+':'+b:b+':'+a;
+  if(!crossings.has(key)){
+   const p=vertex(a),q=vertex(b),t=values[a]/(values[a]-values[b]);
+   crossings.set(key,{key,x:p.x+(q.x-p.x)*t,y:p.y+(q.y-p.y)*t});
+  }
+  return crossings.get(key);
+ }
+ function triangle(a,b,c){
+  const points=[];
+  for(const [u,v] of [[a,b],[b,c],[c,a]])if((values[u]<0)!==(values[v]<0))points.push(crossing(u,v));
+  if(points.length!==2)return;
+  for(let i=0;i<2;i++){const p=points[i],q=points[1-i];if(!links.has(p.key))links.set(p.key,[]);links.get(p.key).push(q);}
+ }
+ for(let y=0;y<height-1;y++)for(let x=0;x<width-1;x++){
+  const a=y*width+x,b=a+1,c=a+width+1,d=a+width;triangle(a,b,c);triangle(a,c,d);
+ }
+ const visited=new Set(),contours=[];
+ for(const [key] of links){
+  if(visited.has(key))continue;
+  const points=[];let current=crossings.get(key),previous=null;
+  while(current&&!visited.has(current.key)){
+   visited.add(current.key);points.push(current);
+   const next=links.get(current.key).find(p=>p.key!==previous);
+   previous=current.key;current=next;
+  }
+  if(points.length>2)contours.push({points,closed:current?.key===key});
+ }
+ // Cache progress with the contour: all profiles use exactly the same boundary.
+ for(const contour of contours)for(let i=0;i<contour.points.length;i++){
+  const a=contour.points[i],b=contour.points[(i+1)%contour.points.length];
+  a.progress=nearest((a.x+b.x)/2,(a.y+b.y)/2).progress;
+ }
+ barrierContourCache.set(track,contours);return contours;
+}
+function buildPhysicalBarriers(){
+ guardrailPaths=[];physicalBarriers=[];barrierBuckets=new Map();
+ for(const contour of barrierContoursForTrack()){
+  let chain=[];
+  for(let i=0;i<contour.points.length;i++){
+   const a=contour.points[i],b=contour.points[(i+1)%contour.points.length];
+   if(!contour.closed&&i===contour.points.length-1)break;
+   if(guardrailActive(a.progress)){
+    if(!chain.length)chain.push(a);chain.push(b);
+    physicalBarriers.push({a,b,radius:5.5,kind:'rail'});
+   }else if(chain.length){guardrailPaths.push(chain);chain=[];}
+  }
+  if(chain.length)guardrailPaths.push(chain);
+ }
+ for(const tire of tireBarriers)for(const offset of [-5,0,5]){
+  const p={x:tire.x+Math.cos(tire.angle)*offset,y:tire.y+Math.sin(tire.angle)*offset};
+  physicalBarriers.push({a:p,b:p,radius:5.8,kind:'tire'});
+ }
+ for(const barrier of physicalBarriers){
+  for(let y=Math.floor((Math.min(barrier.a.y,barrier.b.y)-24)/32);y<=Math.floor((Math.max(barrier.a.y,barrier.b.y)+24)/32);y++){
+   for(let x=Math.floor((Math.min(barrier.a.x,barrier.b.x)-24)/32);x<=Math.floor((Math.max(barrier.a.x,barrier.b.x)+24)/32);x++){
+    const key=x+','+y;if(!barrierBuckets.has(key))barrierBuckets.set(key,[]);barrierBuckets.get(key).push(barrier);
+   }
+  }
+ }
+}
+function closestSegments(a,b,c,d){
+ const candidates=[];
+ for(const p of [a,b]){const q=projectToSegment(p.x,p.y,c,d);candidates.push({car:p,wall:q,distanceSq:q.distanceSq});}
+ for(const q of [c,d]){const p=projectToSegment(q.x,q.y,a,b);candidates.push({car:p,wall:q,distanceSq:p.distanceSq});}
+ const rx=b.x-a.x,ry=b.y-a.y,sx=d.x-c.x,sy=d.y-c.y,den=rx*sy-ry*sx;
+ if(Math.abs(den)>1e-8){
+  const t=((c.x-a.x)*sy-(c.y-a.y)*sx)/den,u=((c.x-a.x)*ry-(c.y-a.y)*rx)/den;
+  if(t>=0&&t<=1&&u>=0&&u<=1){const p={x:a.x+rx*t,y:a.y+ry*t};return {car:p,wall:p,distanceSq:0};}
+ }
+ return candidates.reduce((best,p)=>p.distanceSq<best.distanceSq?p:best);
+}
+function resolveBarrierContact(car,previousX,previousY){
+ let hit=false,impactFactor=1;
+ for(let pass=0;pass<4;pass++){
+  let deepest=null;
+  const hx=Math.cos(car.heading)*5,hy=Math.sin(car.heading)*5;
+  for(const barrier of barrierBuckets.get(Math.floor(car.x/32)+','+Math.floor(car.y/32))||[]){
+   const contact=closestSegments({x:car.x-hx,y:car.y-hy},{x:car.x+hx,y:car.y+hy},barrier.a,barrier.b);
+   const distance=Math.sqrt(contact.distanceSq),depth=10+barrier.radius-distance;
+   if(depth>1e-4&&(!deepest||depth>deepest.depth))deepest={...contact,depth,distance};
+  }
+  if(!deepest)break;
+  let nx=deepest.car.x-deepest.wall.x,ny=deepest.car.y-deepest.wall.y;
+  if(deepest.distance<1e-6){nx=previousX-deepest.wall.x;ny=previousY-deepest.wall.y;}
+  const length=Math.hypot(nx,ny)||1;nx/=length;ny/=length;
+  car.x+=nx*(deepest.depth+.05);car.y+=ny*(deepest.depth+.05);hit=true;
+  const vx=Math.cos(car.heading),vy=Math.sin(car.heading),inward=vx*nx+vy*ny;
+  if(inward<-.02){
+   const reflectedX=vx-1.15*inward*nx,reflectedY=vy-1.15*inward*ny;
+   car.heading=Math.atan2(reflectedY,reflectedX);
+   impactFactor=Math.min(impactFactor,Math.hypot(reflectedX,reflectedY)*.94);
+  }
+ }
+ if(impactFactor<1){car.speed*=clamp(impactFactor,.05,1);car.steer*=.65;}
+ if(hit&&car.flash<=0){playTone(125,.09,.04);car.flash=.12;}
+ return hit;
+}
+
 function checkpointsForTrack(){
  const result=[];
  for(let i=1;i<=3;i++){const progress=track.length*i/4,p=sampleAt(progress);result.push({id:i,progress,x:p.x,y:p.y,angle:p.angle});}
@@ -330,7 +462,7 @@ function start(m,s=Number($('stageSelect').value),keepSeason=false){
  placeCar(cars[0],4,mode==='duo'?-18:-15);
  placeCar(cars[1],mode==='solo'?78:4,mode==='solo'?16:18);
  const requestedBarrierMode=$('barrierMode')?.value||'auto';barrierMode=requestedBarrierMode==='auto'?track.defaultBarriers:requestedBarrierMode;guardrailRanges=guardrailRangesForTrack();trackFeatures=buildTrackFeatures();
- decorations=decorationsForTrack();tireBarriers=barriersForTrack();skidMarks=[];terrainParticles=[];elapsed=0;countdownRemaining=3;goFlashRemaining=0;countdownShown='';paused=false;running=true;keys=Object.create(null);
+ decorations=decorationsForTrack();tireBarriers=barriersForTrack();buildPhysicalBarriers();skidMarks=[];terrainParticles=[];elapsed=0;countdownRemaining=3;goFlashRemaining=0;countdownShown='';paused=false;running=true;keys=Object.create(null);
  menu.classList.add('hidden');result.classList.add('hidden');game.classList.remove('hidden');
  $('views').classList.toggle('pixelated',graphics==='retro');$('views').classList.toggle('performance',graphics==='lite');
  $('trackName').textContent=track.name;$('stageLabel').textContent=String(stage+1).padStart(2,'0');if($('trackCount'))$('trackCount').textContent=String(tracks.length).padStart(2,'0');
@@ -538,16 +670,11 @@ function physics(car,i,dt){
   car.speed=Math.max(14,car.speed-(baseDrag+roadEdge*edgeDrag)*model.grass*dt);
   car.drift=Math.max(car.drift,.28);
  }
- // Las colisiones físicas coinciden con las vallas visibles; los tramos abiertos dejan más margen.
+ // The rendered rails and tires are also the physical collision geometry.
+ const hitBarrier=resolveBarrierContact(car,previousX,previousY);
+ if(hitBarrier)after=nearestOnTrack(car.x,car.y);
  const side=Math.sign(after.offset)||1,nx=-Math.sin(after.angle),ny=Math.cos(after.angle);
- const railContact=guardrailActive(after.progress),tyreContact=!railContact&&tireBarrierContact(after);
- const collisionLimit=railContact?54:(tyreContact?51:Infinity);
- if(Math.abs(after.offset)>collisionLimit){
-  car.x=after.x+nx*side*(collisionLimit-1);car.y=after.y+ny*side*(collisionLimit-1);
-  const outward=Math.cos(car.heading)*nx*side+Math.sin(car.heading)*ny*side;
-  if(outward>0){const vx=Math.cos(car.heading)-2*outward*nx*side,vy=Math.sin(car.heading)-2*outward*ny*side;car.heading=Math.atan2(vy,vx);}
-  car.speed=Math.max(22,car.speed*(railContact?.52:.58));car.steer*=.42;if(car.flash<=0)playTone(125,.09,.04);car.flash=.16;after=nearestOnTrack(car.x,car.y);
- }else if(!railContact&&!tyreContact&&Math.abs(after.offset)>92){
+ if(!hitBarrier&&Math.abs(after.offset)>92){
   car.speed=Math.max(12,car.speed-(100+(Math.abs(after.offset)-92)*2.2)*dt);
   if(Math.abs(after.offset)>112){car.x=after.x+nx*side*108;car.y=after.y+ny*side*108;car.speed*=.76;after=nearestOnTrack(car.x,car.y);}
  }
@@ -608,14 +735,24 @@ function renderGroundTexture(context){
   else if(seed>.55){context.globalAlpha=stage===4?.14:.23;context.strokeStyle=seed>.82?'#d8e6bd':'#0b3a28';context.lineWidth=1;context.beginPath();context.moveTo(x,y+2);context.lineTo(x+(seed-.5)*5,y-2-seed*3);context.stroke();}context.globalAlpha=1;
  }
 }
-function drawOffsetGuardrail(context,startD,endD,side){
- const points=[];for(let d=startD;d<endD;d+=6){const p=sampleAt(d),nx=-Math.sin(p.angle),ny=Math.cos(p.angle);points.push({x:p.x+nx*side*55,y:p.y+ny*side*55,angle:p.angle,d});}
- const tail=sampleAt(endD),tnx=-Math.sin(tail.angle),tny=Math.cos(tail.angle);points.push({x:tail.x+tnx*side*55,y:tail.y+tny*side*55,angle:tail.angle,d:endD});if(points.length<2)return;
- const trace=()=>{context.beginPath();context.moveTo(points[0].x,points[0].y);for(let i=1;i<points.length;i++)context.lineTo(points[i].x,points[i].y);};
- context.save();context.lineCap='round';context.lineJoin='round';context.setLineDash([]);context.strokeStyle='#202732';context.lineWidth=11;trace();context.stroke();context.strokeStyle='#9ba7b7';context.lineWidth=6;trace();context.stroke();context.strokeStyle='#e7eef6';context.lineWidth=2;trace();context.stroke();context.setLineDash([7,13]);context.strokeStyle='#e0b84f';context.lineWidth=2;trace();context.stroke();context.setLineDash([]);
- for(let d=startD;d<endD;d+=24){const p=sampleAt(d),nx=-Math.sin(p.angle),ny=Math.cos(p.angle),x=p.x+nx*side*55,y=p.y+ny*side*55;context.save();context.translate(x,y);context.rotate(p.angle);context.fillStyle='#171c25';context.fillRect(-2,-6,4,12);context.fillStyle='#c8d0dc';context.fillRect(-1,-5,2,10);context.restore();}context.restore();
+function drawGuardrails(context){
+ for(const points of guardrailPaths){
+  const trace=()=>{context.beginPath();context.moveTo(points[0].x,points[0].y);for(let i=1;i<points.length;i++)context.lineTo(points[i].x,points[i].y);};
+  context.save();context.lineCap='round';context.lineJoin='round';context.setLineDash([]);
+  for(const [color,width] of [['#202732',11],['#9ba7b7',6],['#e7eef6',2]]){context.strokeStyle=color;context.lineWidth=width;trace();context.stroke();}
+  context.setLineDash([7,13]);context.strokeStyle='#e0b84f';context.lineWidth=2;trace();context.stroke();context.setLineDash([]);
+  let untilPost=0;
+  for(let i=1;i<points.length;i++){
+   const a=points[i-1],b=points[i],length=pointDistance(a,b),angle=Math.atan2(b.y-a.y,b.x-a.x);
+   while(untilPost<length){
+    const t=untilPost/(length||1);context.save();context.translate(a.x+(b.x-a.x)*t,a.y+(b.y-a.y)*t);context.rotate(angle);
+    context.fillStyle='#171c25';context.fillRect(-2,-5.5,4,11);context.fillStyle='#c8d0dc';context.fillRect(-1,-5,2,10);context.restore();untilPost+=24;
+   }
+   untilPost-=length;
+  }
+  context.restore();
+ }
 }
-function drawGuardrails(context){for(const [startD,endD] of guardrailRanges){drawOffsetGuardrail(context,startD,endD,-1);drawOffsetGuardrail(context,startD,endD,1);}}
 function renderStaticBackground(context){
  context.fillStyle=track.grass;context.fillRect(0,0,1000,640);
  for(let y=0;y<640;y+=36){context.fillStyle=(Math.floor(y/36)%2)?'#ffffff05':'#0b2b1a0a';context.fillRect(0,y,1000,18);}

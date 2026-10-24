@@ -81,4 +81,3 @@ for (let index = 0; index < tracks.length; index++) {
 }
 
 console.log(`PASS: ${tracks.length} circuits, unique names, valid surface/barrier profiles, finite geometry, canvas bounds and no sampled centerline crossings.`);
-
