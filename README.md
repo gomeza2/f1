@@ -9,7 +9,9 @@ Abrí `index.html` en un navegador moderno. Para publicarlo online, activá GitH
 - **Jugador 1:** W acelera, S frena, A/D gira, ESPACIO freno de mano, R reinicia y ESC pausa.
 - **Jugador 2:** flechas para acelerar/frenar/girar, ENTER freno de mano.
 - Botón **Pantalla completa** para ocupar la pantalla; usalo otra vez o pulsá ESC para salir.
-- Podés elegir auto, color, gráficos y dificultad antes de iniciar.
+- Podés elegir auto, color, gráficos, dificultad, circuito y perfil de barreras antes de iniciar.
+- **Vallas completas:** protección en ambos lados de todo el trazado. **Mitad vallas + neumáticos:** vallas en la primera mitad y curvas protegidas con neumáticos en la segunda.
+- Al derrapar aparecen marcas de neumáticos; al salir al terreno se generan partículas de polvo o pasto según el escenario.
 
 ## Fases desarrolladas
 1–3. Menú, controles, física inicial y diez circuitos temáticos.
