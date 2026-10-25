@@ -9,7 +9,12 @@ const source=readFileSync(resolve(root,'script.js'),'utf8');
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 assert.equal(new Set(ids).size,ids.length,'HTML IDs must be unique');
 for(const [,id] of source.matchAll(/\$\('([^']+)'\)/g))assert.ok(ids.includes(id),`Missing HTML ID ${id}`);
-for(const [,path] of html.matchAll(/(?:src|href)="([^"]+)"/g))assert.ok(existsSync(resolve(root,path)),`Missing asset ${path}`);
+const build=html.match(/name="application-version" content="([^"]+)"/)?.[1];
+assert.ok(build,'Release must identify its version');assert.ok(html.includes('BUILD '+build+' //'),'Footer and release version disagree');
+for(const [,path] of html.matchAll(/(?:src|href)="([^"]+)"/g)){
+ const asset=path.split(/[?#]/)[0];assert.ok(existsSync(resolve(root,asset)),`Missing asset ${path}`);
+ assert.equal(new URL(path,'https://example.test/f1/').searchParams.get('v'),build,`Asset version disagrees with release: ${path}`);
+}
 const {game,element}=loadGame();
 const originals=['SUNSET CIRCUIT','NEON HARBOR','DUSTY MESA','NIGHT RUN','FROSTBITE GP','JUNGLE SPRINT','VOLCANO RING','PIXEL CITY','THUNDER VALLEY','CHAMPION ROAD'];
 assert.deepEqual(Array.from(game.tracks.slice(0,10),t=>t.name),originals);

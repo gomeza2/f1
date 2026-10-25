@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.37**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.38**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -228,7 +228,7 @@ La interfaz identifica la build como **0.37**, continuando la base 0.17 del comm
 - Corregir errores de conducción y CPU basados en resultados reales.
 
 ### Fase 24 — Pulido y publicación
-**Pendiente.**
+**Primera entrega web consolidada en 0.38 y comprobada localmente; despliegue público y estabilidad humana pendientes.**
 
 - Limpiar código duplicado y nombres inconsistentes.
 - Actualizar README y documentación.
@@ -848,3 +848,26 @@ Partir de 0.36 y verificar main. Próxima entrega: **fase 23**, batería de jueg
 ### Continuación vigente con «siguiente»
 
 Partir de 0.37 y verificar main. Continuar **fase 24**, consolidación de entrega web y documentación sin perder estas regresiones; mantener pruebas de estabilidad y registro de contactos. El editor, contrarreloj/desafíos, progresión ampliada y otras partes de las 24 fases siguen pendientes. Una revisión futura de trazados debe conservar escapatorias y validar el objetivo de 25–45 s con conducción humana.
+
+
+## Avance — build 0.38 (25 de octubre de 2026)
+
+### Fase 24 — Consolidación de entrega web
+
+- La fase 23 se publicó y verificó primero en main (`a0e32cd`). No se cambian la física ni los resultados de sus 76 carreras.
+- HTML declara versión de aplicación; CSS y JavaScript usan la misma versión en sus URLs. Al recibir HTML nuevo, el navegador solicita recursos de esa entrega y evita mezclar el menú nuevo con un script anterior en caché.
+- La validación de integración comprueba existencia del archivo ignorando consulta/fragmento, coincidencia de versión entre recursos y pie, IDs y registros existentes. Las pruebas de navegador sirven correctamente esas URLs versionadas.
+- `browser-release.cjs` abre los tres archivos reales, sin puente de estado ni modificación del código: ruta `/f1/`, recursos antiguos preparados en caché, CSS/JS de igual versión, 14 pistas, selección, cuenta regresiva, conducción real por teclado, pausa/reinicio/menú y cero errores de JavaScript. La comprobación de apertura directa de `index.html` quedó pendiente: Chromium administrado bloqueó la navegación con `ERR_BLOCKED_BY_ADMINISTRATOR`; no se intenta eludir esa política.
+- Se añaden notas de entrega con estado verificable, limitaciones y pendientes. No se borran hojas de ruta históricas ni se declaran terminadas las 24 fases.
+
+### Comprobaciones y publicación
+
+- Sintaxis, geometría/identidad, integración, ciclo de carrera, conciencia de rivales, conducción/inercia, colisiones, barreras, menú, llegada/resultados y casos focalizados CPU/tráfico/parrilla: superados. Dos carreras de parrilla Sunset/Dusty suman 24 vueltas válidas; sin contactos en esas referencias Normal.
+- Chromium completo, audio real y prueba de entrega sin instrumentación: superados. No se repiten las 42/20/14 carreras completas tras añadir solo versiones a los recursos; se conserva su registro de 0.37 y sus contactos pendientes.
+- El acceso público a `https://gomeza2.github.io/f1/` no pudo comprobarse: el proxy devolvió `Tunnel connection failed: 403 Forbidden`. Esto no prueba que el sitio esté caído ni desplegado. La subida/verificación de main y el estado de GitHub Pages son comprobaciones distintas.
+- La consulta versionada evita mezclar recursos cuando llega HTML nuevo; no fuerza actualizar un documento HTML que el navegador todavía mantenga en caché. Se conserva apertura local y compatibilidad sin dependencias del juego.
+- Pendientes del hito: prueba humana y videos accesibles, contactos de Meadow/Coastline/Dusty Difícil, dispositivos físicos, rendimiento medido y calibración de vueltas. No se etiqueta la entrega como versión estable definitiva.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.38 y verificar main. La siguiente prioridad de producto es volver a **fases 3/5**, recorrido y variedad: ampliar/rediseñar Sunset con más recorrido útil, escapatorias y objetivo humano de 25–45 s, conservando coche/ancho/velocidad y comprobando geometría/checkpoints/CPU. No ralentizar artificialmente el coche. Mantener abiertos los contactos registrados y las pruebas de la base. Modos nuevos, progreso ampliado, editor, perfiles personalizados y otras partes del plan siguen pendientes; haber hecho una primera entrega de fase 24 no completa las 24 fases.

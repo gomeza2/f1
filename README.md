@@ -6,7 +6,9 @@ Juego web arcade de carreras 2D desde arriba, con identidad retro propia, circui
 
 Abrí `index.html` en un navegador moderno. No necesita servidor ni instalación de dependencias para su versión básica.
 
-Para publicarlo, podés habilitar GitHub Pages desde **Settings → Pages** y usar la rama y carpeta en la que estén los archivos principales.
+Para publicarlo, podés habilitar GitHub Pages desde **Settings → Pages** y usar `main` y la carpeta raíz (`/`). La entrega mantiene rutas relativas y funciona bajo `/f1/`.
+
+La versión aparece en el pie. JavaScript y CSS llevan una versión en su URL para evitar reutilizar los recursos de una entrega anterior cuando se recibe el HTML nuevo. Esto no fuerza la renovación de un HTML que siga en caché. La comprobación local de entrega no confirma por sí sola el despliegue público. Ver [notas de entrega y pendientes](RELEASE_NOTES.md).
 
 ## Controles
 
@@ -81,9 +83,9 @@ La prueba de identidad detecta copias de un trazado aunque se escalen, giren o r
 
 La prueba de CPU exige una mejora de al menos 20 % frente a 0.24 en el mismo trazado, además de comprobar límites físicos, desplazamiento y coste del freno de mano. Usa el código real en un entorno DOM simulado: completa tres vueltas con checkpoints en las 14 pistas y las tres dificultades, verifica prestaciones compartidas y prueba frenado ante tráfico y recuperación. No sustituye una carrera humana.
 
-Pruebas opcionales de navegador: `node tests/browser-smoke.cjs` y `node tests/browser-audio.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
+Pruebas opcionales de navegador: `node tests/browser-smoke.cjs`, `node tests/browser-audio.cjs` y `node tests/browser-release.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
-## Conducción — build 0.37
+## Conducción — build 0.38
 
 La aceleración del Balanced pasa de 76 a 110, el frenado de 192 a 230 y la escala real de movimiento de 0,62 a 0,84. Los otros tres modelos se ajustan en la misma dirección y conservan sus diferencias. A igual velocidad indicada, el coche recorre un 35,5 % más de distancia. La pérdida de agarre por exceso de velocidad es progresiva y conserva dirección; frenar sigue permitiendo cerrar mejor una curva. ESPACIO reduce velocidad aunque se mantenga W y ayuda a rotar el coche. La recuperación del derrape usa tiempo real, evitando cambios según los FPS.
 
@@ -190,6 +192,8 @@ En una convergencia cercana en paralelo, la CPU establece antes su objetivo de c
 - `tests/`: validación de geometría, ancho completo, integración, conducción, récords, barreras y CPU; prueba opcional de Chromium.
 
 ## Validación conocida
+
+En 0.38, la prueba de entrega abre los archivos originales sin instrumentar el juego, bajo `/f1/`. La apertura directa de archivos quedó pendiente: este Chromium administrado la bloqueó con `ERR_BLOCKED_BY_ADMINISTRATOR`. Prepara recursos antiguos en caché, verifica carga de JS/CSS con la misma versión, las 14 pistas, configuración, cuenta regresiva, conducción por teclado, pausa/reinicio/menú y ausencia de errores de JavaScript. Pasan el flujo completo de Chromium, audio real, integración con versiones y comprobaciones focalizadas/estructurales. La batería completa de 76 carreras corresponde a 0.37: esta entrega no cambia la simulación. La URL pública no pudo comprobarse porque el proxy devolvió 403 al conectar con `gomeza2.github.io`; no se afirma que Pages esté desplegado.
 
 En 0.37 pasan 76 carreras de la batería completa (450 vueltas válidas), Chromium y Web Audio real, además de las pruebas estructurales/físicas. La regresión de ciclo de carrera prueba 100 pausas/reanudaciones rápidas, una sola cadena de frames, teclas liberadas, pausa por evento de visibilidad, reinicio/menú y redondeo al minuto. El tráfico de dos coches baja de 12 a 7 frames con contacto: Sunset/Neon/Dusty quedan en cero, pero aparecen siete en Meadow. En parrilla Normal el total sigue en cuatro: Jungle pasa a cero y Coastline de tres a cuatro; Dusty Fácil pasa a cero y Difícil registra dos. Se conserva este registro de regresiones locales y no se declara libre de contactos ni equilibrado contra personas.
 
