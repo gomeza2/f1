@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.31**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.32**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -144,11 +144,12 @@ La interfaz identifica la build como **0.31**, continuando la base 0.17 del comm
 - Pendiente: validar densidad, colores y rendimiento en máquinas lentas.
 
 ### Fase 14 — Coches y animación
-**Base implementada; mejora visual pendiente.**
+**Siluetas y feedback de ruedas/freno implementados en 0.32; comprobados automáticamente y en Chromium.**
 
-- Modelos seleccionables y seis pinturas.
-- Sprites sencillos de carrocería, ruedas, ventanas y luces.
-- Mejorar siluetas, animación, diferencias entre modelos y lectura en movimiento.
+- Cuatro carrocerías propias y seis pinturas: compacto, ruedas expuestas, deportivo afilado y rally ancho. Contorno, cristales, luces y detalles conservan dirección legible.
+- Ruedas delanteras según dirección suavizada; rodadura según avance, luces traseras según freno/freno de mano y marcas de derrape en el eje dibujado de cada modelo.
+- La pintura se conserva durante el destello de choque. Calidad escala sombras/detalles/rodadura y respeta movimiento reducido.
+- Sin cambios de prestaciones, volumen de colisión, controles ni CPU. Pendiente: percepción humana a velocidad real y ampliar opciones cosméticas posteriormente.
 
 ### Fase 15 — Audio
 **Primera capa implementada.**
@@ -681,3 +682,28 @@ La base debe permitir entrar, configurar y correr cómodamente; reconocer coches
 ### Continuación vigente con «siguiente»
 
 Partir de 0.31 y verificar main. Próxima fase: **14**, mejorar lectura y respuesta visual de los coches, conservando los cuatro modelos, pinturas, física y controles. Seguir después audio, pantalla inicial y tabla de puntos; mantener la pasada de CPU/nombres y las pruebas finales como parte del hito de base principal. No marcar completo el balance humano ni volver a desarrollar la bandera que ya está implementada.
+
+
+## Avance — build 0.32 (25 de octubre de 2026)
+
+### Fase 14 — Coches reconocibles y feedback de conducción
+
+- Base limpia y remota verificada en `cf4eebe`.
+- Se reemplaza el dibujo único por perfiles de carrocería propios para los cuatro modelos, conservando las seis pinturas: Balanced compacto, Corner King de ruedas expuestas, Speed Demon afilado y Rally Fox ancho/protegido.
+- Ruedas delanteras giran según la dirección suavizada real; las bandas de rodadura siguen el avance del coche y quedan quietas en reposo. Luces traseras responden al freno y freno de mano de humanos/CPU.
+- Sombras, contorno, cristales, bordes iluminados, faros y rasgos de cada modelo mejoran lectura. El destello de impacto actúa sobre el contorno y conserva el color identificable.
+- Se corrige la posición de las marcas de derrape: eje y separación trasera usan la misma definición visual que las ruedas, en lugar del desplazamiento fijo anterior.
+- Detallados conserva las capas y detalles; Retro simplifica; Rendimiento omite bandas animadas y detalles. La preferencia de movimiento reducido desactiva rodadura decorativa, sin ocultar dirección/freno.
+- El render guarda/restaura su estado y no modifica al coche. Los nuevos estados `braking`/`wheelTravel` solo comunican controles/avance; reinicio y recolocación los limpian. No cambian modelos físicos, colisiones, trazados, récords ni dificultad.
+
+### Comprobaciones
+
+- `tests/validate-car-visuals.mjs`: cuatro modelos × seis pinturas × tres calidades (**72 combinaciones**), color conservado en impacto, dibujo finito dentro del contorno visual establecido, estado de Canvas restaurado y simulación sin mutar.
+- Entradas reales de física: giro/contravolante, luces de freno/freno de mano, avance y ruedas quietas, marcas coincidentes con ambos neumáticos traseros de cada modelo, movimiento reducido y reinicio.
+- Chromium: atlas del render real con cuatro modelos/seis pinturas/tres calidades; capturas revisadas. Dirección/freno de teclado, movimiento reducido, controles de carrera, HUD, pausa, fullscreen, resize, cámaras, bandera/resultados, varios rivales y dos jugadores: superados.
+- Conducción de cuatro modelos, inercia, geometría, identidad, HTML/archivos/diez originales/14 registros, colisiones/recuperación, llegada y barreras (37 contornos/11174 puntos): superados. CPU/tráfico focalizados y dos carreras de parrilla Sunset/Dusty (24 vueltas válidas): superados, con tiempos conservados.
+- No se repite la batería completa de 42 carreras clásicas/20 de parrilla: no se modifica la conducción. Siguen pendientes percepción humana, audio, controles táctiles y rendimiento medido; no se declara resuelto el balance con jugadores.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.32 y verificar main. Próxima fase: **15**, mejorar motor, frenado/derrape, impactos y señales sonoras conservando el interruptor, evitando saturación y respetando pausa/menú. Después pantalla inicial/HUD (16), resultados/puntos (17), pasada de CPU/nombres (10) y pruebas/correcciones (23): **unas cinco entregas estimadas** para el hito de base principal, sujetas a lo que encuentren las pruebas. Mantener físicas, pistas abiertas y render de coches recién comprobado.

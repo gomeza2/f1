@@ -16,12 +16,12 @@ export function loadGame() {
   }
   const sandbox = {
     document: { body:element('body'),getElementById: element, createElement: () => element(Symbol()), querySelectorAll: () => [], addEventListener() {} },
-    window: { addEventListener() {} }, localStorage: { getItem: () => null, setItem() {} },
+    window: { addEventListener() {}, matchMedia:()=>({matches:false}) }, localStorage: { getItem: () => null, setItem() {} },
     performance: { now: () => 0 }, requestAnimationFrame: () => 1, cancelAnimationFrame() {}, console,
   };
   vm.createContext(sandbox);
   const source = readFileSync(new URL('../../script.js', import.meta.url), 'utf8');
-  const expose = `globalThis.testGame={start,physics,placeCar,setupCar,aiTraffic,trafficApproach,AI_DRIVERS,AI_PERSONALITIES,driverFor,raceClassification,awardPoints,standingsText,finishRace,raceFinishState,updateFinishFeedback,togglePause,CAR_MODELS,WORLD_SPEED_SCALE,vehicleHandling,updateSteeringInertia,raceCamera,toggleCamera,overviewZoom,usesSplitScreen,lapRecordKey,saveBestLap,currentLapTime,updateTelemetry,
+  const expose = `globalThis.testGame={start,physics,placeCar,setupCar,aiTraffic,trafficApproach,AI_DRIVERS,AI_PERSONALITIES,driverFor,raceClassification,awardPoints,standingsText,finishRace,raceFinishState,updateFinishFeedback,togglePause,CAR_MODELS,CAR_VISUALS,carVisualState,drawCarBody,drawCar,get motionPreference(){return motionPreference},get skidMarks(){return skidMarks},WORLD_SPEED_SCALE,vehicleHandling,updateSteeringInertia,raceCamera,toggleCamera,overviewZoom,usesSplitScreen,lapRecordKey,saveBestLap,currentLapTime,updateTelemetry,
     get championship(){return championship},get bestLapRecords(){return bestLapRecords},sampleAt,nearestOnTrack,curvatureAt,resolveCollisions,guardrailActive,barrierContoursForTrack,resolveBarrierContact,projectToSegment,closestSegments,
     get decorations(){return decorations},decorationsForTrack,SCENERY_THEMES,TRACK_SCENERY,SCENERY_CLEARANCE,drawSceneryObject,get physicalBarriers(){return physicalBarriers},get guardrailPaths(){return guardrailPaths},
     get checkpoints(){return checkpoints},get tracks(){return tracks},get cars(){return cars},get track(){return track},

@@ -546,12 +546,12 @@ function setupCar(player,isAI=false){
  const paint=CAR_PAINTS[$('carColor')?.value||'pink']||CAR_PAINTS.pink;
  const personality=isAI?['racer','attacker','precise'][player-1]||'racer':null;
  return {player,isAI,model,personality,color:isAI?AI_PERSONALITIES[personality].color:player===0?paint.hex:'#39e8e8',
-  x:0,y:0,heading:0,yawRate:0,speed:0,steer:0,drift:0,handbrake:false,done:false,finishTime:null,newBestLap:false,
+  x:0,y:0,heading:0,yawRate:0,speed:0,steer:0,drift:0,handbrake:false,braking:false,wheelTravel:0,done:false,finishTime:null,newBestLap:false,
   progress:0,previousProgress:0,lap:0,lapTimes:[],lapStartTime:0,raceProgress:0,offroad:0,roadOffset:0,particles:[],flash:0};
 }
 function placeCar(car,progress,lateral){
  const p=sampleAt(progress),nx=-Math.sin(p.angle),ny=Math.cos(p.angle);
- car.x=p.x+nx*lateral;car.y=p.y+ny*lateral;car.heading=p.angle;car.yawRate=0;
+ car.x=p.x+nx*lateral;car.y=p.y+ny*lateral;car.heading=p.angle;car.yawRate=0;car.braking=false;car.wheelTravel=0;
  car.progress=wrapDistance(progress);car.previousProgress=car.progress;car.raceProgress=car.progress;
  car.nextCheckpoint=0;car.checkpointPasses=0;car.lastCheckpointTime=0;car.aiManeuver=null;car.aiTrafficStates={};car.aiLane=lateral;
 }
@@ -614,7 +614,7 @@ function updateProgress(car,loc,fromX,fromY){
  }
  car.previousProgress=old;car.progress=newP;car.raceProgress=car.lap*track.length+newP;
  car.offroad=Math.abs(loc.offset);car.roadOffset=loc.offset;car.nearest=loc;
- if(car.lap>=LAPS_TO_WIN&&!car.done){car.done=true;car.finishTime=elapsed;car.speed=0;}
+ if(car.lap>=LAPS_TO_WIN&&!car.done){car.done=true;car.finishTime=elapsed;car.speed=0;car.braking=false;}
 }
 // Difficulty changes driving decisions, never the vehicle specifications.
 const AI_DRIVERS={
@@ -829,7 +829,7 @@ function physics(car,i,dt){
   car.steer+=(steering-car.steer)*Math.min(1,dt*(hand?13:10));
   controls={throttle:keys[k.up]?1:0,brake:keys[k.down]?1:0,hand};
  }
- const {throttle,brake,hand}=controls;car.handbrake=hand;
+ const {throttle,brake,hand}=controls;car.handbrake=hand;car.braking=brake>0||hand;
  car.speed+=throttle*model.acceleration*dt;
  car.speed-=brake*(hand?model.braking*1.27:model.braking)*dt;
  car.speed-=(throttle?2.6:20)*dt;
@@ -843,6 +843,7 @@ function physics(car,i,dt){
  car.drift=clamp(Math.max(car.drift*Math.exp(-4.5*dt),tooFast/160),0,1);
  const oldProgress=car.progress,previousX=car.x,previousY=car.y;
  const move=car.speed*WORLD_SPEED_SCALE*dt;
+ car.wheelTravel=(car.wheelTravel+move)%12;
  car.x+=Math.cos(car.heading)*move;car.y+=Math.sin(car.heading)*move;
  let after=nearestOnTrack(car.x,car.y);
  // El pasto tiene mucha resistencia: penaliza fuerte, pero permite recuperar el auto.
@@ -866,8 +867,8 @@ function physics(car,i,dt){
  if(tooFast>12&&upcoming.distance<130)car.speed=Math.max(30,car.speed-tooFast*dt*.045);
  car.skidTimer=Math.max(0,(car.skidTimer||0)-dt);
  const skidding=car.speed>58&&(car.handbrake||car.drift>.43);
- if(skidding&&car.skidTimer<=0){const rearX=car.x-Math.cos(car.heading)*12,rearY=car.y-Math.sin(car.heading)*12;
-  for(const wheelSide of [-1,1]){const wx=rearX-Math.sin(car.heading)*wheelSide*5,wy=rearY+Math.cos(car.heading)*wheelSide*5;skidMarks.push({x:wx,y:wy,angle:car.heading,life:10,maxLife:10});}
+ if(skidding&&car.skidTimer<=0){const wheels=(CAR_VISUALS[car.model]||CAR_VISUALS.balanced),rearX=car.x+Math.cos(car.heading)*wheels.rearAxle,rearY=car.y+Math.sin(car.heading)*wheels.rearAxle;
+  for(const wheelSide of [-1,1]){const wx=rearX-Math.sin(car.heading)*wheelSide*wheels.halfTrack,wy=rearY+Math.cos(car.heading)*wheelSide*wheels.halfTrack;skidMarks.push({x:wx,y:wy,angle:car.heading,life:10,maxLife:10});}
   car.skidTimer=.045;if(skidMarks.length>1400)skidMarks.splice(0,skidMarks.length-1400);
  }
  if((skidding||roadEdge>3)&&car.speed>38&&Math.random()<dt*(roadEdge>3?34:20)&&terrainParticles.length<360){
@@ -1003,22 +1004,67 @@ function drawGroundEffects(context){
  for(const mark of skidMarks){context.save();context.globalAlpha=Math.min(.46,mark.life/mark.maxLife*.46);context.translate(mark.x,mark.y);context.rotate(mark.angle);context.fillStyle='#101419';context.fillRect(-5,-1.35,10,2.7);context.restore();}
  for(const p of terrainParticles){context.globalAlpha=Math.max(0,p.life/p.max)*.64;context.fillStyle=p.color;context.beginPath();context.arc(p.x,p.y,p.size*(.6+.4*p.life/p.max),0,Math.PI*2);context.fill();}context.globalAlpha=1;
 }
-function drawCar(context,car){
- context.save();context.translate(car.x,car.y);context.rotate(car.heading);
- if(car.offroad>39){context.fillStyle='#d6bf94';context.globalAlpha=.4;context.fillRect(-16,-9,32,18);context.globalAlpha=1;}
- if(graphics==='high'){context.fillStyle='#00000055';context.fillRect(-17,-9,36,20);}
- context.fillStyle='#151923';context.fillRect(-9,-10,7,5);context.fillRect(5,-10,7,5);context.fillRect(-9,5,7,5);context.fillRect(5,5,7,5);
- context.fillStyle=car.flash>0?'#ffffff':car.color;context.fillRect(-15,-7,30,14);
- context.fillStyle='#242b3a';context.fillRect(-5,-5,12,10);context.fillStyle='#baf4ff';context.fillRect(2,-4,6,8);
- context.fillStyle='#fff4ad';context.fillRect(11,-5,3,3);context.fillRect(11,2,3,3);
- context.fillStyle='#a9344e';context.fillRect(-15,-5,3,3);context.fillRect(-15,2,3,3);context.fillStyle='#111725';context.fillRect(-12,-11,24,2);
- context.restore();
- context.fillStyle='#10151ddd';context.fillRect(car.x-19,car.y-27,38,11);
- context.fillStyle=car.color;context.font='bold 9px monospace';context.textAlign='center';context.fillText(carName(car),car.x,car.y-19);
- for(const smoke of car.particles){
-  context.globalAlpha=clamp(smoke.life/smoke.max,0,1)*.42;context.fillStyle='#e1e2df';context.beginPath();context.arc(car.x-smoke.dx,car.y+smoke.dy,smoke.size,0,Math.PI*2);context.fill();
+// Visual profiles stay inside the existing 30 x 20 car footprint; no handling changes.
+const CAR_VISUALS={
+ balanced:{rearAxle:-8,frontAxle:8,halfTrack:7.5,steerAngle:.36,body:[[-15,-5],[-13,-7],[10,-7],[15,-4],[15,4],[10,7],[-13,7],[-15,5]],roof:[[-6,-5],[3,-5],[7,-3],[7,3],[3,5],[-6,5]]},
+ corner:{rearAxle:-8.5,frontAxle:8.5,halfTrack:7.5,steerAngle:.4,body:[[-13,-4],[-4,-5],[2,-3],[14,-2],[15,0],[14,2],[2,3],[-4,5],[-13,4]],roof:[[-7,-3],[-1,-3],[2,0],[-1,3],[-7,3]]},
+ speed:{rearAxle:-9,frontAxle:9,halfTrack:7.5,steerAngle:.32,body:[[-15,-5],[-11,-7],[6,-6],[15,-3],[15,3],[6,6],[-11,7],[-15,5]],roof:[[-9,-4],[0,-4],[4,-2],[4,2],[0,4],[-9,4]]},
+ rally:{rearAxle:-7.5,frontAxle:7,halfTrack:7.5,steerAngle:.38,body:[[-14,-6],[-12,-8],[10,-8],[15,-5],[15,5],[10,8],[-12,8],[-14,6]],roof:[[-7,-5],[4,-5],[7,-3],[7,3],[4,5],[-7,5]]}
+};
+const motionPreference=typeof window.matchMedia==='function'?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
+function carVisualState(car){
+ const profile=CAR_VISUALS[car.model]||CAR_VISUALS.balanced;
+ return {profile,wheelAngle:clamp(car.steer||0,-1,1)*profile.steerAngle,rolling:graphics!=='lite'&&!motionPreference?.matches,
+  tread:(car.wheelTravel||0)%4,braking:!!car.braking&&!car.done};
+}
+function drawCarBody(context,car){
+ const visual=carVisualState(car),v=visual.profile,detail=graphics==='high';
+ const poly=(points,color)=>{context.beginPath();points.forEach(([x,y],i)=>i?context.lineTo(x,y):context.moveTo(x,y));context.closePath();context.fillStyle=color;context.fill();};
+ const rect=(x,y,w,h,color)=>{context.fillStyle=color;context.fillRect(x,y,w,h);};
+ if(detail){rect(-14,-6,30,15,'#050b1740');rect(-12,-4,29,14,'#050b1740');}
+ for(const side of [-1,1])for(const front of [false,true]){
+  context.save();context.translate(front?v.frontAxle:v.rearAxle,side*v.halfTrack);if(front)context.rotate(visual.wheelAngle);
+  rect(-3,-1.4,6,2.8,'#090f19');
+  if(graphics!=='lite'){
+   rect(-2.4,-.8,4.8,1.6,'#485361');
+   if(visual.rolling){context.save();context.beginPath();context.rect(-2.6,-1,5.2,2);context.clip();for(let x=-6+visual.tread;x<3;x+=4)rect(x,-1,.9,2,'#a9b6b9');context.restore();}
+  }
+  context.restore();
  }
- context.globalAlpha=1;
+ poly(v.body,car.color);context.strokeStyle=car.flash>0?'#f1ffed':'#111c2c';context.lineWidth=car.flash>0?1.4:1;context.stroke();
+ // A lit leading edge and shaded sill give depth without hiding the paint.
+ if(graphics!=='lite'){rect(-11,-6,18,.8,'#ffffff52');rect(-12,5,22,1,'#07172966');}
+ poly(v.roof,'#172c3e');
+ if(car.model==='corner'){
+  rect(-13,-8,2,16,'#182b3b');rect(-12.5,-7,1,14,car.color);
+  rect(11,-7.5,1.5,15,car.color);rect(-6,-2.1,4,4.2,'#619cac');rect(-3,-1,3,2,'#b2e7de');
+  rect(4,-1,6,2,'#ffffffa0');
+ }else if(car.model==='speed'){
+  poly([[0,-3.3],[3,-1.7],[3,1.7],[0,3.3]],'#a3e5e9');
+  rect(-14,-7,2,14,'#172b3c');rect(5,-1.8,8,1,'#ebf4d4');rect(5,.8,8,1,'#ebf4d4');
+  if(detail){rect(-8,-3,3,.65,'#56889c');rect(-8,2.3,3,.65,'#56889c');}
+ }else{
+  poly([[3,-4],[6,-2.7],[6,2.7],[3,4]],'#b0edf0');rect(-5,-3.6,2,7.2,'#6299ad');
+  if(car.model==='rally'){
+   rect(-1,-3.8,2.6,7.6,car.color);rect(-3,-5.5,.8,11,'#c6d6cd');rect(1,-5.5,.8,11,'#c6d6cd');
+   rect(13,-5,1.5,10,'#172b3a');
+   if(detail){rect(11,-3.6,2,1.5,'#fff4c4');rect(11,2.1,2,1.5,'#fff4c4');rect(-13,-8,1.3,2,'#1b2934');rect(-13,6,1.3,2,'#1b2934');}
+  }else if(detail){rect(-1,-3.3,3,6.6,car.color);rect(-10,-4.5,2,.7,'#deeee47a');}
+ }
+ // Warm front lamps and red rear lamps keep heading readable in every paint.
+ rect(11,-4.7,2.5,1.8,'#fff0b9');rect(11,2.9,2.5,1.8,'#fff0b9');
+ const rearLight=visual.braking?'#ff685c':'#993747';
+ rect(-14,-4.8,2,2.2,rearLight);rect(-14,2.6,2,2.2,rearLight);
+ if(visual.braking&&detail){rect(-15,-5.3,1,3.2,'#ff75634a');rect(-15,2.1,1,3.2,'#ff75634a');}
+ if(car.offroad>39){const dirt=track.surface==='ice'?'#d6ecee99':track.surface==='grass'?'#9ca47699':'#bda27b99';rect(-12,-6.5,3,1.2,dirt);rect(-12,5.3,3,1.2,dirt);if(detail)rect(-9,-2,1,2,dirt);}
+}
+function drawCar(context,car){
+ context.save();context.save();context.translate(car.x,car.y);context.rotate(car.heading);drawCarBody(context,car);context.restore();
+ const name=carName(car),labelWidth=clamp(name.length*5.5+8,28,72);
+ context.fillStyle='#10151ddd';context.fillRect(car.x-labelWidth/2,car.y-27,labelWidth,11);
+ context.fillStyle=car.color;context.font='bold 9px monospace';context.textAlign='center';context.fillText(name,car.x,car.y-19);
+ for(const smoke of car.particles){context.globalAlpha=clamp(smoke.life/smoke.max,0,1)*.42;context.fillStyle='#e1e2df';context.beginPath();context.arc(car.x-smoke.dx,car.y+smoke.dy,smoke.size,0,Math.PI*2);context.fill();}
+ context.restore();
 }
 function drawMiniMap(){
  const mini=$('miniMap');if(!mini)return;const m=mini.getContext('2d'),w=mini.width,h=mini.height;
