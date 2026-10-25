@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.40**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.41**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -17,7 +17,7 @@ El usuario reporta que se acelera demasiado rápido, puede completar curvas sin 
 | Orden | Fases del plan | Entrega y criterio de aceptación | Estado |
 |---|---|---|---|
 | 1 | 7, 8, 10, 23 | Aceleración progresiva, peso/inercia y radio que exijan frenar en curvas cerradas, recuperación justa. CPU con las mismas reglas; récords separados si cambia la física. Comprobar curvas rápidas/técnicas, coches y superficies con el usuario. | Primera revisión 0.40 implementada; sensación humana pendiente. |
-| 2 | 6, 4, 12, 13 | Pianos/asfalto → escapatoria de grava/tierra frenante → pasto, definidas por sector/lado. Dibujo, agarre, resistencia y partículas usan el mismo material. Respetar barreras automáticas/elegidas y no dibujar grava sobre otro ramal ni barreras invisibles. Recuperarse acelerando sin teletransporte ni velocidad generada. | Siguiente entrega. |
+| 2 | 6, 4, 12, 13 | Pianos/asfalto → escapatoria de grava/tierra frenante → pasto, definidas por sector/lado. Dibujo, agarre, resistencia y partículas usan el mismo material. Respetar barreras automáticas/elegidas y no dibujar grava sobre otro ramal ni barreras invisibles. Recuperarse acelerando sin teletransporte ni velocidad generada. | Implementado 0.41; probado automáticamente/en Chromium; valoración humana pendiente. |
 | 3 | 15 | Sustituir timbre actual por motor convincente: pulsos/armónicos, carga/acelerador y régimen, transiciones/cambios suaves, freno/derrape/grava con mezcla moderada. Recursos propios o con licencia verificada. Escucha humana obligatoria antes de aprobar calidad; conservar silencio en pausa/OFF/menú. | Pendiente; el audio actual no se considera aceptado por el usuario. |
 | 4 | 17, 2, 16, 22 | Mejorar dos jugadores y ampliar a 3/4 humanos: selector, entradas independientes/configurables, cámaras legibles, HUD/tiempos/CP por persona, nombres/colores, contactos, clasificación y puntos de todos. Controles sin solaparse con R/C/Esc; prever mandos para evitar depender de muchas teclas simultáneas. Probar teclado real/mandos, pausa/reinicio y modos 1/2/3/4. | Pendiente; hoy solo 2 humanos. |
 | 5 | 23, 24 | Revisión final en pistas, dificultades, coches, superficies/perfiles y cantidades de humanos; cronometraje humano 25–45 s donde corresponda, salidas/recuperación, rendimiento medido y publicación verificable. Corregir lo hallado antes de declarar base decente. | Pendiente; validación continua en cada bloque. |
@@ -75,14 +75,15 @@ Editor, desbloqueos y desafíos extra quedan fuera de este hito. No ampliar más
 - Sunset (0.39): silueta propia, comparada sin escala/giro/reflejo contra la anterior y las otras 13; no se acepta una variante que se parecía a Champion.
 - Pendiente: diferenciar los otros siete originales, sin convertir la variedad en cambios de color ni perder las escapatorias; evaluación humana de ritmo y diversión.
 
-### Fase 6 — Superficies mixtas
-**Primera capa implementada y corregida en build 0.16.**
+### Fase 6 — Superficies mixtas y escapatorias
+**Base 0.16 y grava frenante 0.41 implementadas; materiales compartidos y 70 perfiles comprobados. Valoración humana pendiente.**
 
 - Superficies de asfalto, tierra, pasto, hielo y volcánico.
 - Los sectores de tierra de circuitos mixtos aplican una adherencia específica.
 - Agarres, partículas y minimapa usan el material del sector. La etiqueta de terreno se retiró del HUD en 0.26 a pedido del usuario.
 - El minimapa indica los segmentos visuales de tierra.
-- Pendiente: probar el agarre y la salida de pista jugando.
+- 0.41: grava en exteriores seleccionados de ocho pistas pavimentadas/mixtas/costeras, seguida de terreno nativo. Dibujo, agarre, resistencia, polvo/huellas y ruido de terreno usan una definición común por punto. No cubre asfalto de otro ramal ni sectores con valla activa.
+- Pendiente: probar el agarre, frenado, recuperación y lectura con conducción humana.
 
 ### Fase 7 — Derrape y respuesta física
 **Reabierta por feedback: aceleración progresiva y límite lateral implementados en 0.40; sensación humana y refinamiento de derrape pendientes.**
@@ -941,3 +942,32 @@ Partir de 0.39 y verificar main. Próxima prioridad: **fase 23, revisión final 
 ### Continuación vigente con «siguiente»
 
 Partir de 0.40 y verificar main. Revisar primero el feedback humano de la nueva conducción. Siguiente bloque de desarrollo: **fases 6/4**, escapatorias de grava/tierra frenante seguidas de pasto, materiales compartidos entre dibujo/física/partículas y respeto de opciones de barreras. Después **15 motor**, **17/2/16 local 2–4 humanos**, y **23/24 revisión final**. Mantener el plan de cinco bloques como guía, sin prometer un número fijo de entregas ni declarar la base aceptada solo por las pruebas automáticas.
+
+
+## Avance — build 0.41 (25 de octubre de 2026)
+
+### Bloque 2 — Fases 6/4: escapatorias de grava y terreno real
+
+- Main verificado en `d686bdc`, sin cambios locales ajenos. Se conserva la conducción progresiva, Sunset largo y las opciones existentes.
+- Hasta seis curvas bien separadas por pista definen el exterior y extensión de las trampas. Se incorporan en ocho circuitos con pavimento; se respeta tierra/hielo/volcánico/pasto en los demás. Las transiciones se estrechan al terminar cada zona.
+- Material común por coordenadas del mundo (`terrainAt`/`TERRAIN_MATERIALS`): asfalto/piano → grava → terreno nativo. La física fuera de pista ya consulta el material bajo el coche, en lugar de mantener agarre de asfalto por su progreso. CPU y humanos comparten la misma aplicación.
+- Grava: agarre .60, resistencia propia dependiente de velocidad, textura granular determinista, polvo del material del eje trasero y huellas marrones desde cada rueda. Permite avanzar para recuperar el coche, sin añadir velocidad a uno detenido ni teletransportar la CPU.
+- El borde pavimentado se ajusta a la transición física del piano (48 unidades de radio exterior; asfalto de conducción 42). No se mueve la geometría de vallas/neumáticos.
+- Vallas completas: sin trampas. Perfil abierto: zonas completas. Mitad/curvas/automático: se excluyen los tramos con valla activa y se conserva solo la parte accesible. La pista más próxima impide pintar material sobre otro ramal.
+- Raster de dos unidades, índice espacial de segmentos y caché por pista/perfil, reutilizado por el fondo estático. Mismo material en los centros de celdas; tolerancia visual de borde de una celda. No se declara una medición de FPS en dispositivos.
+- Física 3 y récords con `:p3`; se conservan las claves de física 2 y todos los trazados anteriores. No se cambian prestaciones de motor, recorrido, dificultad ni opciones.
+
+### Comprobaciones y errores encontrados
+
+- `validate-runoff.mjs`: 14 pistas × cinco perfiles (70), 37.082 sondeos independientes del mundo y 149.324 celdas abiertas. Concordancia muestreada de raster/material, exclusión de asfalto/ramales/vallas activas, límites/caché, transición asfalto-piano/grava/pasto y colores del render: superados.
+- Frenado sin entrada durante 0,25 s desde 160: asfalto 154,1; grava 110,0; pasto a la misma profundidad 136,6. La primera prueba comparaba grava con terreno muy alejado, donde también actúa el frenado de contención: se corrigió el caso para aislar material a igual distancia del asfalto, sin debilitar esa contención.
+- Cuatro modelos: reposo sin velocidad generada y recuperación con acelerador. Dos humanos: física igual. CPU: recuperación física desde grava sin salto a la pista. Huellas de grava con color del material: superado.
+- Chromium completo: grava visible frena al coche real; vallas completas muestran vallas y ninguna trampa. Capturas de pista completa, coche sobre grava y perfil cerrado revisadas. Controles/cámaras/minimapa/fullscreen/resize, pausa/reinicio, 14 pistas, CPU/parrilla, resultados/puntos, dos humanos, móvil y calidades conservados.
+- Prueba de entrega sin modificar el juego: superada. La prueba de audio usaba 700 ms fijos para activar derrape, insuficientes tras la aceleración progresiva de 0.40; se corrige para esperar velocidad real de 90 antes del freno de mano. No se cambia el motor para hacer pasar esa prueba ni se declara aceptada su calidad.
+- Batería completa: 42 carreras clásicas/126 vueltas, 20 de parrilla/240 vueltas y 14 de tráfico/84 vueltas: **76 carreras y 450 vueltas válidas**. Ritmo libre y orden de dificultades conservados, porque la conducción sobre pavimento no cambia. En la referencia de dos coches no aparecen contactos; parrilla conserva los 18 frames de Normal y uno en Sunset Fácil registrados en 0.40, todavía pendientes de pulir.
+- Sintaxis, geometría/identidad, HTML/archivos/diez originales/14 registros/70 perfiles, conducción/inercia, colisiones, ciclo de carrera, menú/llegada/resultados, coches y grafo de audio: superados. Barreras: 37 contornos/11733 puntos. Escenarios: 987 colocaciones. Audio real de Chromium tras corregir el momento de la prueba: superado técnicamente; la sustitución del motor sigue pendiente de calidad humana.
+- Pendientes: valoración humana del frenado/recuperación y balance al salir de pista, contactos en grupo ya documentados, dispositivos físicos y medición de rendimiento. El audio de motor y el modo 3–4 humanos continúan pendientes.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.41 y verificar main. Próximo bloque: **fase 15, sustituir el sonido de motor**, con timbre/régimen/carga más convincentes y escucha humana; conservar señales útiles y silencio en pausa/OFF/menú. Después **17/2/16, mejorar dos jugadores y ampliar a 3/4**, y **23/24, revisión final**. La conducción y la grava están implementadas/comprobadas pero siguen abiertas a la prueba humana. No reiniciar el proyecto ni repetirlas como ausentes; el plan de base conserva esos cinco bloques y tres de ellos todavía esperan desarrollo/cierre.

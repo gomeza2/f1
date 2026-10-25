@@ -79,6 +79,7 @@ node tests/validate-rival-awareness.mjs
 node tests/validate-race-lifecycle.mjs
 node tests/validate-driving.mjs
 node tests/validate-driving-demand.mjs
+node tests/validate-runoff.mjs
 node tests/validate-steering-inertia.mjs
 node tests/validate-barriers.mjs
 ```
@@ -89,19 +90,29 @@ La prueba de CPU comprueba límites físicos, desplazamiento y coste del freno d
 
 Pruebas opcionales de navegador: `node tests/browser-smoke.cjs`, `node tests/browser-audio.cjs` y `node tests/browser-release.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
-## Conducción — build 0.40
+## Conducción — build 0.41
 
 La revisión de 0.40 responde a la conducción demasiado fácil reportada por el usuario. La aceleración cae progresivamente con la velocidad: Balanced alcanza 100 en unos 1,59 s y el 95 % de su máxima en 4,40 s en la prueba de aceleración. Los otros modelos conservan su identidad y velocidad máxima. La escala de movimiento sigue en 0,84.
 
 El giro está limitado por una fuerza lateral finita compartida: a alta velocidad crece el radio mínimo y una curva cerrada exige bajar la velocidad. Frenar devuelve una trayectoria más cerrada. Se conserva dirección recuperable, inercia de giro y freno de mano con coste de velocidad; la sensación final del derrape sigue pendiente de validación humana. La CPU construye su plan de frenado usando el mismo modelo; no recibe potencia, agarre ni dirección extra.
 
-Los récords de esta física usan sufijo `:p2` (por ejemplo, `SUNSET CIRCUIT@3:p2`). Se conservan los anteriores. No se comparan como récord vigente tiempos logrados con la física que permitía pasar curvas mucho más rápido.
+La física de 0.40 usa sufijo `:p2`; desde 0.41 se usa `:p3` (por ejemplo, `SUNSET CIRCUIT@3:p3`) por el nuevo agarre/resistencia de las escapatorias. Se conservan ambas referencias anteriores. No se comparan como récord vigente tiempos logrados con la física que permitía pasar curvas mucho más rápido.
 
 ### Trabajo pendiente para la base
 
 El plan vigente tiene cinco bloques contando esta revisión: conducción; grava/pasto/barreras; motor y sonido; modo local de 2–4 jugadores; revisión final. El feedback reemplaza la estimación anterior de una sola entrega restante. Cada bloque puede necesitar varias iteraciones.
 
-La próxima entrega debe añadir escapatorias de grava que frenen y levanten polvo antes del pasto, con superficies visibles/físicas compartidas y barreras según la opción elegida. Después se rehace el sonido de motor y se amplía el modo local: hoy siguen funcionando **dos humanos**, y **tres/cuatro todavía no están implementados**. El editor y desbloqueos quedan fuera de este hito.
+Las escapatorias de grava se implementan en 0.41, con validación humana pendiente. **Lo próximo es rehacer el motor**, después ampliar el modo local y cerrar la revisión final. Hoy siguen funcionando **dos humanos**, y **tres/cuatro todavía no están implementados**. El editor y desbloqueos quedan fuera de este hito.
+
+## Grava, pasto y barreras — build 0.41
+
+Ocho circuitos con sectores pavimentados incorporan escapatorias en el exterior de hasta seis curvas seleccionadas. La secuencia es asfalto/piano → grava frenante → terreno nativo (normalmente pasto). La grava tiene menos agarre, mayor resistencia, textura propia, polvo beige y huellas marrones; salir acelerando sigue siendo posible. Los caminos de tierra, hielo, volcánicos y pasto conservan su terreno nativo.
+
+Una misma consulta del material en coordenadas del mundo decide el dibujo de grava, la adherencia, la resistencia, las partículas y la capa sonora del terreno. Las ruedas generan huellas según su contacto; el polvo toma el material del eje trasero. La salida de pista ya no conserva el agarre del asfalto por consultar solo el progreso del circuito.
+
+**Según circuito** respeta el perfil predeterminado; **Sin barreras** expone todas las zonas, **Vallas completas** las desactiva y los perfiles parciales conservan únicamente partes abiertas. La geometría física de vallas/neumáticos no se desplaza. El borde dibujado del pavimento se ajusta al piano/transición física, y los otros ramales quedan protegidos por la consulta de pista más cercana. El raster de grava usa celdas de dos unidades, caché por trazado/perfil e índice espacial; el fondo se reutiliza durante la carrera.
+
+En una prueba de 0,25 s desde 160, el coche terminó a 154,1 en asfalto, 110,0 en grava y 136,6 en pasto a la misma distancia de salida. La recuperación lejana conserva su frenado adicional y no se confunde con esta comparación de materiales. Son medidas de simulación, pendientes de conducción humana.
 
 ## Interfaz — build 0.26
 
@@ -204,6 +215,8 @@ En una convergencia cercana en paralelo, la CPU establece antes su objetivo de c
 - `tests/`: validación de geometría, ancho completo, integración, conducción, récords, barreras y CPU; prueba opcional de Chromium.
 
 ## Validación conocida
+
+En 0.41, `validate-runoff.mjs` recorre 14 pistas y 70 perfiles, compara 37.082 puntos independientes del mundo y verifica 149.324 celdas de grava en perfiles abiertos. Comprueba dibujo/material, exclusión del asfalto y barreras activas, caché, secuencia pavimento/grava/pasto, frenado distinto, recuperación de cuatro modelos desde reposo sin generar velocidad, dos humanos con la misma física y CPU que sale de una trampa sin teletransporte. Chromium comprueba frenado sobre grava visible y ausencia con vallas completas; capturas revisadas. Se repiten 76 carreras/450 vueltas con tiempos sobre pavimento conservados y los contactos en grupo ya registrados. Récords de física anterior conservados. El motor convincente sigue pendiente y dos jugadores sigue siendo el límite local actual.
 
 En 0.40, la nueva prueba de conducción mide aceleración progresiva, diferencia real de trayectoria entre 100/máxima y recuperación de radio al frenar, límite de fuerza lateral en cuatro superficies y separación de récords. Pasan conducción, inercia, integración, geometría, colisiones y pruebas de navegador/entrega. Se repiten carreras completas con la nueva física; las referencias de contacto previas quedan asociadas a su versión. El criterio nuevo comprueba finalización y evita contactos sostenidos (más de 1 s acumulado por carrera de parrilla o 0,5 s con dos coches), sin afirmar que no haya roces. La batería completa suma 76 carreras y 450 vueltas válidas: cero contactos en el tráfico de dos coches; 18 frames acumulados en parrillas Normal y uno en Sunset Fácil. Siguen pendientes los contactos en grupo y la valoración humana. Grava, motor nuevo y 3–4 jugadores siguen pendientes.
 

@@ -17,7 +17,7 @@ assert.ok(game.audioChannels[0].gain.gain.value>0);assert.equal(game.audioChanne
 const signatures=new Set();
 for(const model of Object.keys(game.CAR_MODELS)){game.cars[0].model=model;game.updateAudio();const channel=game.audioChannels[0];signatures.add(channel.engine.type+channel.engine.frequency.value);}
 assert.equal(signatures.size,4,'Engine timbre/regime did not distinguish models');
-const car=game.cars[0];car.handbrake=true;car.braking=true;car.drift=.8;car.roadOffset=65;game.updateAudio();
+const car=game.cars[0];game.placeCar(car,150,65);car.speed=100;car.handbrake=true;car.braking=true;car.drift=.8;car.roadOffset=65;game.updateAudio();
 assert.ok(game.audioChannels[0].skid.gain.gain.value>0);assert.ok(game.audioChannels[0].terrain.gain.gain.value>0);
 game.playRaceCue('checkpoint',game.cars[1]);assert.equal(game.audioVoices.size,0,'Distant CPU checkpoint was audible');
 game.playRaceCue('checkpoint',car);assert.equal(game.audioVoices.size,1);context.advance(1);assert.equal(game.audioVoices.size,0);

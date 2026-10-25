@@ -112,7 +112,7 @@ for(const stage of stages){
  }
  assert.ok(game.cars.every(car=>car.lap===3),`${game.track.name}: traffic prevented a complete race`);
  if(game.PHYSICS_VERSION===1&&[0,1,2].includes(stage))assert.equal(contacts,0,`${game.track.name}: reference two-car overlap contacts returned`);
- if(game.PHYSICS_VERSION===2)assert.ok(contacts<=15,`${game.track.name}: sustained contact in new-physics two-car race`);
+ if(game.PHYSICS_VERSION>=2)assert.ok(contacts<=15,`${game.track.name}: sustained contact in new-physics two-car race`);
  totalContacts+=contacts;
  console.log(`PASS: ${game.track.name}, two finishers, max offset ${maxOffset.toFixed(1)}, contact frames ${contacts}.`);
 }

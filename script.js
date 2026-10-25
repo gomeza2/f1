@@ -23,7 +23,7 @@ const wrapAngle=a=>Math.atan2(Math.sin(a),Math.cos(a));
 const pointDistance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const LAPS_TO_WIN=3;
 const ROAD_EDGE=42, WALL_EDGE=66;
-const PHYSICS_VERSION=2;
+const PHYSICS_VERSION=3;
 const CAR_MODELS={
  balanced:{name:'BALANCED',maxSpeed:232,acceleration:110,braking:230,steering:1,grip:1,grass:1,description:'Equilibrado para aprender y competir.'},
  corner:{name:'CORNER KING',maxSpeed:218,acceleration:105,braking:255,steering:1.19,grip:1.15,grass:.86,description:'Más agarre y frenado; velocidad punta menor.'},
@@ -55,7 +55,18 @@ function makeTrack(def){
 }
 const tracks=trackDefs.map(makeTrack);
 const TRACK_SURFACES=['asphalt','asphalt','dirt','asphalt','ice','grass','volcanic','asphalt','mixed','asphalt','coastal','dirt','grass','mixed'];
-const SURFACE_GRIP={asphalt:1,dirt:.84,grass:.79,ice:.68,volcanic:.87,coastal:1};
+const TERRAIN_MATERIALS={
+ asphalt:{grip:1,drag:0,edgeDrag:0,particle:'#aeb6c5',life:.46,size:2},
+ dirt:{grip:.84,drag:54,edgeDrag:2.8,particle:'#ad8053',life:.62,size:3},
+ grass:{grip:.79,drag:34,edgeDrag:2.2,particle:'#6e9958',life:.46,size:2},
+ ice:{grip:.68,drag:58,edgeDrag:4.6,particle:'#d9f1f6',life:.46,size:2},
+ volcanic:{grip:.87,drag:54,edgeDrag:2.8,particle:'#cf603c',life:.58,size:3},
+ coastal:{grip:1,drag:54,edgeDrag:2.8,particle:'#c9ad7a',life:.58,size:3},
+ gravel:{mark:'#816c50',grip:.60,drag:130,edgeDrag:0,speedDrag:.35,particle:'#c4a47b',life:.62,size:3,palette:['#a48c6d','#b59b77','#c3ab86','#d1bb96']}
+};
+const SURFACE_GRIP=Object.fromEntries(Object.entries(TERRAIN_MATERIALS).map(([name,material])=>[name,material.grip]));
+const ROAD_SHOULDER=48,GRAVEL_WIDTH=38,RUNOFF_CELL=2;
+
 const TRACK_BARRIERS=['open','half','open','corners','corners','open','corners','half','open','corners','open','open','open','half'];
 tracks.forEach((item,index)=>{item.surface=TRACK_SURFACES[index]||'asphalt';item.defaultBarriers=TRACK_BARRIERS[index]||'full';item.dirtRanges=item.surface==='mixed'?[[item.length*.24,item.length*.33],[item.length*.66,item.length*.75]]:[];});
 let cameraMode='near';
@@ -68,7 +79,8 @@ function lapRecordKey(item=track){return (item.layoutVersion?item.name+'@'+item.
 function saveBestLap(trackName,time){if(!Number.isFinite(time)||time<=0)return false;const previous=bestLapRecords[trackName];if(Number.isFinite(previous)&&previous<=time)return false;bestLapRecords[trackName]=time;try{localStorage.setItem(BEST_LAPS_KEY,JSON.stringify(bestLapRecords));}catch(error){}return true;}
 let keys=Object.create(null),cars=[],graphics='high',difficulty='normal',decorations=[],tireBarriers=[],checkpoints=[];
 let guardrailPaths=[],physicalBarriers=[],barrierBuckets=new Map();
-let barrierMode='auto',guardrailRanges=[],skidMarks=[],terrainParticles=[],trackFeatures={braking:[],passing:[]};
+let barrierMode='auto',guardrailRanges=[],skidMarks=[],terrainParticles=[],trackFeatures={braking:[],passing:[]},runoffZones=[];
+const runoffRasterCache=new WeakMap(),runoffBucketsCache=new WeakMap();
 let backgroundCache=null,backgroundCacheKey='',trackSurfaceCache=null,trackSurfaceKey='';
 let soundEnabled=true,audioContext=null,audioMaster=null,audioCompressor=null,audioNoise=null,audioResultActive=false,audioResultCue=null,lastAudioImpact=-Infinity;
 const audioChannels=[],audioVoices=new Set(),audioReleasing=new WeakSet(),audioVoiceGains=new WeakMap();
@@ -110,11 +122,11 @@ function updateAudio(){
   channel.filter.frequency.setTargetAtTime(250+load*900+ratio*900,now,.08);
   const audible=active&&!!car,volume=audible?(.016+load*.018+ratio*.018)*mix:0;
   channel.gain.gain.setTargetAtTime(volume,now,.045);channel.subGain.gain.setTargetAtTime(volume*.25,now,.045);
-  const surface=car?surfaceAtProgress(car.progress):'asphalt',offroad=car&&Math.abs(car.roadOffset)>ROAD_EDGE;
+  const ground=car?terrainAt(car.x,car.y):{material:'asphalt',offroad:false},surface=ground.material,offroad=ground.offroad;
   const sliding=car?Math.max(car.handbrake?1:0,car.drift>.4?car.drift:0,car.braking&&Math.abs(car.steer)>.3?.4:0):0;
   channel.skid.filter.frequency.setTargetAtTime(surface==='ice'?850:1450,now,.08);channel.skid.filter.Q.value=1.2;
   channel.skid.gain.gain.setTargetAtTime(audible&&speed>35?Math.min(.025,sliding*ratio*.035)*mix:0,now,.035);
-  const roughness=offroad ? .018:surface==='dirt'||surface==='volcanic'?.009:surface==='grass'?.007:surface==='ice'?.002:0;
+  const roughness=surface==='gravel'?.025:offroad ? .018:surface==='dirt'||surface==='volcanic'?.009:surface==='grass'?.007:surface==='ice'?.002:0;
   channel.terrain.filter.frequency.setTargetAtTime(surface==='ice'?1200:offroad?650:450,now,.08);
   channel.terrain.gain.gain.setTargetAtTime(audible?roughness*ratio*mix:0,now,.06);
  });
@@ -185,6 +197,64 @@ function surfaceAtProgress(distance){
  if(track.surface==='coastal'&&d>=track.length*.31&&d<=track.length*.37)return 'dirt';
  return track.surface||'asphalt';
 }
+// One world-material query drives handling, resistance, particles, audio and the gravel raster.
+function terrainAt(x,y,loc=nearestOnTrack(x,y)){
+ const road=surfaceAtProgress(loc.progress),paved=road==='asphalt'||road==='coastal';
+ const shoulder=paved?ROAD_SHOULDER:ROAD_EDGE,depth=Math.max(0,loc.distance-shoulder);
+ if(depth===0)return {material:road,offroad:false,depth:0};
+ const native=track.surface==='dirt'?'dirt':track.surface==='ice'?'ice':track.surface==='volcanic'?'volcanic':track.surface==='coastal'?'coastal':'grass';
+ if(paved&&x>=0&&y>=0&&x<track.worldWidth&&y<track.worldHeight&&!guardrailActive(loc.progress)){
+  for(const zone of runoffZones){
+   const delta=Math.abs(wrapDistance(loc.progress-zone.center+track.length/2)-track.length/2);
+   const width=zone.width*clamp((zone.halfLength-delta)/35,0,1);
+   if(Math.sign(loc.offset)===zone.side&&depth<=width)return {material:'gravel',offroad:true,depth};
+  }
+ }
+ return {material:native,offroad:true,depth};
+}
+function buildRunoffZones(){
+ if(!['asphalt','mixed','coastal'].includes(track.surface))return [];
+ const corners=[...new Map(trackFeatures.braking.map(corner=>[corner.cornerProgress,corner])).values()];
+ return corners.map(corner=>({center:corner.cornerProgress,halfLength:150,side:-Math.sign(corner.turn),width:GRAVEL_WIDTH}));
+}
+function runoffBuckets(){
+ if(runoffBucketsCache.has(track))return runoffBucketsCache.get(track);
+ const buckets=new Map(),pad=ROAD_SHOULDER+GRAVEL_WIDTH+12,s=track.samples;
+ for(let i=0;i<s.length;i++){
+  const a=s[i],b=s[(i+1)%s.length];
+  for(let row=Math.floor((Math.min(a.y,b.y)-pad)/128);row<=Math.floor((Math.max(a.y,b.y)+pad)/128);row++)for(let column=Math.floor((Math.min(a.x,b.x)-pad)/128);column<=Math.floor((Math.max(a.x,b.x)+pad)/128);column++){
+   const key=column+','+row;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(i);
+  }
+ }
+ runoffBucketsCache.set(track,buckets);return buckets;
+}
+function runoffRaster(){
+ let profiles=runoffRasterCache.get(track);if(!profiles){profiles=new Map();runoffRasterCache.set(track,profiles);}
+ if(profiles.has(barrierMode))return profiles.get(barrierMode);
+ const cells=[];profiles.set(barrierMode,cells);
+ if(!runoffZones.length||barrierMode==='full')return cells;
+ const columns=Math.ceil(track.worldWidth/RUNOFF_CELL),rows=Math.ceil(track.worldHeight/RUNOFF_CELL),seen=new Uint8Array(columns*rows);
+ const pad=ROAD_SHOULDER+GRAVEL_WIDTH+12,buckets=runoffBuckets();
+ for(const zone of runoffZones)for(let d=zone.center-zone.halfLength;d<=zone.center+zone.halfLength;d+=12){
+  const p=sampleAt(d),left=Math.max(0,Math.floor((p.x-pad)/RUNOFF_CELL)),right=Math.min(columns-1,Math.ceil((p.x+pad)/RUNOFF_CELL));
+  const top=Math.max(0,Math.floor((p.y-pad)/RUNOFF_CELL)),bottom=Math.min(rows-1,Math.ceil((p.y+pad)/RUNOFF_CELL));
+  for(let row=top;row<=bottom;row++)for(let column=left;column<=right;column++){
+   const key=row*columns+column;if(seen[key])continue;seen[key]=1;
+   const x=column*RUNOFF_CELL,y=row*RUNOFF_CELL;
+   const cx=x+RUNOFF_CELL/2,cy=y+RUNOFF_CELL/2,indices=buckets.get(Math.floor(cx/128)+','+Math.floor(cy/128))||[];
+   const loc=nearestOnTrack(cx,cy,indices);
+   if(!loc||loc.distance>ROAD_SHOULDER+GRAVEL_WIDTH||terrainAt(cx,cy,loc).material!=='gravel')continue;
+   let seed=Math.imul(column,374761393)+Math.imul(row,668265263);seed=Math.imul(seed^(seed>>>13),1274126177);
+   const tone=((seed^(seed>>>16))>>>0)%4;
+   cells.push({x,y,tone});
+  }
+ }
+ return cells;
+}
+function drawRunoff(context){
+ const palette=TERRAIN_MATERIALS.gravel.palette,cells=runoffRaster();
+ for(let tone=0;tone<palette.length;tone++){context.fillStyle=palette[tone];for(const cell of cells)if(cell.tone===tone)context.fillRect(cell.x,cell.y,RUNOFF_CELL,RUNOFF_CELL);}
+}
 function sampleAt(distance,item=track){
  const d=((distance%item.length)+item.length)%item.length,s=item.samples;let lo=0,hi=s.length-1;
  while(lo<hi){const mid=(lo+hi+1)>>1;if(s[mid].d<=d)lo=mid;else hi=mid-1;}
@@ -192,9 +262,10 @@ function sampleAt(distance,item=track){
  const t=clamp((d-a.d)/seg,0,1);
  return {x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,angle:Math.atan2(b.y-a.y,b.x-a.x)};
 }
-function nearestOnTrack(x,y){
+function nearestOnTrack(x,y,indices=null){
  const s=track.samples;let best=Infinity,found=null;
- for(let i=0;i<s.length;i++){
+ for(let step=0;step<(indices?indices.length:s.length);step++){
+  const i=indices?indices[step]:step;
   const a=s[i],b=s[(i+1)%s.length],vx=b.x-a.x,vy=b.y-a.y,len2=vx*vx+vy*vy||1;
   const t=clamp(((x-a.x)*vx+(y-a.y)*vy)/len2,0,1),px=a.x+vx*t,py=a.y+vy*t;
   const dx=x-px,dy=y-py,d2=dx*dx+dy*dy;
@@ -623,7 +694,7 @@ function drawTrackSurface(context){
   }else if(track.surface==='volcanic'){
    strokeTrack(sc,'#29282c',122);strokeTrack(sc,'#594b49',112);strokeTrack(sc,'#302e34',99);strokeTrack(sc,'#8f4837',88,[15,24],0);strokeTrack(sc,'#403238',80);strokeTrack(sc,'#cf603c',74,[5,20],0);strokeTrack(sc,'#29262e',68);strokeTrack(sc,'#171920',61);
   }else{
-   strokeTrack(sc,'#11171c',122);strokeTrack(sc,'#cdd1d3',114,[18,18],0);strokeTrack(sc,'#d84b59',106,[12,24],0);strokeTrack(sc,'#282d37',94);strokeTrack(sc,'#e74b5d',82,[23,23],0);strokeTrack(sc,'#f5f0dc',82,[23,23],23);strokeTrack(sc,'#3c414c',74);strokeTrack(sc,graphics==='high'?'#707783':'#646873',68);strokeTrack(sc,'#2c313b',61);
+   strokeTrack(sc,'#11171c',96);strokeTrack(sc,'#cdd1d3',94,[18,18],0);strokeTrack(sc,'#d84b59',90,[12,24],0);strokeTrack(sc,'#282d37',84);strokeTrack(sc,'#e74b5d',82,[23,23],0);strokeTrack(sc,'#f5f0dc',82,[23,23],23);strokeTrack(sc,'#3c414c',74);strokeTrack(sc,graphics==='high'?'#707783':'#646873',68);strokeTrack(sc,'#2c313b',61);
   }
   if(track.surface==='mixed'){for(const [start,end] of track.dirtRanges){strokeTrackRange(sc,start,end,'#76563c',76);strokeTrackRange(sc,start,end,'#ad8258',66,[14,11]);}}
   if(track.surface==='coastal'){strokeTrackRange(sc,track.length*.31,track.length*.37,'#846b47',74);strokeTrackRange(sc,track.length*.31,track.length*.37,'#c2a06b',63,[9,12]);}
@@ -653,7 +724,7 @@ function start(m,s=Number($('stageSelect').value),keepSeason=false){
  if(mode==='solo'){const count=clamp(Number($('opponentCount').value)||3,1,3);for(let i=1;i<=count;i++)cars.push(setupCar(i,true));}else cars.push(setupCar(1));
  placeCar(cars[0],4,mode==='duo'?-18:-15);
  cars.slice(1).forEach((car,index)=>placeCar(car,mode==='solo'?78+index*70:4,mode==='solo'?(index%2?-16:16):18));
- const requestedBarrierMode=$('barrierMode')?.value||'auto';barrierMode=requestedBarrierMode==='auto'?track.defaultBarriers:requestedBarrierMode;guardrailRanges=guardrailRangesForTrack();trackFeatures=buildTrackFeatures();
+ const requestedBarrierMode=$('barrierMode')?.value||'auto';barrierMode=requestedBarrierMode==='auto'?track.defaultBarriers:requestedBarrierMode;guardrailRanges=guardrailRangesForTrack();trackFeatures=buildTrackFeatures();runoffZones=buildRunoffZones();
  decorations=decorationsForTrack();tireBarriers=barriersForTrack();buildPhysicalBarriers();skidMarks=[];terrainParticles=[];elapsed=0;finishNoticeKey='';countdownRemaining=3;goFlashRemaining=0;countdownShown='';paused=false;running=true;keys=Object.create(null);
  document.body.classList.add('racing');menu.classList.add('hidden');result.classList.add('hidden');game.classList.remove('hidden');
  $('pauseBtn').textContent='Ⅱ PAUSA';$('pauseBtn').setAttribute('aria-pressed','false');
@@ -905,11 +976,11 @@ function driveAI(car,before,model,dt){
  const targetBase=sampleAt(before.progress+lookAhead);
  const target={x:targetBase.x-Math.sin(targetBase.angle)*car.aiLane,y:targetBase.y+Math.cos(targetBase.angle)*car.aiLane};
  const error=wrapAngle(Math.atan2(target.y-car.y,target.x-car.x)-car.heading);
- const handling=vehicleHandling(car.speed,model,surfaceAtProgress(before.progress),curvatureAt(before.progress).safeSpeed,car.drift);
+ const handling=vehicleHandling(car.speed,model,terrainAt(car.x,car.y,before).material,curvatureAt(before.progress).safeSpeed,car.drift);
  const targetDistance=Math.max(10,Math.hypot(target.x-car.x,target.y-car.y));
  const requiredYaw=2*car.speed*WORLD_SPEED_SCALE*Math.sin(error)/targetDistance;
  const hand=allowHandbrake&&car.speed>90&&Math.abs(car.steer)>.3&&Math.abs(requiredYaw)>handling.turnRate*(car.handbrake?.72:.9);
- const turnRate=hand?vehicleHandling(car.speed,model,surfaceAtProgress(before.progress),curvatureAt(before.progress).safeSpeed,clamp(Math.abs(car.steer)*car.speed/200,0,1),true).turnRate:handling.turnRate;
+ const turnRate=hand?vehicleHandling(car.speed,model,terrainAt(car.x,car.y,before).material,curvatureAt(before.progress).safeSpeed,clamp(Math.abs(car.steer)*car.speed/200,0,1),true).turnRate:handling.turnRate;
  const steerTarget=car.speed<60?error*2.6:requiredYaw/turnRate+error*.2;
  car.steer+=(clamp(steerTarget,-1,1)-car.steer)*Math.min(1,dt*driver.response);
  if(Math.abs(before.offset)>ROAD_EDGE)targetSpeed=Math.min(targetSpeed,65);
@@ -944,7 +1015,7 @@ function physics(car,i,dt){
  if(hand)car.drift=Math.min(1,Math.abs(car.steer)*car.speed/200);
  car.speed=clamp(car.speed,0,model.maxSpeed);
  const tooFast=Math.max(0,car.speed-localBend.safeSpeed);
- const drivingSurface=surfaceAtProgress(before.progress);
+ const drivingSurface=terrainAt(car.x,car.y,before).material;
  const handling=vehicleHandling(car.speed,model,drivingSurface,localBend.safeSpeed,car.drift,car.handbrake);
  updateSteeringInertia(car,handling.turnRate,model.maxSpeed,dt);
  car.drift=clamp(Math.max(car.drift*Math.exp(-4.5*dt),tooFast/160),0,1);
@@ -953,14 +1024,13 @@ function physics(car,i,dt){
  car.wheelTravel=(car.wheelTravel+move)%12;
  car.x+=Math.cos(car.heading)*move;car.y+=Math.sin(car.heading)*move;
  let after=nearestOnTrack(car.x,car.y);
- // El pasto tiene mucha resistencia: penaliza fuerte, pero permite recuperar el auto.
- let roadEdge=Math.max(0,Math.abs(after.offset)-ROAD_EDGE);
- if(roadEdge>0){
-  const runoffMaterial=track.surface==='dirt'?'dirt':track.surface==='volcanic'?'volcanic':track.surface==='ice'?'ice':track.surface==='coastal'?'coastal':'grass';
-  const baseDrag=runoffMaterial==='grass'?34:runoffMaterial==='ice'?58:(runoffMaterial==='dirt'||runoffMaterial==='volcanic'||runoffMaterial==='coastal')?54:82;
-  const edgeDrag=runoffMaterial==='grass'?2.2:(runoffMaterial==='dirt'||runoffMaterial==='volcanic'||runoffMaterial==='coastal')?2.8:4.6;
-  car.speed=Math.max(Math.min(14,car.speed),car.speed-(baseDrag+roadEdge*edgeDrag)*model.grass*dt);
-  car.drift=Math.max(car.drift,.28);
+ // Resistance uses the same material sampled by the visible runoff layer.
+ let ground=terrainAt(car.x,car.y,after),roadEdge=ground.offroad?ground.depth:0;
+ if(ground.offroad){
+  const material=TERRAIN_MATERIALS[ground.material],drag=material.drag+ground.depth*material.edgeDrag+car.speed*(material.speedDrag||0);
+  // Preserve a recovery crawl without creating speed from rest or released throttle.
+  car.speed=Math.max(Math.min(14,car.speed),car.speed-drag*model.grass*dt);
+  car.drift=Math.max(car.drift,ground.material==='gravel'?.42:.28);
  }
  // The rendered rails and tires are also the physical collision geometry.
  const hitBarrier=resolveBarrierContact(car,previousX,previousY);
@@ -970,21 +1040,20 @@ function physics(car,i,dt){
   car.speed=Math.max(Math.min(12,car.speed),car.speed-(100+(Math.abs(after.offset)-92)*2.2)*dt);
   if(Math.abs(after.offset)>112){car.x=after.x+nx*side*108;car.y=after.y+ny*side*108;car.speed*=.76;after=nearestOnTrack(car.x,car.y);}
  }
+ ground=terrainAt(car.x,car.y,after);roadEdge=ground.offroad?ground.depth:0;
  updateProgress(car,after,previousX,previousY);
  if(tooFast>12&&upcoming.distance<130)car.speed=Math.max(30,car.speed-tooFast*dt*.045);
  car.skidTimer=Math.max(0,(car.skidTimer||0)-dt);
  const skidding=car.speed>58&&(car.handbrake||car.drift>.43);
  if(skidding&&car.skidTimer<=0){const wheels=(CAR_VISUALS[car.model]||CAR_VISUALS.balanced),rearX=car.x+Math.cos(car.heading)*wheels.rearAxle,rearY=car.y+Math.sin(car.heading)*wheels.rearAxle;
-  for(const wheelSide of [-1,1]){const wx=rearX-Math.sin(car.heading)*wheelSide*wheels.halfTrack,wy=rearY+Math.cos(car.heading)*wheelSide*wheels.halfTrack;skidMarks.push({x:wx,y:wy,angle:car.heading,life:10,maxLife:10});}
+  for(const wheelSide of [-1,1]){const wx=rearX-Math.sin(car.heading)*wheelSide*wheels.halfTrack,wy=rearY+Math.cos(car.heading)*wheelSide*wheels.halfTrack;skidMarks.push({x:wx,y:wy,angle:car.heading,life:10,maxLife:10,color:TERRAIN_MATERIALS[terrainAt(wx,wy).material].mark||'#101419'});}
   car.skidTimer=.045;if(skidMarks.length>1400)skidMarks.splice(0,skidMarks.length-1400);
  }
  if((skidding||roadEdge>3)&&car.speed>38&&Math.random()<dt*(roadEdge>3?34:20)&&terrainParticles.length<360){
   const rearX=car.x-Math.cos(car.heading)*13,rearY=car.y-Math.sin(car.heading)*13,spread=(Math.random()-.5)*14;
-  const runoffMaterial=track.surface==='dirt'?'dirt':track.surface==='volcanic'?'volcanic':track.surface==='ice'?'snow':track.surface==='coastal'?'sand':'grass';
-  const particleMaterial=roadEdge>3?runoffMaterial:surfaceAtProgress(after.progress);
-  const particleStyle={dirt:{color:'#ad8053',life:.62,size:3},volcanic:{color:'#cf603c',life:.58,size:3},snow:{color:'#d9f1f6',life:.46,size:2},sand:{color:'#c9ad7a',life:.58,size:3},grass:{color:'#6e9958',life:.46,size:2},asphalt:{color:'#aeb6c5',life:.46,size:2}}[particleMaterial]||{color:'#aeb6c5',life:.46,size:2};
+  const rearGround=terrainAt(rearX,rearY),particleStyle=TERRAIN_MATERIALS[rearGround.material]||TERRAIN_MATERIALS.asphalt;
   const life=particleStyle.life;
-  terrainParticles.push({x:rearX-Math.sin(car.heading)*spread,y:rearY+Math.cos(car.heading)*spread,vx:(Math.random()-.5)*34-Math.cos(car.heading)*(roadEdge>3?12:5),vy:(Math.random()-.5)*34-Math.sin(car.heading)*(roadEdge>3?12:5),life,max:life,size:particleStyle.size+Math.random()*2,color:particleStyle.color});
+  terrainParticles.push({x:rearX-Math.sin(car.heading)*spread,y:rearY+Math.cos(car.heading)*spread,vx:(Math.random()-.5)*34-Math.cos(car.heading)*(roadEdge>3?12:5),vy:(Math.random()-.5)*34-Math.sin(car.heading)*(roadEdge>3?12:5),life,max:life,size:particleStyle.size+Math.random()*2,color:particleStyle.particle});
  }
  car.particles=car.particles.filter(p=>(p.life-=dt)>0);if(car.flash>0)car.flash-=dt;
 }
@@ -1072,7 +1141,7 @@ function renderStaticBackground(context){
  renderGroundTexture(context);
  for(const d of decorations)drawSceneryObject(context,d);
  // Capas de asfalto y vallas metálicas con postes.
- drawTrackSurface(context);drawGuardrails(context);
+ drawRunoff(context);drawTrackSurface(context);drawGuardrails(context);
  // Animated center-line dashes stay separate from the cached asphalt.
  // Pilas de neumáticos en el exterior de las curvas más cerradas.
  for(const tire of tireBarriers){
@@ -1108,7 +1177,7 @@ function updateGroundEffects(dt){
  for(const p of terrainParticles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=Math.max(0,1-dt*1.8);p.vy*=Math.max(0,1-dt*1.8);p.life-=dt;}terrainParticles=terrainParticles.filter(p=>p.life>0);
 }
 function drawGroundEffects(context){
- for(const mark of skidMarks){context.save();context.globalAlpha=Math.min(.46,mark.life/mark.maxLife*.46);context.translate(mark.x,mark.y);context.rotate(mark.angle);context.fillStyle='#101419';context.fillRect(-5,-1.35,10,2.7);context.restore();}
+ for(const mark of skidMarks){context.save();context.globalAlpha=Math.min(.46,mark.life/mark.maxLife*.46);context.translate(mark.x,mark.y);context.rotate(mark.angle);context.fillStyle=mark.color||'#101419';context.fillRect(-5,-1.35,10,2.7);context.restore();}
  for(const p of terrainParticles){context.globalAlpha=Math.max(0,p.life/p.max)*.64;context.fillStyle=p.color;context.beginPath();context.arc(p.x,p.y,p.size*(.6+.4*p.life/p.max),0,Math.PI*2);context.fill();}context.globalAlpha=1;
 }
 // Visual profiles stay inside the existing 30 x 20 car footprint; no handling changes.

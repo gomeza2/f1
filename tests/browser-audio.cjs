@@ -10,7 +10,7 @@ try{
  await page.route('https://fonts.googleapis.com/**',r=>r.abort());await page.route(/\/script\.js(?:\?.*)?$/,r=>r.fulfill({contentType:'text/javascript',body:source.replace(/\}\)\(\);\s*$/,bridge+'})();')}));
  await page.goto('http://127.0.0.1:'+server.address().port);await page.addStyleTag({content:'button{transition:none!important}button:hover{transform:none!important}'});await page.click('[data-mode="solo"]');await page.waitForTimeout(250);
  assert.equal((await page.evaluate(()=>window.audioTest.info())).state,'running');await page.evaluate(()=>window.audioTest.sample());
- await page.evaluate(()=>window.audioTest.skipCountdown());await page.keyboard.down('w');await page.waitForTimeout(700);
+ await page.evaluate(()=>window.audioTest.skipCountdown());await page.keyboard.down('w');await page.waitForFunction(()=>parseInt(document.getElementById('speedValue').textContent)>=90,null,{timeout:5000});
  const engine=await page.evaluate(()=>window.audioTest.sample());assert.ok(engine.rms>1e-5,'Real engine output is silent: '+JSON.stringify(await page.evaluate(()=>window.audioTest.info())));assert.ok(engine.peak<.95,'Output clipped');
  await page.keyboard.down(' ');await page.keyboard.down('d');await page.waitForTimeout(180);
  assert.ok((await page.evaluate(()=>window.audioTest.info())).channels[0].skid>0,'Skid layer did not react to handbrake');await page.keyboard.up(' ');await page.keyboard.up('d');await page.keyboard.up('w');
