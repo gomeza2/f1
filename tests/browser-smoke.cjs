@@ -170,14 +170,14 @@ const server=http.createServer((req,res)=>{
   const beforeNotice=await page.locator('#canvas1').boundingBox();
   await page.evaluate(()=>window.testGame.noticeScenario());
   assert.ok(await page.locator('#status').evaluate(node=>node.classList.contains('checkered-status')));
-  assert.match(await page.locator('#status').textContent(),/CPU 1 TERMINÓ.*SEGUÍ CORRIENDO/);
+  assert.match(await page.locator('#status').textContent(),/TRAZO TERMINÓ.*SEGUÍ CORRIENDO/);
   assert.equal(await page.locator('#finishClock').textContent(),'CIERRE 17 s');
   assert.ok(await page.evaluate(()=>window.testGame.running&&!window.testGame.cars[0].done));
   const afterNotice=await page.locator('#canvas1').boundingBox();assert.equal(afterNotice.height,beforeNotice.height,'Finish notice reduced driving area');
   await checkRaceLayout();
   await page.click('#pauseBtn');const clockPaused=await page.locator('#finishClock').textContent();await page.waitForTimeout(100);
   assert.equal(await page.locator('#finishClock').textContent(),clockPaused);
-  await page.keyboard.press('Escape');assert.match(await page.locator('#status').textContent(),/CPU 1 TERMINÓ.*SEGUÍ CORRIENDO/);await page.keyboard.down('w');await page.waitForTimeout(250);await page.keyboard.up('w');
+  await page.keyboard.press('Escape');assert.match(await page.locator('#status').textContent(),/TRAZO TERMINÓ.*SEGUÍ CORRIENDO/);await page.keyboard.down('w');await page.waitForTimeout(250);await page.keyboard.up('w');
   assert.ok(await page.evaluate(()=>window.testGame.cars[0].speed>0),'Human could not continue after CPU finish');
   await page.evaluate(()=>window.testGame.freezeFrame());
   if(process.env.SCREENSHOT_PATH)await page.screenshot({path:process.env.SCREENSHOT_PATH.replace('.png','-notice.png'),fullPage:true});
@@ -206,7 +206,7 @@ const server=http.createServer((req,res)=>{
   const gridResult=await page.locator('#raceRows').textContent();
   assert.equal(await page.locator('#raceRows tr').count(),4);assert.equal(await page.locator('#seasonRows tr').count(),4);
   assert.equal(await page.locator('#seasonRows .total-points').first().textContent(),'25');
-  for(const name of ['P1','CPU 1','FURIA','ÁPICE'])assert.ok(gridResult.includes(name));
+  for(const name of ['P1','TRAZO','FURIA','ÁPICE'])assert.ok(gridResult.includes(name));
   await page.click('#nextBtn');assert.equal(await page.evaluate(()=>window.testGame.cars.length),4);
   await page.click('#backBtn');await page.click('[data-mode="duo"]');assert.equal(await page.evaluate(()=>window.testGame.cars.length),2);
   for(const quality of ['high','retro','lite']){

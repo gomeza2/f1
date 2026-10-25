@@ -6,12 +6,12 @@ const [human,first,second]=game.cars;
 let announcements=0,message=element('status').textContent;
 Object.defineProperty(element('status'),'textContent',{get(){return message},set(value){message=value;announcements++;},configurable:true});
 first.done=true;first.finishTime=60;game.setElapsed(60);game.updateFinishFeedback();
-assert.match(message,/CPU 1 TERMINÓ.*SEGUÍ CORRIENDO/);assert.equal(announcements,1);
+assert.match(message,/TRAZO TERMINÓ.*SEGUÍ CORRIENDO/);assert.equal(announcements,1);
 assert.equal(element('finishClock').textContent,'CIERRE 18 s');
 for(const time of [60.1,60.5,61.1,62]){game.setElapsed(time);game.updateFinishFeedback();}
 assert.equal(announcements,1,'Live region repeats each frame or countdown second');assert.equal(element('finishClock').textContent,'CIERRE 16 s');
 assert.equal(game.raceFinishState().closed,false,'First CPU finish ended a race before the human could continue');
-game.togglePause();assert.match(message,/PAUSA/);game.togglePause();assert.match(message,/CPU 1 TERMINÓ.*SEGUÍ CORRIENDO/);announcements=1;
+game.togglePause();assert.match(message,/PAUSA/);game.togglePause();assert.match(message,/TRAZO TERMINÓ.*SEGUÍ CORRIENDO/);announcements=1;
 second.done=true;second.finishTime=65;game.setElapsed(65);game.updateFinishFeedback();assert.equal(announcements,2);
 human.done=true;human.finishTime=70;human.lapTimes=[23,24,23];game.setElapsed(70);game.updateTelemetry();
 assert.match(message,/LLEGASTE 3\.º \/ 4/);assert.equal(element('timer').textContent,'00:23.0');

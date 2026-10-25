@@ -61,6 +61,7 @@ for(const difficulty of ['normal',...(focused?[]:['easy','hard'])]){
    }
   }
   assert.ok(game.cars.every(c=>c.lap===3&&c.lapTimes.length===3),`${game.track.name}/${difficulty}: incomplete grid race`);
+  if(difficulty==='normal'&&[0,2].includes(stage))assert.equal(contacts,0,`${game.track.name}: close-curve overlap contacts returned`);
   console.log(`PASS: ${game.track.name}/${difficulty}, four finishers, 12 valid laps, offset ${maxOffset.toFixed(1)}, contact frames ${contacts}, laps ${game.cars.map(c=>(c.finishTime/3).toFixed(2)).join('/')}.`);
  }
 }

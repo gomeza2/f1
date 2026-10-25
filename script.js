@@ -484,6 +484,7 @@ function updateMenuPreview(){
  $('previewRouteInfo').textContent=LAPS_TO_WIN+' VUELTAS · '+gates.length+' CHECKPOINTS';$('previewBarriers').textContent=barrierNames[profile];
  const record=bestLapRecords[lapRecordKey(item)];$('previewRecord').textContent=record?format(record):'--:--.-';
  $('raceSummary').textContent=LAPS_TO_WIN+' VUELTAS · '+count+' '+(count===1?'RIVAL CPU':'RIVALES CPU')+' · '+difficultyName;
+ $('opponentSummary').textContent=['racer','attacker','precise'].slice(0,count).map(id=>AI_PERSONALITIES[id].name+' · '+AI_PERSONALITIES[id].description).join(' / ');
  $('soloStartLabel').textContent='CORRER VS '+count+' CPU';preview.setAttribute('aria-label',item.name+', '+gates.length+' checkpoints, '+barrierNames[profile]);
 }
 const SCENERY_CLEARANCE=124;
@@ -713,9 +714,9 @@ const AI_DRIVERS={
  hard:{pace:1,brakingMargin:.98,response:9.2,laneSpeed:28,handbrake:true}
 };
 const AI_PERSONALITIES={
- racer:{name:'CPU 1',color:'#ffc857',pace:0,braking:0,response:0,lane:0,attackGap:135,closing:4},
- attacker:{name:'FURIA',color:'#ff794f',pace:.03,braking:.05,response:1,lane:4,attackGap:150,closing:2},
- precise:{name:'ÁPICE',color:'#ae97ff',pace:.02,braking:.06,response:1.4,lane:2,attackGap:120,closing:6}
+ racer:{name:'TRAZO',description:'equilibrado',color:'#ffc857',pace:0,braking:0,response:0,lane:0,attackGap:135,closing:4},
+ attacker:{name:'FURIA',description:'ataca antes',color:'#ff794f',pace:.03,braking:.05,response:1,lane:4,attackGap:150,closing:2},
+ precise:{name:'ÁPICE',description:'respuesta precisa',color:'#ae97ff',pace:.02,braking:.06,response:1.4,lane:2,attackGap:120,closing:6}
 };
 function driverFor(car){
  const base=AI_DRIVERS[difficulty]||AI_DRIVERS.normal,style=AI_PERSONALITIES[car.personality]||AI_PERSONALITIES.racer;
@@ -876,11 +877,18 @@ function aiTraffic(car,before,driver,dt){
  if(!traffic){car.aiManeuver=fresh();traffic={lane:clamp(curvatureAt(before.progress+35).turn*8,-10,10)};}
  return {lane:traffic.lane,speedLimit};
 }
+function aiLookAhead(car){
+ let distance=clamp(28+car.speed*.27,32,94);
+ // A distant target cuts the corner across a nearby rival's reserved lane.
+ // Shorten it only when the current arcs predict contact during overlap.
+ if(car.aiManeuver?.type==='alongside'&&cars.some(other=>other!==car&&!other.done&&Math.hypot(other.x-car.x,other.y-car.y)<50&&trafficApproach(car,other).clearance<29))distance=Math.min(distance,28+car.speed*.06);
+ if(car.speed<40&&car.aiManeuver?.type!=='clear')distance=Math.min(distance,8+car.speed*.15);
+ return distance;
+}
 function driveAI(car,before,model,dt){
  const driver=driverFor(car);
  const traffic=aiTraffic(car,before,driver,dt);
- let lookAhead=clamp(28+car.speed*.27,32,94);
- if(car.speed<40&&car.aiManeuver.type!=='clear')lookAhead=Math.min(lookAhead,8+car.speed*.15);
+ const lookAhead=aiLookAhead(car);
  const laneOffset=traffic.lane;
  const allowHandbrake=driver.handbrake&&car.aiManeuver.type==='clear'&&Math.abs(before.offset)<ROAD_EDGE-8;
  let targetSpeed=Math.min(aiTargetSpeed(before.progress,model,driver,allowHandbrake),traffic.speedLimit);

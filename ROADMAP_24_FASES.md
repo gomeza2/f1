@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.35**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.36**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -104,9 +104,10 @@ La interfaz identifica la build como **0.35**, continuando la base 0.17 del comm
 - Pendiente: calibración frente a personas, contactos tras movimientos impredecibles, todos los modelos y personalidades. Las pruebas de dos controladores no representan automáticamente a un jugador humano.
 
 ### Fase 10 — Dificultad y personalidades de la CPU
-**Tres dificultades y tres estilos implementados en 0.28; parrilla ampliada y balance humano pendiente.**
+**Tres dificultades/estilos en 0.28; revisión de convivencia en curvas y nombres en 0.36. Balance humano pendiente.**
 
-- Selector de 1/2/3 rivales; tres por defecto. CPU 1 conserva el controlador previo, Furia ataca con menor diferencia de velocidad y Ápice tiene mayor precisión y elección más selectiva de ataque.
+- Selector de 1/2/3 rivales; tres por defecto. TRAZO (antes CPU 1) conserva el controlador equilibrado, FURIA ataca con menor diferencia de velocidad y ÁPICE tiene mayor precisión y elección más selectiva de ataque.
+- En paralelo con riesgo de convergencia cercana, acorta el punto de seguimiento para respetar el carril en la curva. Conserva anticipación normal sin riesgo; considera todos los coches del grupo. Nombres y estilos se presentan en el menú y se conservan en avisos/resultados/puntos.
 - Cada estilo adapta ritmo objetivo, margen de frenado, respuesta, velocidad lateral y condiciones de ataque; mantiene el Balanced y los límites físicos. No se añade potencia, agarre ni velocidad máxima.
 - Tráfico considera todos los participantes, contactos por pares, posición en HUD, resultados completos y puntos 25/18/15/12. Dos jugadores sigue separado de la selección de CPU.
 - Fácil: ritmo conservador, mayor margen de frenado y respuesta más lenta.
@@ -793,3 +794,30 @@ Partir de 0.34 y verificar main. Continuar **fase 17**, tabla clara de resultado
 ### Continuación vigente con «siguiente»
 
 Partir de 0.35 y verificar main. Próxima entrega: revisión de **CPU y nombres (fase 10)**, contrastando especialmente Dusty/Sunset y escapatorias, sin ventajas físicas ocultas. Después **fase 23**, pruebas completas y correcciones del hito de base principal. Son dos entregas orientativas, no una garantía de terminar todos los errores; las 24 fases incluyen funciones futuras que siguen pendientes. Si llega material de carrera accesible, priorizar fallos reproducibles.
+
+
+## Avance — build 0.36 (25 de octubre de 2026)
+
+### Revisión de fase 10 — CPU en paralelo y nombres
+
+- Base main verificada en `69211e8`, sin cambios locales ajenos.
+- Se reproduce el roce de Dusty en el paso por meta: el punto lejano de seguimiento de la CPU recorta la curva sobre el carril ocupado en paralelo.
+- `aiLookAhead` acorta el objetivo solo si hay solapamiento, otro coche activo a menos de 50 unidades y las trayectorias actuales predicen separación menor a 29. Considera todos los rivales, conserva el objetivo normal con espacio y la recuperación a baja velocidad.
+- Se descartaron dos variantes generales: mejoraban Dusty pero añadían 8/11 frames de roce en Sunset. El ajuste final por proximidad/riesgo mantiene cero en Sunset y elimina los diez de Dusty Normal.
+- TRAZO reemplaza el nombre genérico CPU 1; FURIA y ÁPICE conservan sus identidades. El menú muestra nombre/estilo de los rivales seleccionados y la misma fuente alimenta etiquetas, avisos y tablas. Claves de puntuación conservadas.
+- Mantiene estilos existentes de ataque/respuesta y las tres dificultades. No hay aumento de potencia/agarre/velocidad máxima, cambios de pista, castigo nuevo al jugador ni ayudas invisibles.
+
+### Comprobaciones y límites
+
+- Nuevo `validate-rival-awareness.mjs`: convergencia cercana, carril paralelo libre, rival lejano/finalizado, segundo rival del grupo, recuperación lenta, nombres según cantidad y límites físicos por dificultad: superado.
+- Las 42 carreras clásicas (126 vueltas) terminan en las 14 pistas y tres dificultades; límites compartidos y orden Difícil < Normal < Fácil conservados. Normal libre conserva Dusty 19,40 s y Sunset 22,39 s por vuelta de referencia; no se fuerza el rango humano de 25–45 s reduciendo velocidad.
+- Parrilla Normal: cuatro finalistas/12 vueltas por pista; total de contacto 15→4 frames. Sunset 0→0, Dusty 10→0, Coastline 5→3; aparece 1 en Jungle que debe seguirse. En Dusty Fácil aparece 1 frente a cero previo; no se oculta esa regresión local. Difícil Dusty 3→0.
+- Batería completa de esta revisión: 42 carreras clásicas (126 vueltas), 20 de parrilla (240 vueltas) y 14 de tráfico de dos coches (84 vueltas): **76 carreras y 450 vueltas válidas**. El benchmark de dos coches registra 12 frames con contacto frente a 11 previos: Dusty 10 y Neon 2. Sigue mejor que los 70 de 0.26, pero es una regresión de un frame respecto de 0.35 y queda abierta para fase 23; no se afirma mejora universal.
+- Regresión explícita en `validate-grid.mjs` impide volver a introducir contactos en las carreras de referencia Normal Sunset/Dusty; se repite después de añadirla.
+- Chromium completo: carreras/CPU/tráfico, nombres, resultados, puntos, menú, teclado, pausa/reinicio, cambio de etapa, cámaras/fullscreen/resize, móvil, dos jugadores, modelos/calidades y movimiento reducido: superado. Captura de resultados con nombres revisada.
+- Sintaxis, geometría, identidad, HTML/archivos/diez originales/14 pistas/70 perfiles, conducción/inercia, colisiones, barreras (37 contornos/11174 puntos), llegada, menú, resultados, coches y grafo de audio: superados.
+- Conducción humana, hardware, escapatorias usadas por jugadores, errores razonables/personales de CPU y revisión de videos siguen pendientes. No se declara resuelto el reporte de dos vueltas de ventaja ni se presenta una simulación sin contactos como una partida humana.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.36 y verificar main. Próxima entrega: **fase 23**, batería de juego y correcciones para la base principal, priorizando contactos residuales (Jungle/Coastline Normal, Dusty Fácil y tráfico de dos coches en Dusty/Neon), pausa/reinicios/checkpoints y carreras humanas reproducibles. Mantener el objetivo de vueltas más largas y pistas abiertas para la siguiente revisión de trazados, validando geometría y ritmo humano. El hito principal no equivale a completar modos futuros, editor ni las 24 fases; no declarar el juego libre de errores.

@@ -5,7 +5,7 @@ function finish(order){for(const [index,player] of order.entries()){const car=ga
 finish([1,2,0]);
 assert.deepEqual(Array.from(game.seasonStandings(),e=>[e.car.player,e.points,e.rank]),[[1,25,1],[2,18,2],[0,15,3],[3,0,4]]);
 const raceHTML=element('raceRows').innerHTML,seasonHTML=element('seasonRows').innerHTML;
-assert.ok(raceHTML.indexOf('CPU 1')<raceHTML.indexOf('FURIA'));assert.ok(raceHTML.indexOf('FURIA')<raceHTML.indexOf('P1'));
+assert.ok(raceHTML.indexOf('TRAZO')<raceHTML.indexOf('FURIA'));assert.ok(raceHTML.indexOf('FURIA')<raceHTML.indexOf('P1'));
 assert.match(raceHTML,/SIN TERMINAR/);assert.match(raceHTML,/\+00:04\.0/);assert.match(raceHTML,/00:19\.0/);
 assert.match(seasonHTML,/total-points">25/);assert.match(seasonHTML,/earned-points">\+0/);
 assert.match(element('seasonCaption').textContent,/1 CARRERA DISPUTADA/);

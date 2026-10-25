@@ -221,3 +221,5 @@ body.racing .racebottom{flex:0 0 auto;padding-top:5px;font-size:8px;flex-wrap:no
 #resultText{font-size:14px;line-height:1.7;color:#a5b9c9;margin:18px 0 28px}
 @media(max-width:960px){.result-tables{grid-template-columns:1fr}}
 @media(max-width:600px){.result-tables{gap:14px}.result-table-card{padding:10px 6px}.result-table-card table{font-size:13px}.result-table-card thead th{font-size:9px;padding:10px 3px;letter-spacing:0}.result-table-card tbody td,.result-table-card tbody th{padding:13px 3px}.result-table-card caption{font-size:8px}.result-pilot{gap:4px}.race-time{font-size:11px}.race-time small{font-size:9px}#result .primary,#result .small{display:block;width:100%;margin:14px 0 0;min-height:44px}}
+
+.opponent-summary{font:13px/1.5 Rajdhani,Arial,sans-serif;color:#9bb3c3;margin:0 0 14px}

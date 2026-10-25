@@ -70,6 +70,7 @@ node tests/validate-car-visuals.mjs
 node tests/validate-audio.mjs
 node tests/validate-menu.mjs
 node tests/validate-results.mjs
+node tests/validate-rival-awareness.mjs
 node tests/validate-driving.mjs
 node tests/validate-steering-inertia.mjs
 node tests/validate-barriers.mjs
@@ -81,7 +82,7 @@ La prueba de CPU exige una mejora de al menos 20 % frente a 0.24 en el mismo tra
 
 Pruebas opcionales de navegador: `node tests/browser-smoke.cjs` y `node tests/browser-audio.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
-## Conducción — build 0.35
+## Conducción — build 0.36
 
 La aceleración del Balanced pasa de 76 a 110, el frenado de 192 a 230 y la escala real de movimiento de 0,62 a 0,84. Los otros tres modelos se ajustan en la misma dirección y conservan sus diferencias. A igual velocidad indicada, el coche recorre un 35,5 % más de distancia. La pérdida de agarre por exceso de velocidad es progresiva y conserva dirección; frenar sigue permitiendo cerrar mejor una curva. ESPACIO reduce velocidad aunque se mantenga W y ayuda a rotar el coche. La recuperación del derrape usa tiempo real, evitando cambios según los FPS.
 
@@ -157,6 +158,14 @@ El paddock reúne configuración de carrera, garaje y vista previa. El mapa usa 
 
 Las flechas y Enter funcionan en los selectores y botones del menú; antes el control global de carrera bloqueaba esas teclas. Al correr el foco pasa al lienzo y al volver regresa al título del menú. Los controles secundarios se consultan en un desplegable. En móvil la configuración se apila sin desbordar; todavía se necesita teclado para conducir. No se agregaron controles táctiles.
 
+## Rivales — build 0.36
+
+La parrilla usa nombres propios estables: **TRAZO** mantiene el estilo equilibrado, **FURIA** inicia ataques con menor ventaja de velocidad y **ÁPICE** responde con más precisión. El menú explica los estilos de los rivales elegidos. Colores, avisos de llegada y tablas comparten esos nombres; las claves de puntuación permanecen iguales.
+
+En paralelo, si las trayectorias actuales prevén contacto con un coche cercano, la CPU sigue un punto más próximo de su carril. Esto evita que apunte al otro lado de la curva y cierre el espacio del rival. Conserva su anticipación normal con un carril libre, un coche lejano o trayectorias paralelas seguras; considera también los otros rivales del grupo.
+
+No se aumenta potencia, agarre ni velocidad máxima. El ajuste no vuelve más lento al jugador ni cambia la penalización del terreno. El ritmo humano, las escapatorias y las diferencias de estilo siguen necesitando carreras reales; no se declara resuelto el reporte de dos vueltas de ventaja.
+
 ## Resultados y campeonato — build 0.35
 
 La llegada muestra dos tablas: carrera (puesto, piloto, tiempo/diferencia, mejor vuelta y puntos ganados) y campeonato (puesto por puntos, piloto, puntos de esta carrera y total). Se identifican ambos humanos y los colores de todos los coches; los mismos nombres y puntos continúan al siguiente circuito. Quien no termina aparece como **SIN TERMINAR**, con sus vueltas y cero puntos. La escala sigue siendo 25/18/15/12.
@@ -172,6 +181,8 @@ Los empates de puntos comparten puesto en el campeonato. Si la última etapa ter
 - `tests/`: validación de geometría, ancho completo, integración, conducción, récords, barreras y CPU; prueba opcional de Chromium.
 
 ## Validación conocida
+
+En 0.36, la revisión de CPU supera las 42 carreras clásicas (126 vueltas), conserva el orden de dificultad en las 14 pistas y prueba el seguimiento próximo solo ante convergencia en paralelo. En parrilla Normal, Sunset/Dusty bajan a cero fotogramas con contacto y el total de las 14 pistas pasa de 15 a 4 (uno en Jungle y tres en Coastline). Se registra un contacto en Dusty Fácil, donde la referencia anterior tenía cero. El tráfico de dos coches suma 12 frames de contacto frente a 11 previos (Dusty 10 y Neon 2); queda pendiente de corrección. No se considera una solución universal. Las 76 carreras de la batería completa suman 450 vueltas válidas. Chromium comprueba nombres, carreras, menú, resultados, controles y pantallas adaptables. Las pruebas de conciencia de rivales, integración/física/colisiones/barreras y sistemas existentes pasan; el balance con personas sigue pendiente.
 
 En 0.35, `validate-results.mjs` comprueba orden, tiempos/diferencias/mejores vueltas, sin terminar, puntos por carrera/total, continuidad de identidad, empate de puestos y final, ausencia de doble premio, reinicio de temporada, 1–3 rivales y dos jugadores. Chromium comprueba ambas tablas de cuatro coches, nombres, puntajes, ausencia de desbordamiento móvil y continuación de carrera. Pasan además integración, geometría/identidad, conducción/inercia, colisiones/barreras, coches, llegada, menú, audio y CPU/tráfico/parrilla focalizados. Las capturas se revisan; esto no reemplaza carreras humanas.
 
