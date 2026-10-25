@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.34**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.35**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -171,9 +171,11 @@ La interfaz identifica la build como **0.34**, continuando la base 0.17 del comm
 - Chromium verifica proporción, ausencia de scroll, HUD exterior y visibilidad en escritorio, móvil vertical/horizontal y pantalla completa. Pendiente: dispositivos físicos, controles táctiles y conducción humana.
 
 ### Fase 17 — Modos de carrera y tabla de puntos
-**Base implementada; expansión pendiente.**
+**Tabla de carrera/campeonato implementada y comprobada en 0.35; expansión de modos pendiente.**
 
 - Pedido del usuario: tabla de puntos legible con puesto, piloto, puntos por carrera y total; marcar sin terminar y mantener orden/nombres entre etapas.
+- Dos tablas con tiempos/diferencias/mejor vuelta, puntos ganados y clasificación acumulada; humanos y colores identificados. Sin terminar recibe cero puntos. Empates de puntos comparten puesto; final empatada se informa sin elegir campeón arbitrario.
+- Pruebas automáticas y Chromium de tablas, continuidad y móvil; contrarreloj/desafíos siguen pendientes.
 - Carrera contra CPU.
 - Dos jugadores en el mismo dispositivo.
 - Campeonato por puntos.
@@ -767,3 +769,27 @@ Partir de 0.33 y verificar main. Priorizar la revisión del reporte de carrera s
 ### Continuación vigente con «siguiente»
 
 Partir de 0.34 y verificar main. Continuar **fase 17**, tabla clara de resultados/puntos por carrera y total, manteniendo nombres/orden de campeonato y sin terminar. Después revisión CPU/nombres (10) y pruebas/correcciones (23), sin considerar cerrados el balance humano ni los errores reportados.
+
+
+## Avance — build 0.35 (25 de octubre de 2026)
+
+### Fase 17 — Resultados y tabla de puntos
+
+- La fase 16 se publicó y verificó en main (`3c2f805`) antes de continuar.
+- El párrafo que mezclaba resultados y campeonato se reemplaza por dos tablas semánticas: carrera con tiempos, diferencias, mejor vuelta y puntos; campeonato con puesto acumulado, premio de esta carrera y total.
+- Conserva nombres/colores por identidad, destaca humanos y muestra sin terminar con vueltas completadas y cero puntos. No modifica el reparto 25/18/15/12 ni el cierre de carrera.
+- Orden acumulado estable por puntos; los empates comparten puesto. Se corrige un error real del final de temporada: ante igualdad se declaraba campeón al primero del arreglo. Ahora se anuncia empate entre todos los líderes.
+- Dos columnas en escritorio y tablas apiladas en móvil, encabezados y captions accesibles, continuidad de foco de llegada y botones de continuación/menú.
+- No cambia física, trazados, barreras, IA, dificultad ni récords. Contrarreloj y desafíos quedan expresamente pendientes dentro de la fase 17.
+
+### Comprobaciones
+
+- `validate-results.mjs`: orden de llegada, tiempo/diferencia/mejor vuelta, sin terminar y cero puntos, puntos acumulados a través de dos etapas, mismos pilotos, empate de puestos/final, render sin premio adicional, fin repetido sin doble puntuación, nueva temporada, 1–3 rivales y modo local: superado.
+- Chromium completo: ambas tablas, cuatro nombres, puntuación, foco, siguiente circuito y vista móvil sin desbordamiento; capturas de escritorio/móvil revisadas. Continúan pasando los flujos de menú, teclado, carrera, pausa, reinicio, cámaras, pantalla completa, resize, bandera, coches y modo local.
+- Sintaxis, integración HTML/archivos/diez originales/14 pistas/70 perfiles, geometría, identidad, conducción, inercia, colisiones, barreras, coches, llegada, menú y grafo de audio: superados. Casos focalizados de CPU/tráfico y parrilla Sunset/Dusty: 24 vueltas válidas; tiempos conservados y 10 frames de contacto residuales en Dusty, cero en Sunset.
+- No se repiten las 42/20 carreras completas ni la medición física de audio ya pasada en 0.34: esta etapa modifica tablas y presentación/premio compartido, con su regresión específica. No se mide FPS ni se declara balance humano resuelto.
+- Sigue pendiente revisar las grabaciones del usuario, no transferibles por superar 32 MiB, y probar sensaciones en dispositivos físicos. Las pruebas no invalidan su reporte de errores.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.35 y verificar main. Próxima entrega: revisión de **CPU y nombres (fase 10)**, contrastando especialmente Dusty/Sunset y escapatorias, sin ventajas físicas ocultas. Después **fase 23**, pruebas completas y correcciones del hito de base principal. Son dos entregas orientativas, no una garantía de terminar todos los errores; las 24 fases incluyen funciones futuras que siguen pendientes. Si llega material de carrera accesible, priorizar fallos reproducibles.

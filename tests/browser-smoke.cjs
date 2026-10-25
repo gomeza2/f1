@@ -199,9 +199,13 @@ const server=http.createServer((req,res)=>{
   if(process.env.SCREENSHOT_PATH)await page.screenshot({path:process.env.SCREENSHOT_PATH.replace('.png','-finish.png'),fullPage:true});
   await page.setViewportSize({width:390,height:844});
   assert.ok(await page.locator('#finishSummary').isVisible());
+  assert.ok(await page.locator('#raceResults').isVisible());assert.ok(await page.locator('#seasonResults').isVisible());
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mobile results overflow horizontally');
   if(process.env.SCREENSHOT_PATH)await page.screenshot({path:process.env.SCREENSHOT_PATH.replace('.png','-finish-mobile.png'),fullPage:true});
   await page.setViewportSize({width:1440,height:1000});await page.emulateMedia({reducedMotion:'no-preference'});
-  const gridResult=await page.locator('#resultText').textContent();
+  const gridResult=await page.locator('#raceRows').textContent();
+  assert.equal(await page.locator('#raceRows tr').count(),4);assert.equal(await page.locator('#seasonRows tr').count(),4);
+  assert.equal(await page.locator('#seasonRows .total-points').first().textContent(),'25');
   for(const name of ['P1','CPU 1','FURIA','ÁPICE'])assert.ok(gridResult.includes(name));
   await page.click('#nextBtn');assert.equal(await page.evaluate(()=>window.testGame.cars.length),4);
   await page.click('#backBtn');await page.click('[data-mode="duo"]');assert.equal(await page.evaluate(()=>window.testGame.cars.length),2);

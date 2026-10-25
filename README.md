@@ -69,6 +69,7 @@ node tests/validate-finish.mjs
 node tests/validate-car-visuals.mjs
 node tests/validate-audio.mjs
 node tests/validate-menu.mjs
+node tests/validate-results.mjs
 node tests/validate-driving.mjs
 node tests/validate-steering-inertia.mjs
 node tests/validate-barriers.mjs
@@ -80,7 +81,7 @@ La prueba de CPU exige una mejora de al menos 20 % frente a 0.24 en el mismo tra
 
 Pruebas opcionales de navegador: `node tests/browser-smoke.cjs` y `node tests/browser-audio.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
-## Conducción — build 0.34
+## Conducción — build 0.35
 
 La aceleración del Balanced pasa de 76 a 110, el frenado de 192 a 230 y la escala real de movimiento de 0,62 a 0,84. Los otros tres modelos se ajustan en la misma dirección y conservan sus diferencias. A igual velocidad indicada, el coche recorre un 35,5 % más de distancia. La pérdida de agarre por exceso de velocidad es progresiva y conserva dirección; frenar sigue permitiendo cerrar mejor una curva. ESPACIO reduce velocidad aunque se mantenga W y ayuda a rotar el coche. La recuperación del derrape usa tiempo real, evitando cambios según los FPS.
 
@@ -156,6 +157,12 @@ El paddock reúne configuración de carrera, garaje y vista previa. El mapa usa 
 
 Las flechas y Enter funcionan en los selectores y botones del menú; antes el control global de carrera bloqueaba esas teclas. Al correr el foco pasa al lienzo y al volver regresa al título del menú. Los controles secundarios se consultan en un desplegable. En móvil la configuración se apila sin desbordar; todavía se necesita teclado para conducir. No se agregaron controles táctiles.
 
+## Resultados y campeonato — build 0.35
+
+La llegada muestra dos tablas: carrera (puesto, piloto, tiempo/diferencia, mejor vuelta y puntos ganados) y campeonato (puesto por puntos, piloto, puntos de esta carrera y total). Se identifican ambos humanos y los colores de todos los coches; los mismos nombres y puntos continúan al siguiente circuito. Quien no termina aparece como **SIN TERMINAR**, con sus vueltas y cero puntos. La escala sigue siendo 25/18/15/12.
+
+Los empates de puntos comparten puesto en el campeonato. Si la última etapa termina con líderes empatados se informa el empate, en lugar de elegir un campeón por orden interno. Una nueva temporada reinicia los puntos. Las tablas se apilan en pantallas pequeñas, conservan encabezados accesibles y el foco de llegada permanece en el título. Contrarreloj y desafíos todavía no están implementados.
+
 ## Estructura
 
 - `index.html`: menú, opciones, interfaz de carrera y telemetría.
@@ -165,6 +172,8 @@ Las flechas y Enter funcionan en los selectores y botones del menú; antes el co
 - `tests/`: validación de geometría, ancho completo, integración, conducción, récords, barreras y CPU; prueba opcional de Chromium.
 
 ## Validación conocida
+
+En 0.35, `validate-results.mjs` comprueba orden, tiempos/diferencias/mejores vueltas, sin terminar, puntos por carrera/total, continuidad de identidad, empate de puestos y final, ausencia de doble premio, reinicio de temporada, 1–3 rivales y dos jugadores. Chromium comprueba ambas tablas de cuatro coches, nombres, puntajes, ausencia de desbordamiento móvil y continuación de carrera. Pasan además integración, geometría/identidad, conducción/inercia, colisiones/barreras, coches, llegada, menú, audio y CPU/tráfico/parrilla focalizados. Las capturas se revisan; esto no reemplaza carreras humanas.
 
 En 0.34 se comprueban las 14 vistas previas, checkpoints/récords/perfiles, 24 selecciones de modelo y pintura, ausencia de cambios en la simulación y continuidad de selección entre etapas. Chromium comprueba teclado nativo, foco, menú móvil, vistas previas y el flujo de carrera existente. También se repiten las pruebas físicas/estructurales y CPU/tráfico/parrilla focalizados, y la medición real de audio. No se declara resuelto el balance humano ni los errores del reporte de video, que todavía no pudo transferirse.
 

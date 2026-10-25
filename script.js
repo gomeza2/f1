@@ -150,12 +150,32 @@ function scoreKey(car){return car.isAI?(car.player===1?'rival':'rival'+car.playe
 function raceClassification(){
  return [...cars].sort((a,b)=>a.done!==b.done?(a.done?-1:1):a.done?(a.finishTime-b.finishTime||a.player-b.player):(b.raceProgress-a.raceProgress||a.player-b.player));
 }
+function racePoints(car,index){return car.done?([25,18,15,12][index]||0):0;}
 function awardPoints(){
- raceClassification().forEach((car,index)=>{const key=scoreKey(car);championship[key]=(championship[key]||0)+(car.done?([25,18,15,12][index]||0):0);});
+ raceClassification().forEach((car,index)=>{const key=scoreKey(car);championship[key]=(championship[key]||0)+racePoints(car,index);});
  roundsCompleted++;
 }
+function seasonStandings(){
+ const sorted=[...cars].sort((a,b)=>(championship[scoreKey(b)]||0)-(championship[scoreKey(a)]||0)||a.player-b.player);
+ let rank=0,previous=null;
+ return sorted.map((car,index)=>{const points=championship[scoreKey(car)]||0;if(points!==previous)rank=index+1;previous=points;return {car,points,rank};});
+}
 function standingsText(){
- return 'CAMPEONATO · '+[...cars].sort((a,b)=>(championship[scoreKey(b)]||0)-(championship[scoreKey(a)]||0)).map(car=>carName(car)+' '+(championship[scoreKey(car)]||0)+' PTS').join(' · ');
+ return 'CAMPEONATO · '+seasonStandings().map(({car,points})=>carName(car)+' '+points+' PTS').join(' · ');
+}
+function renderResults(classification){
+ const raceScores=new Map(classification.map((car,index)=>[scoreKey(car),racePoints(car,index)]));
+ const pilot=car=>'<span class="result-pilot"><i style="--pilot-color:'+car.color+'" aria-hidden="true"></i>'+carName(car)+(car.isAI?'':'<small>HUMANO</small>')+'</span>';
+ const winner=classification[0];
+ $('raceRows').innerHTML=classification.map((car,index)=>{
+  const laps=car.lapTimes.filter(time=>Number.isFinite(time)&&time>0),best=laps.length?format(Math.min(...laps)):'—';
+  const time=car.done&&Number.isFinite(car.finishTime)?format(car.finishTime):'SIN TERMINAR';
+  const gap=car.done&&Number.isFinite(car.finishTime)&&Number.isFinite(winner.finishTime)?(index===0?'GANADOR':'+'+format(Math.max(0,car.finishTime-winner.finishTime))):Math.min(car.lap,LAPS_TO_WIN)+' / '+LAPS_TO_WIN+' VUELTAS';
+  return '<tr'+(car.isAI?'':' class="human-result"')+'><td>'+(index+1)+'.º</td><th scope="row">'+pilot(car)+'</th><td class="race-time">'+time+'<small>'+gap+'</small></td><td>'+best+'</td><td class="earned-points">+'+raceScores.get(scoreKey(car))+'</td></tr>';
+ }).join('');
+ $('seasonRows').innerHTML=seasonStandings().map(({car,points,rank})=>'<tr'+(car.isAI?'':' class="human-result"')+'><td>'+rank+'.º</td><th scope="row">'+pilot(car)+'</th><td class="earned-points">+'+raceScores.get(scoreKey(car))+'</td><td class="total-points">'+points+'</td></tr>').join('');
+ $('raceCaption').textContent=track.name+' · '+LAPS_TO_WIN+' VUELTAS';
+ $('seasonCaption').textContent='CAMPEONATO · '+roundsCompleted+' '+(roundsCompleted===1?'CARRERA DISPUTADA':'CARRERAS DISPUTADAS');
 }
 const wrapDistance=d=>((d%track.length)+track.length)%track.length;
 function surfaceAtProgress(distance){
@@ -1239,13 +1259,14 @@ function finishRace(){
  if(stage===tracks.length-1)$('resultTitle').textContent='¡CAMPEONATO TERMINADO!';
  else if(mode==='solo')$('resultTitle').textContent=winner.isAI?'¡GANÓ '+carName(winner)+'!':'¡GANASTE LA CARRERA!';
  else $('resultTitle').textContent='¡GANA EL JUGADOR '+(winner.player+1)+'!';
- const champion=[...cars].sort((a,b)=>(championship[scoreKey(b)]||0)-(championship[scoreKey(a)]||0))[0];
- const finalNote=stage===tracks.length-1?' · CAMPEÓN DE TEMPORADA: '+carName(champion)+' ('+(championship[scoreKey(champion)]||0)+' pts)':'';
+ const leaders=seasonStandings().filter(entry=>entry.rank===1);
+ const finalNote=stage===tracks.length-1?' · '+(leaders.length>1?'EMPATE EN EL CAMPEONATO: ':'CAMPEÓN DE TEMPORADA: ')+leaders.map(({car})=>carName(car)).join(' / ')+' ('+leaders[0].points+' pts)':'';
  const human=cars[0];
  $('resultTitle').focus({preventScroll:true});
  $('finishSummary').textContent=mode==='solo'?(human.done&&Number.isFinite(human.finishTime)?'TU PUESTO '+(classification.indexOf(human)+1)+'.º / '+cars.length+' · TU TIEMPO '+format(human.finishTime):'SIN TERMINAR · '+human.lap+' / '+LAPS_TO_WIN+' VUELTAS'):'P1 '+(cars[0].done?format(cars[0].finishTime):'SIN TERMINAR')+' · P2 '+(cars[1].done?format(cars[1].finishTime):'SIN TERMINAR');
  const bestLap=bestLapRecords[lapRecordKey()];
- $('resultText').textContent=classification.map((car,index)=>(index+1)+'º '+carName(car)+' '+(car.done?format(car.finishTime):'SIN TERMINAR')).join(' · ')+' · '+track.name+' · '+LAPS_TO_WIN+' vueltas · Tiempo total '+format(winner.finishTime??elapsed)+(winner.lapTimes.length?' · Mejor vuelta '+format(Math.min(...winner.lapTimes)):'')+' · '+standingsText()+finalNote+(bestLap?' · Récord guardado '+format(bestLap):'')+(cars.some(car=>car.newBestLap)?' · ¡NUEVO RÉCORD!':'');
+ renderResults(classification);
+ $('resultText').textContent='25 / 18 / 15 / 12 PTS POR PUESTO · SIN TERMINAR: 0 PTS'+finalNote+(bestLap?' · RÉCORD DE PISTA '+format(bestLap):'')+(cars.some(car=>car.newBestLap)?' · ¡NUEVO RÉCORD!':'');
  $('nextBtn').textContent=stage===tracks.length-1?'NUEVA TEMPORADA ↻':'SIGUIENTE CIRCUITO →';
  $('nextBtn').onclick=()=>stage===tracks.length-1?start(mode,0,false):start(mode,(stage+1)%tracks.length,true);
 }
