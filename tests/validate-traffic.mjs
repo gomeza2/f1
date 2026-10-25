@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {loadGame} from './helpers/game-harness.mjs';
 const {game,element}=loadGame(),dt=1/60;
 const driver=game.AI_DRIVERS.normal;
@@ -53,7 +54,35 @@ decision(ai);assert.equal(ai.aiManeuver.type,'clear');
 [other,ai]=setup();decision(other);assert.equal(other.aiManeuver.type,'follow');
 // Clear stale intent on a restart or position reset.
 game.placeCar(ai,150,0);assert.equal(ai.aiManeuver,null);
-console.log('PASS: persistent passing, overlap space, committed defence, lapping, yielding, finish seam, unrelated sections and reset.');
+// A passing side must have enough road width before the cars overlap.
+[other,ai]=setup();at(ai,150,27);at(other,210,20);ai.speed=120;other.speed=50;
+assert.equal(decision(ai).lane<0,true,'CPU committed to a passing lane blocked by the road edge');
+// Reserve space from the occupied lane while side by side, retaining physical side.
+at(ai,200,-24);at(other,210,0);const reserved=decision(ai);
+assert.ok(reserved.lane<=-25,'CPU left insufficient lateral room during overlap');
+// A trailing car trapped against the outside edge must leave longitudinal space.
+[other,ai]=setup();at(ai,200,27);at(other,208,12);ai.speed=100;other.speed=90;
+assert.ok(decision(ai).speedLimit<other.speed,'CPU squeezed a rival when the edge left no passing room');
+// A parallel rival one lane over is safe; the same car cutting in needs braking.
+[other,ai]=setup();at(ai,150,0);at(other,180,32);ai.speed=120;other.speed=80;
+assert.equal(decision(ai).speedLimit,Infinity,'Parallel occupied lane caused unnecessary braking');
+other.heading-=.65;
+const approach=game.trafficApproach(ai,other);
+assert.ok(approach.time>0&&approach.time<=.75&&approach.clearance<30);
+assert.ok(decision(ai).speedLimit<other.speed,'CPU ignored a predicted cut-in from another lane');
+// Follow the actual steering arc rather than treating a turning car as a straight ray.
+for(const direction of [-1,1]){
+ const radius=100*game.WORLD_SPEED_SCALE/Math.PI;
+ const curve=game.trafficApproach({x:0,y:0,heading:0,speed:100,yawRate:direction*Math.PI},
+  {x:radius,y:direction*radius,heading:0,speed:0});
+ assert.ok(curve.clearance<1e-6 && curve.time===.5,'Predicted approach ignored the current turning arc');
+}
+// Diverging velocities must not be interpreted as an imminent contact.
+other.heading+=1.3;
+assert.equal(decision(ai).speedLimit,Infinity,'CPU braked for a diverging car');
+// Stationary/identical velocity prediction remains finite, with no division by zero.
+assert.equal(game.trafficApproach({x:0,y:0,heading:0,speed:0},{x:30,y:0,heading:0,speed:0}).clearance,30);
+console.log('PASS: predictive cut-in braking, free passing lane, persistent passing, overlap space, committed defence, lapping, yielding, finish seam, unrelated sections and reset.');
 
 // Real physics: move past a stationary obstacle on a straight without contact.
 for(const lap of [0,1]){
@@ -72,6 +101,8 @@ for(const lap of [0,1]){
 
 // Two cars use the real controller and shared physics for complete traffic races.
 const stages=process.argv.includes('--focused')?[]:game.tracks.map((_,index)=>index);
+const baseline=JSON.parse(readFileSync(new URL('./fixtures/traffic-0.26.json',import.meta.url),'utf8'));
+let totalContacts=0;
 for(const stage of stages){
  game.start('solo',stage);game.cars[0].isAI=true;
  let contacts=0,maxOffset=0;
@@ -80,5 +111,12 @@ for(const stage of stages){
   for(const car of game.cars){assert.ok(Number.isFinite(car.x)&&Number.isFinite(car.speed));maxOffset=Math.max(maxOffset,car.offroad);assert.ok(car.offroad<42,`${game.track.name}: traffic pushed a car off the road`)}
  }
  assert.ok(game.cars.every(car=>car.lap===3),`${game.track.name}: traffic prevented a complete race`);
+ totalContacts+=contacts;
  console.log(`PASS: ${game.track.name}, two finishers, max offset ${maxOffset.toFixed(1)}, contact frames ${contacts}.`);
+}
+
+if(stages.length){
+ const previous=Object.values(baseline.contactFrames).reduce((a,b)=>a+b,0);
+ assert.ok(totalContacts<=previous*.5,`Traffic benchmark did not halve contact frames: ${totalContacts} vs ${previous}`);
+ console.log(`PASS: contact frames reduced from ${previous} to ${totalContacts} across 14 races (84 valid laps); this is a fixed AI benchmark, not proof of collision-free human play.`);
 }

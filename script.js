@@ -565,6 +565,23 @@ function aiTargetSpeed(progress,model,driver,allowHandbrake=false){
  }
  return target;
 }
+// Predict short-term contact from actual world velocities, including lateral cut-ins.
+function trafficApproach(car,other){
+ // Continue the current yaw for a short horizon, including curved approaches.
+ function projected(vehicle,time){
+  const yaw=vehicle.yawRate||0,travel=vehicle.speed*WORLD_SPEED_SCALE;
+  if(Math.abs(yaw)<.01)return {x:vehicle.x+Math.cos(vehicle.heading)*travel*time,y:vehicle.y+Math.sin(vehicle.heading)*travel*time};
+  const heading=vehicle.heading+yaw*time;
+  return {x:vehicle.x+travel/yaw*(Math.sin(heading)-Math.sin(vehicle.heading)),y:vehicle.y+travel/yaw*(Math.cos(vehicle.heading)-Math.cos(heading))};
+ }
+ let time=0,clearance=Math.hypot(other.x-car.x,other.y-car.y);
+ for(let step=1;step<=12;step++){
+  const candidateTime=step/16,a=projected(car,candidateTime),b=projected(other,candidateTime);
+  const distance=Math.hypot(b.x-a.x,b.y-a.y);
+  if(distance<clearance){time=candidateTime;clearance=distance;}
+ }
+ return {time,clearance};
+}
 // Keep physical proximity separate from race position: a lapped car is still solid.
 function aiTraffic(car,before,driver,dt){
  const maneuver=car.aiManeuver||(car.aiManeuver={type:'clear',side:0,age:0,cooldown:0});
@@ -584,7 +601,12 @@ function aiTraffic(car,before,driver,dt){
  const lapDifference=Math.round((raceGap-gap)/track.length);
  const alongside=Math.abs(gap)<36&&separation<78;
  const ahead=gap>0;
- const chooseSide=()=>before.offset<otherLoc.offset?-1:before.offset>otherLoc.offset?1:otherLoc.offset>=0?-1:1;
+ const chooseSide=()=>{
+  const physicalSide=before.offset<otherLoc.offset?-1:before.offset>otherLoc.offset?1:otherLoc.offset>=0?-1:1;
+  // Pick a lane with room before committing; never cross sides during overlap.
+  if(!alongside&&Math.abs(otherLoc.offset+physicalSide*32)>28)return -physicalSide;
+  return physicalSide;
+ };
  function commit(type,side){
   if(maneuver.type!==type){maneuver.type=type;maneuver.age=0;}
   maneuver.side=side;
@@ -612,19 +634,28 @@ function aiTraffic(car,before,driver,dt){
  let lane=idealLane;
  const laneRoom=28/(1+bend.severity*.25);
  if(maneuver.type==='pass'||maneuver.type==='yield')lane=maneuver.side*laneRoom;
- if(maneuver.type==='alongside')lane=clamp(otherLoc.offset+maneuver.side*27,-laneRoom,laneRoom);
+ if(maneuver.type==='alongside')lane=clamp(otherLoc.offset+maneuver.side*32,-laneRoom,laneRoom);
  if(maneuver.type==='defend')lane=maneuver.side*Math.min(18,laneRoom);
  let speedLimit=Infinity;
- if(ahead&&Math.abs(before.offset-otherLoc.offset)<24){
+ const approach=trafficApproach(car,other);
+ const converging=approach.time>0&&approach.clearance<30;
+ if(ahead&&(Math.abs(before.offset-otherLoc.offset)<27||converging)){
   // Shared braking distance gives time to open a lane before reaching the rear bumper.
-  const closing=Math.max(0,car.speed-other.speed),buffer=30+closing*.2;
+  const otherForwardSpeed=Math.max(0,other.speed*Math.cos(other.heading-car.heading));
+  const closing=Math.max(0,car.speed-otherForwardSpeed),buffer=32+closing*.2;
   const available=Math.max(0,gap-buffer);
-  speedLimit=Math.sqrt(other.speed*other.speed+2*CAR_MODELS[car.model].braking*driver.brakingMargin*available/WORLD_SPEED_SCALE);
+  speedLimit=Math.sqrt(otherForwardSpeed*otherForwardSpeed+2*CAR_MODELS[car.model].braking*driver.brakingMargin*available/WORLD_SPEED_SCALE);
+  // Yield longitudinal room if the other car cuts into the reserved lane.
+  if(converging&&approach.time<.55)speedLimit=Math.min(speedLimit,otherForwardSpeed*.9);
   // A stopped obstacle must not deadlock steering: creep only along a clear ray.
   const dx=other.x-car.x,dy=other.y-car.y;
   const forward=dx*Math.cos(car.heading)+dy*Math.sin(car.heading);
   const clearance=forward>0?Math.sqrt(Math.max(0,separation*separation-forward*forward)):separation;
   if(other.speed<30&&clearance>24.5&&separation>25&&(maneuver.type==='pass'||maneuver.type==='alongside'))speedLimit=Math.max(speedLimit,18);
+ }
+ // If the edge leaves no safe side-by-side lane, fall behind rather than squeeze.
+ if(ahead&&maneuver.type==='alongside'&&Math.abs(lane-otherLoc.offset)<25){
+  speedLimit=Math.min(speedLimit,Math.max(0,other.speed-25));
  }
  return {lane,speedLimit};
 }

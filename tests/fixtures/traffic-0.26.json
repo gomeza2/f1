@@ -1,0 +1,24 @@
+{
+  "build": "0.26",
+  "commit": "158042fc6a242d408120bfb7b986c9f6d6b22c92",
+  "difficulty": "normal",
+  "model": "balanced",
+  "dt": 0.03333333333333333,
+  "laps": 3,
+  "contactFrames": {
+    "SUNSET CIRCUIT": 0,
+    "NEON HARBOR": 7,
+    "DUSTY MESA": 0,
+    "NIGHT RUN": 0,
+    "FROSTBITE GP": 18,
+    "JUNGLE SPRINT": 14,
+    "VOLCANO RING": 0,
+    "PIXEL CITY": 0,
+    "THUNDER VALLEY": 4,
+    "CHAMPION ROAD": 0,
+    "COASTLINE RUN": 0,
+    "RALLY CANYON": 9,
+    "MEADOW RUN": 18,
+    "INDUSTRIAL MIX": 0
+  }
+}

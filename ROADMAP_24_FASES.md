@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.26**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.27**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -91,14 +91,16 @@ La interfaz identifica la build como **0.26**, continuando la base 0.17 del comm
 - Pendiente: mayor agresividad y adaptación de línea en tráfico (fase 9), otros modelos/riesgos y más rivales (fase 10), medición frente a conducción humana real.
 
 ### Fase 9 — Adelantamientos y defensa
-**Mejora 0.19 implementada; validación automática y de navegador registrada más abajo. Balance humano pendiente.**
+**Anticipación y reserva de espacio mejoradas en 0.27; validación registrada más abajo. Contactos residuales y balance humano pendientes.**
 
 - Maniobra persistente con estado de seguimiento, ataque, defensa, solapamiento y cesión; lado comprometido durante el ataque y una línea defensiva por aproximación.
 - Intentos infructuosos limitados a ocho segundos, con pausa de 1,5 s antes de volver a atacar.
 - Durante el solapamiento prima el lado ocupado físicamente por cada coche; la defensa no autoriza cerrar la línea exterior del rival.
 - Distancia física circular separada de la posición acumulada: reconoce obstáculos doblados y tráfico cerca de la meta; no confunde ramales alejados de una horquilla.
 - Frenado preventivo por velocidad relativa y espacio disponible, con prestaciones compartidas. Avance lento alrededor de un detenido solo con una trayectoria libre de contacto.
-- Prueba `tests/validate-traffic.mjs`: decisiones, conservación del lado, límite del intento, defensa, espacio, doblados, cesión, meta, reinicio, dos adelantamientos físicos y carreras completas de dos controladores.
+- En 0.27 predice posiciones con velocidad, dirección y giro actual hasta 0,75 s; frena ante entradas laterales y considera la velocidad proyectada del rival.
+- Selecciona un lado con espacio antes de comprometer el ataque. Mayor reserva lateral durante el solapamiento; el perseguidor cede cuando el borde no permite circular a la par.
+- Prueba `tests/validate-traffic.mjs`: predicción recta/curva, entrada lateral, carriles divergentes, borde ocupado, decisiones, conservación del lado, límite del intento, defensa, espacio, doblados, cesión, meta, reinicio, dos adelantamientos físicos y carreras completas de dos controladores.
 - Pendiente: calibración frente a personas, contactos tras movimientos impredecibles, todos los modelos y personalidades. Las pruebas de dos controladores no representan automáticamente a un jugador humano.
 
 ### Fase 10 — Dificultad y personalidades de la CPU
@@ -520,3 +522,36 @@ Partir de 0.25 y verificar la revisión remota. La limpieza de interfaz solicita
 ### Continuación vigente con «siguiente»
 
 Partir de 0.26 y verificar rama/commit remoto. Próxima etapa: fase 9, revisar ataques, defensa y contactos antes de ampliar la parrilla con uno o dos rivales adicionales en fase 10. Sigue pendiente contrastar Sunset y Dusty contra las vueltas humanas de unos 18 s y el uso de escapatorias; no considerar equilibrado el juego solo por las simulaciones. La siguiente ampliación física de trazados debe conservar zonas abiertas y validar duración humana, geometría y checkpoints; esta etapa mejora el área visible de la web.
+
+
+## Avance — build 0.27 (25 de octubre de 2026)
+
+### Fase 9 — Anticipación y espacio en tráfico
+
+- Verificada rama `main` limpia y remota en `158042f` antes de cambiar código.
+- Se conservan circuito, interfaz compacta, coches, inercia y escapatorias. Sigue habiendo una CPU; no se añaden rivales antes de revisar tráfico y contactos.
+- La CPU proyecta posiciones con la velocidad y la velocidad angular actuales en una ventana de 0,75 s. Así detecta acercamientos laterales y en arco, además del coche directamente delante.
+- El frenado usa la componente de avance del rival; abre espacio ante una entrada lateral próxima en vez de asumir que estar en otro carril es seguro.
+- El lado inicial de ataque debe dejar espacio dentro del ancho de pista. Durante el solapamiento conserva el lado físico y pide mayor separación. Si falta espacio contra el borde, el perseguidor baja su objetivo de velocidad y deja pasar.
+- No cambia la física, la aceleración ni la velocidad máxima. El perseguidor usa sus frenos normales; el coche no se desplaza artificialmente a otro carril.
+
+### Errores encontrados y corregidos
+
+- La base 0.26 registraba 70 frames con contacto en 14 carreras de dos controladores normales, concentrados en seis pistas. La comprobación previa solo exigía terminar y conservar la carretera; no evaluaba mejora de contactos.
+- El primer ajuste de cesión podía detener a la CPU al rodear un coche parado, porque exigía más separación de la que dejaba una curva. Detectado por la prueba física de adelantamiento y Chromium; se corrigió el umbral para conservar un paso seguro y se repitieron las pruebas.
+- La predicción inicial recta no describía bien las aproximaciones en curva. Se incorporó la velocidad angular real y pruebas de arcos en ambos sentidos.
+
+### Validación y límites
+
+- La referencia de tráfico se conserva en `tests/fixtures/traffic-0.26.json`, con commit, dificultad, modelo, paso físico y contactos por pista. La prueba exige reducir al menos a la mitad el total en ese mismo escenario.
+- Nuevos casos reproducibles: ataque con borde ocupado, reserva lateral, perseguidor sin hueco, entrada lateral con frenado, rival paralelo/divergente sin frenado innecesario, arcos de giro y vehículos detenidos.
+- Resultado final de tráfico: **70 → 11 frames con contacto** (84,3 % menos tiempo de contacto) en 14 carreras normales y **84 vueltas válidas**. Todos terminaron y el máximo desvío fue menor que el ancho físico de conducción. Es una referencia determinista de dos controladores, no una garantía frente a un jugador.
+- En Dusty aparecieron 11 frames residuales (0 en esa referencia anterior), mientras los otros 13 circuitos terminaron sin contacto en este escenario. Se registra esta regresión local; no se declara resuelta toda la interacción lateral y debe revisarse en fase 11 antes de cerrar el balance.
+- 42 carreras de CPU y 126 vueltas válidas: tres dificultades ordenadas, prestaciones compartidas, coste real de freno de mano y mejora de ritmo frente a 0.24 conservados. El benchmark en pista libre mantiene los tiempos de 0.25.
+- Superadas sintaxis, integración HTML/archivos/14 pistas, geometría, identidad de trazados, conducción de cuatro modelos, inercia y barreras (37 contornos, 11174 puntos). Los cambios posteriores al pase de barreras se limitaron a la predicción de tráfico; se repitieron los casos afectados.
+- Chromium: adelantamiento al detenido, carreras CPU de Dusty y hielo, controles, pausa, reinicio, menú, resultados, 14 pistas, fullscreen, resize en pausa, HUD compacto/cronómetro, ausencia de scroll, minimapa móvil y dos jugadores: superados. Revisada captura de escritorio.
+- Pendientes: partidas humanas, conducción/táctil en teléfono, audio y rendimiento medido. Las pruebas móviles verifican distribución y visibilidad.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.27 y verificar la revisión remota. Próxima fase: **10**, ampliar la parrilla con uno o dos rivales y comportamientos diferenciados, después de adaptar detección de tráfico, colisiones por pares, clasificación, cámaras y resultados. Conservar la interfaz despejada, las escapatorias y prestaciones compartidas; no declarar resuelto el balance contra personas. Los contactos restantes deben seguir registrados al abordar fase 11.
