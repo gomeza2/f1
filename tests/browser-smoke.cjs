@@ -6,7 +6,7 @@ const path = require('node:path');
 const assert = require('node:assert/strict');
 const root=path.resolve(__dirname,'..');
 const source=fs.readFileSync(path.join(root,'script.js'),'utf8');
-const bridge=`window.testGame={checkLapClock(){cancelAnimationFrame(raf);elapsed=42;cars[0].lapStartTime=30;updateTelemetry();const current=$('timer').textContent;cars[0].lapStartTime=elapsed;updateTelemetry();const reset=$('timer').textContent;cars[0].lapTimes.push(29.3);cars[0].done=true;elapsed+=5;updateTelemetry();return {current,reset,finished:$('timer').textContent}},get cars(){return cars},get elapsed(){return elapsed},get paused(){return paused},get countdown(){return countdownRemaining},get running(){return running},get camera(){return raceCamera()},get overview(){return overviewZoom()},get split(){return usesSplitScreen()},get world(){return {width:track.worldWidth,height:track.worldHeight}},separateViews(){placeCar(cars[1],track.length/2,0);drawFrame();updateTelemetry();return Math.hypot(raceCamera(0).x-raceCamera(1).x,raceCamera(0).y-raceCamera(1).y)},get buffers(){return {backgroundWidth:backgroundCache?.width,surfaceWidth:trackSurfaceCache?.width}},skipCountdown(){countdownRemaining=0},simulateRace(){cancelAnimationFrame(raf);cars[0].done=true;for(let i=0;i<9000&&!cars[1].done;i++){elapsed+=1/30;physics(cars[1],1,1/30)}drawFrame();updateTelemetry();return {lap:cars[1].lap,time:cars[1].finishTime}},trafficScenario(){cancelAnimationFrame(raf);placeCar(cars[0],170,0);placeCar(cars[1],110,0);cars[1].speed=90;let minDistance=Infinity;for(let i=0;i<900&&cars[1].progress<210;i++){elapsed+=1/60;physics(cars[1],1,1/60);minDistance=Math.min(minDistance,Math.hypot(cars[0].x-cars[1].x,cars[0].y-cars[1].y))}drawFrame();return {passed:cars[1].progress>=210,minDistance}},finishRace};`;
+const bridge=`window.testGame={checkLapClock(){cancelAnimationFrame(raf);elapsed=42;cars[0].lapStartTime=30;updateTelemetry();const current=$('timer').textContent;cars[0].lapStartTime=elapsed;updateTelemetry();const reset=$('timer').textContent;cars[0].lapTimes.push(29.3);cars[0].done=true;elapsed+=5;updateTelemetry();return {current,reset,finished:$('timer').textContent}},simulateGrid(){cancelAnimationFrame(raf);cars[0].isAI=true;for(let i=0;i<10800&&!cars.every(c=>c.done);i++){elapsed+=1/30;cars.forEach((car,index)=>{if(!car.done)physics(car,index,1/30)});resolveCollisions(1/30)}cars[0].isAI=false;drawFrame();updateTelemetry();return cars.map(c=>({lap:c.lap,time:c.finishTime}))},get cars(){return cars},get elapsed(){return elapsed},get paused(){return paused},get countdown(){return countdownRemaining},get running(){return running},get camera(){return raceCamera()},get overview(){return overviewZoom()},get split(){return usesSplitScreen()},get world(){return {width:track.worldWidth,height:track.worldHeight}},separateViews(){placeCar(cars[1],track.length/2,0);drawFrame();updateTelemetry();return Math.hypot(raceCamera(0).x-raceCamera(1).x,raceCamera(0).y-raceCamera(1).y)},get buffers(){return {backgroundWidth:backgroundCache?.width,surfaceWidth:trackSurfaceCache?.width}},skipCountdown(){countdownRemaining=0},simulateRace(){cancelAnimationFrame(raf);cars[0].done=true;for(let i=0;i<9000&&!cars[1].done;i++){elapsed+=1/30;physics(cars[1],1,1/30)}drawFrame();updateTelemetry();return {lap:cars[1].lap,time:cars[1].finishTime}},trafficScenario(){cancelAnimationFrame(raf);placeCar(cars[0],170,0);placeCar(cars[1],110,0);cars[1].speed=90;let minDistance=Infinity;for(let i=0;i<900&&cars[1].progress<210;i++){elapsed+=1/60;physics(cars[1],1,1/60);minDistance=Math.min(minDistance,Math.hypot(cars[0].x-cars[1].x,cars[0].y-cars[1].y))}drawFrame();return {passed:cars[1].progress>=210,minDistance}},finishRace};`;
 const server=http.createServer((req,res)=>{
  const name=req.url==='/'?'index.html':req.url.slice(1);
  if(!['index.html','style.css','script.js'].includes(name)){res.writeHead(404).end();return}
@@ -25,6 +25,7 @@ const server=http.createServer((req,res)=>{
   // Disable decorative hover motion so click stability does not depend on frame timing.
   await page.addStyleTag({content:'button{transition:none!important}button:hover{transform:none!important}'});
   assert.equal(await page.locator('#stageSelect option').count(),14);
+  assert.equal(await page.inputValue('#opponentCount'),'3');await page.selectOption('#opponentCount','1');
   await page.click('[data-mode="solo"]');
   async function checkRaceLayout(){
    const layout=await page.evaluate(()=>{
@@ -131,8 +132,24 @@ const server=http.createServer((req,res)=>{
   assert.ok(await page.evaluate(()=>window.testGame.separateViews()>50));
   if(process.env.SCREENSHOT_PATH)await page.screenshot({path:process.env.SCREENSHOT_PATH.replace('.png','-duo.png'),fullPage:true});
   for(const graphics of ['retro','lite']){await page.click('#backBtn');await page.selectOption('#graphics',graphics);await page.click('[data-mode="solo"]');assert.ok(await page.locator('#canvas1').isVisible());}
+  await page.click('#backBtn');await page.selectOption('#graphics','high');
+  for(const count of ['2','3']){
+   await page.selectOption('#opponentCount',count);await page.click('[data-mode="solo"]');
+   assert.equal(await page.evaluate(()=>window.testGame.cars.length),Number(count)+1);
+   await checkRaceLayout();
+   await page.keyboard.press('r');assert.equal(await page.evaluate(()=>window.testGame.cars.length),Number(count)+1);
+   await page.click('#backBtn');
+  }
+  await page.click('[data-mode="solo"]');
+  if(process.env.SCREENSHOT_PATH)await page.screenshot({path:process.env.SCREENSHOT_PATH.replace('.png','-grid.png'),fullPage:true});
+  const gridRace=await page.evaluate(()=>window.testGame.simulateGrid());assert.ok(gridRace.every(car=>car.lap===3&&car.time>0));
+  await page.evaluate(()=>window.testGame.finishRace());
+  const gridResult=await page.locator('#resultText').textContent();
+  for(const name of ['P1','CPU 1','FURIA','ÁPICE'])assert.ok(gridResult.includes(name));
+  await page.click('#nextBtn');assert.equal(await page.evaluate(()=>window.testGame.cars.length),4);
+  await page.click('#backBtn');await page.click('[data-mode="duo"]');assert.equal(await page.evaluate(()=>window.testGame.cars.length),2);
   assert.deepEqual(errors,[]);
-  console.log('PASS: Chromium, input/yaw/release/countersteer, countdown, pause/resume, restart, menu, 14 tracks, fullscreen/aspect/compact HUD/lap clock/no scrolling, world-sized caches, split/close/overview cameras, mobile map and landscape space, traffic overtake, Dusty Mesa pace/race, ice CPU race/results/next stage, local two-player and viewport resizing.');
+  console.log('PASS: Chromium, input/yaw/release/countersteer, countdown, pause/resume, restart, menu, 14 tracks, fullscreen/aspect/compact HUD/lap clock/no scrolling, world-sized caches, split/close/overview cameras, mobile map and landscape space, traffic overtake, Dusty Mesa pace/race, ice CPU race/results/next stage, local two-player, viewport resizing, two/three CPUs, grid restart/results/next stage.');
   console.log('Mobile checks cover visibility only; human handling, touch controls, audio and performance remain unverified.');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1}).finally(()=>server.close());

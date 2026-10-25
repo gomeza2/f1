@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.27**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.28**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -104,8 +104,11 @@ La interfaz identifica la build como **0.27**, continuando la base 0.17 del comm
 - Pendiente: calibración frente a personas, contactos tras movimientos impredecibles, todos los modelos y personalidades. Las pruebas de dos controladores no representan automáticamente a un jugador humano.
 
 ### Fase 10 — Dificultad y personalidades de la CPU
-**Tres dificultades implementadas y medidas; personalidades pendientes.**
+**Tres dificultades y tres estilos implementados en 0.28; parrilla ampliada y balance humano pendiente.**
 
+- Selector de 1/2/3 rivales; tres por defecto. CPU 1 conserva el controlador previo, Furia ataca con menor diferencia de velocidad y Ápice tiene mayor precisión y elección más selectiva de ataque.
+- Cada estilo adapta ritmo objetivo, margen de frenado, respuesta, velocidad lateral y condiciones de ataque; mantiene el Balanced y los límites físicos. No se añade potencia, agarre ni velocidad máxima.
+- Tráfico considera todos los participantes, contactos por pares, posición en HUD, resultados completos y puntos 25/18/15/12. Dos jugadores sigue separado de la selección de CPU.
 - Fácil: ritmo conservador, mayor margen de frenado y respuesta más lenta.
 - Normal: ritmo intermedio, menor margen y cambio lateral más rápido.
 - Difícil: mayor precisión y aprovechamiento del coche, respetando sus prestaciones.
@@ -555,3 +558,32 @@ Partir de 0.26 y verificar rama/commit remoto. Próxima etapa: fase 9, revisar a
 ### Continuación vigente con «siguiente»
 
 Partir de 0.27 y verificar la revisión remota. Próxima fase: **10**, ampliar la parrilla con uno o dos rivales y comportamientos diferenciados, después de adaptar detección de tráfico, colisiones por pares, clasificación, cámaras y resultados. Conservar la interfaz despejada, las escapatorias y prestaciones compartidas; no declarar resuelto el balance contra personas. Los contactos restantes deben seguir registrados al abordar fase 11.
+
+
+## Avance — build 0.28 (25 de octubre de 2026)
+
+### Fase 10 — Parrilla y personalidades
+
+- Base remota verificada en `37eea1a` y árbol limpio antes de editar.
+- Menú de 1, 2 o 3 rivales, con tres por defecto. CPU 1 clásico, Furia agresivo y Ápice preciso; etiquetas y colores propios. La parrilla se escalona sobre la pista sin solapar coches y antes del primer checkpoint.
+- Se reutiliza la lógica de maniobra de fase 9 por cada vecino. El tráfico cercano se ordena físicamente y todos sus límites de velocidad se consideran; conserva estados independientes y descarta los de coches alejados.
+- Dificultad y estilo componen decisiones de conducción con límites máximos de ritmo/frenado. Furia busca atacar con menor ventaja de velocidad; Ápice requiere una oportunidad más clara y responde con mayor precisión. No se añaden prestaciones al Balanced.
+- Los contactos ya no se limitan a los dos primeros coches. Se corrige además el mínimo anterior de 30 que aceleraba un coche parado al tocarlo: el contacto solo puede quitar velocidad.
+- Clasificación por tiempo de finalización y luego progreso; indicador POS compacto, resultados de todos los coches y campeonato individual 25/18/15/12. Quienes no terminan reciben cero. Se conserva el límite de 18 s tras el primer finalista.
+- Modo local conserva dos humanos y sus cámaras. No cambian geometría, superficies, récords, escapatorias ni el resto del HUD.
+
+### Comprobaciones
+
+- Se incorpora `tests/validate-grid.mjs`: selector, estilos distintos en la misma situación de ataque, múltiples amenazas, pares de contacto, coche detenido, clasificación, puntos, continuidad y dos humanos.
+- Las pruebas clásicas fijan explícitamente un rival para conservar la comparación con versiones previas; la nueva batería comprueba la parrilla ampliada de forma separada.
+- **20 carreras de parrilla, 80 finalizaciones y 240 vueltas válidas**: Normal en las 14 pistas y Fácil/Difícil en Sunset, Dusty y hielo. Desvío máximo observado 36,8 unidades, dentro del ancho físico de 42. Todos terminaron en la simulación completa.
+- Contactos de parrilla: Normal suma 19 frames (10 Dusty, 9 Coastline); Fácil cero en las tres pistas comprobadas; Difícil cuatro en Dusty. Son contactos residuales, no carreras universalmente libres de choques. El benchmark de dos coches mantiene 11 frames frente a la referencia de 70.
+- **42 carreras clásicas y 126 vueltas válidas**: dificultades ordenadas, límites físicos y coste de freno de mano conservados. Tráfico clásico: 14 carreras y 84 vueltas válidas.
+- Superadas sintaxis, IDs HTML/archivos, 14 pistas/diez originales, geometría, identidad, conducción, inercia y barreras (37 contornos/11174 puntos).
+- Chromium: selector 2/3 rivales, cuatro coches, reinicio, carrera completa de parrilla, nombres/resultados y continuidad con siguiente circuito, vuelta a modo local; además controles, fullscreen, resize, HUD, cronómetro, minimapa y distribución móvil. Captura con cuatro coches revisada.
+- Se comprobaron también los cuatro valores de puntos 25/18/15/12 y la ausencia de puntos para quien no termina. La prueba del coche seguro cercano más otro obstáculo más adelante confirma que se consideran varias amenazas.
+- Pendientes: pruebas con jugadores, todos los modelos humanos en tráfico de cuatro coches, controles táctiles/audio/rendimiento medido, fallos deliberados y rasgos más amplios de personalidad. Las pruebas aceleradas no aplican el cierre visual de 18 s; Chromium comprueba el flujo de resultados y siguiente etapa.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.28 y verificar main. Próxima fase: **11**, revisar contactos en grupo, separación tras impactos, interacción con barreras y recuperación con varios coches y modelos. Mantener los contactos residuales como referencia y no declararlos resueltos por completar carreras. Conservar la parrilla, estilos, interfaz compacta y pistas abiertas. Después continuar ambientación/feedback, sin ampliar circuitos antes de validar geometría y duración humana.

@@ -7,7 +7,7 @@ export function loadGame() {
   const context = new Proxy({}, { get: () => () => {} });
   function element(id) {
     if (!elements.has(id)) elements.set(id, {
-      value: ({ graphics: 'lite', difficulty: 'normal', stageSelect: '0', barrierMode: 'auto', carModel: 'balanced', carColor: 'pink' })[id] || '',
+      value: ({ graphics: 'lite', difficulty: 'normal', stageSelect: '0', barrierMode: 'auto', carModel: 'balanced', carColor: 'pink', opponentCount: '1' })[id] || '',
       classList: { add() {}, remove() {}, toggle() {} }, style: { setProperty() {} },
       getContext: () => context, getBoundingClientRect: () => ({ width: 1000, height: 640 }),
       addEventListener() {}, append() {},
@@ -21,11 +21,11 @@ export function loadGame() {
   };
   vm.createContext(sandbox);
   const source = readFileSync(new URL('../../script.js', import.meta.url), 'utf8');
-  const expose = `globalThis.testGame={start,physics,placeCar,setupCar,aiTraffic,trafficApproach,AI_DRIVERS,CAR_MODELS,WORLD_SPEED_SCALE,vehicleHandling,updateSteeringInertia,raceCamera,toggleCamera,overviewZoom,usesSplitScreen,lapRecordKey,saveBestLap,currentLapTime,updateTelemetry,
-    get bestLapRecords(){return bestLapRecords},sampleAt,nearestOnTrack,curvatureAt,resolveCollisions,guardrailActive,barrierContoursForTrack,resolveBarrierContact,projectToSegment,closestSegments,
+  const expose = `globalThis.testGame={start,physics,placeCar,setupCar,aiTraffic,trafficApproach,AI_DRIVERS,AI_PERSONALITIES,driverFor,raceClassification,awardPoints,standingsText,finishRace,CAR_MODELS,WORLD_SPEED_SCALE,vehicleHandling,updateSteeringInertia,raceCamera,toggleCamera,overviewZoom,usesSplitScreen,lapRecordKey,saveBestLap,currentLapTime,updateTelemetry,
+    get championship(){return championship},get bestLapRecords(){return bestLapRecords},sampleAt,nearestOnTrack,curvatureAt,resolveCollisions,guardrailActive,barrierContoursForTrack,resolveBarrierContact,projectToSegment,closestSegments,
     get physicalBarriers(){return physicalBarriers},get guardrailPaths(){return guardrailPaths},
     get checkpoints(){return checkpoints},get tracks(){return tracks},get cars(){return cars},get track(){return track},
-    tick(dt){elapsed+=dt;cars.forEach((car,i)=>{if(!car.done)physics(car,i,dt)});const contact=cars.every(car=>!car.done)&&Math.hypot(cars[0].x-cars[1].x,cars[0].y-cars[1].y)<23-1e-6;resolveCollisions(dt);return contact},
+    tick(dt){elapsed+=dt;cars.forEach((car,i)=>{if(!car.done)physics(car,i,dt)});const contact=cars.some((a,i)=>!a.done&&cars.slice(i+1).some(b=>!b.done&&Math.hypot(a.x-b.x,a.y-b.y)<23-1e-6));resolveCollisions(dt);return contact},
     setKeys(value){keys=value},setDifficulty(value){difficulty=value}};`;
   vm.runInContext(source.replace(/\}\)\(\);\s*$/, expose + '})();'), sandbox);
   return { game: sandbox.testGame, element };

@@ -103,17 +103,17 @@ function playTone(freq,duration=.1,volume=.035){
 function resetChampionship(){
  championship={player1:0,player2:0,rival:0};roundsCompleted=0;
 }
-function awardPoints(winner){
- const winningKey=mode==='solo'?(winner.isAI?'rival':'player1'):(winner.player===0?'player1':'player2');
- const losingKey=mode==='solo'?(winner.isAI?'player1':'rival'):(winner.player===0?'player2':'player1');
- const loser=cars.find(car=>car!==winner);
- championship[winningKey]+=25;
- championship[losingKey]+=loser?.done?18:0;
+function carName(car){return car.isAI?(AI_PERSONALITIES[car.personality]?.name||'CPU'):'P'+(car.player+1);}
+function scoreKey(car){return car.isAI?(car.player===1?'rival':'rival'+car.player):'player'+(car.player+1);}
+function raceClassification(){
+ return [...cars].sort((a,b)=>a.done!==b.done?(a.done?-1:1):a.done?(a.finishTime-b.finishTime||a.player-b.player):(b.raceProgress-a.raceProgress||a.player-b.player));
+}
+function awardPoints(){
+ raceClassification().forEach((car,index)=>{const key=scoreKey(car);championship[key]=(championship[key]||0)+(car.done?([25,18,15,12][index]||0):0);});
  roundsCompleted++;
 }
 function standingsText(){
- if(mode==='solo')return 'CAMPEONATO · VOS '+championship.player1+' PTS · CPU '+championship.rival+' PTS';
- return 'CAMPEONATO · P1 '+championship.player1+' PTS · P2 '+championship.player2+' PTS';
+ return 'CAMPEONATO · '+[...cars].sort((a,b)=>(championship[scoreKey(b)]||0)-(championship[scoreKey(a)]||0)).map(car=>carName(car)+' '+(championship[scoreKey(car)]||0)+' PTS').join(' · ');
 }
 const wrapDistance=d=>((d%track.length)+track.length)%track.length;
 function surfaceAtProgress(distance){
@@ -449,7 +449,8 @@ function drawTrackSurface(context){
 function setupCar(player,isAI=false){
  const model=isAI?'balanced':player===0?($('carModel')?.value||'balanced'):'balanced';
  const paint=CAR_PAINTS[$('carColor')?.value||'pink']||CAR_PAINTS.pink;
- return {player,isAI,model,color:isAI?'#ffc857':player===0?paint.hex:'#39e8e8',
+ const personality=isAI?['racer','attacker','precise'][player-1]||'racer':null;
+ return {player,isAI,model,personality,color:isAI?AI_PERSONALITIES[personality].color:player===0?paint.hex:'#39e8e8',
   x:0,y:0,heading:0,yawRate:0,speed:0,steer:0,drift:0,handbrake:false,done:false,finishTime:null,newBestLap:false,
   progress:0,previousProgress:0,lap:0,lapTimes:[],lapStartTime:0,raceProgress:0,offroad:0,roadOffset:0,particles:[],flash:0};
 }
@@ -457,16 +458,16 @@ function placeCar(car,progress,lateral){
  const p=sampleAt(progress),nx=-Math.sin(p.angle),ny=Math.cos(p.angle);
  car.x=p.x+nx*lateral;car.y=p.y+ny*lateral;car.heading=p.angle;car.yawRate=0;
  car.progress=wrapDistance(progress);car.previousProgress=car.progress;car.raceProgress=car.progress;
- car.nextCheckpoint=0;car.checkpointPasses=0;car.lastCheckpointTime=0;car.aiManeuver=null;car.aiLane=lateral;
+ car.nextCheckpoint=0;car.checkpointPasses=0;car.lastCheckpointTime=0;car.aiManeuver=null;car.aiTrafficStates={};car.aiLane=lateral;
 }
 function start(m,s=Number($('stageSelect').value),keepSeason=false){
  if(!keepSeason)resetChampionship();
  mode=m;stage=s;track=tracks[stage];graphics=$('graphics').value;difficulty=$('difficulty').value;
  backgroundCache=null;backgroundCacheKey='';trackSurfaceCache=null;trackSurfaceKey='';checkpoints=checkpointsForTrack();aiSpeedPlan=buildAiSpeedPlan();
  cars=[setupCar(0)];
- if(mode==='solo')cars.push(setupCar(1,true));else cars.push(setupCar(1));
+ if(mode==='solo'){const count=clamp(Number($('opponentCount').value)||3,1,3);for(let i=1;i<=count;i++)cars.push(setupCar(i,true));}else cars.push(setupCar(1));
  placeCar(cars[0],4,mode==='duo'?-18:-15);
- placeCar(cars[1],mode==='solo'?78:4,mode==='solo'?16:18);
+ cars.slice(1).forEach((car,index)=>placeCar(car,mode==='solo'?78+index*70:4,mode==='solo'?(index%2?-16:16):18));
  const requestedBarrierMode=$('barrierMode')?.value||'auto';barrierMode=requestedBarrierMode==='auto'?track.defaultBarriers:requestedBarrierMode;guardrailRanges=guardrailRangesForTrack();trackFeatures=buildTrackFeatures();
  decorations=decorationsForTrack();tireBarriers=barriersForTrack();buildPhysicalBarriers();skidMarks=[];terrainParticles=[];elapsed=0;countdownRemaining=3;goFlashRemaining=0;countdownShown='';paused=false;running=true;keys=Object.create(null);
  document.body.classList.add('racing');menu.classList.add('hidden');result.classList.add('hidden');game.classList.remove('hidden');
@@ -523,6 +524,15 @@ const AI_DRIVERS={
  normal:{pace:.97,brakingMargin:.90,response:7.5,laneSpeed:22,handbrake:true},
  hard:{pace:1,brakingMargin:.98,response:9.2,laneSpeed:28,handbrake:true}
 };
+const AI_PERSONALITIES={
+ racer:{name:'CPU 1',color:'#ffc857',pace:0,braking:0,response:0,lane:0,attackGap:135,closing:4},
+ attacker:{name:'FURIA',color:'#ff794f',pace:.03,braking:.05,response:1,lane:4,attackGap:150,closing:2},
+ precise:{name:'ÁPICE',color:'#ae97ff',pace:.02,braking:.06,response:1.4,lane:2,attackGap:120,closing:6}
+};
+function driverFor(car){
+ const base=AI_DRIVERS[difficulty]||AI_DRIVERS.normal,style=AI_PERSONALITIES[car.personality]||AI_PERSONALITIES.racer;
+ return {...base,pace:Math.min(1,base.pace+style.pace),brakingMargin:Math.min(1,base.brakingMargin+style.braking),response:base.response+style.response,laneSpeed:base.laneSpeed+style.lane,attackGap:style.attackGap,closing:style.closing};
+}
 const WORLD_SPEED_SCALE=.84;
 function vehicleHandling(speed,model,surface,safeSpeed,drift=0,hand=false){
  const excess=Math.max(0,speed-safeSpeed);
@@ -583,10 +593,8 @@ function trafficApproach(car,other){
  return {time,clearance};
 }
 // Keep physical proximity separate from race position: a lapped car is still solid.
-function aiTraffic(car,before,driver,dt){
- const maneuver=car.aiManeuver||(car.aiManeuver={type:'clear',side:0,age:0,cooldown:0});
+function aiTrafficAgainst(car,before,driver,dt,other,maneuver){
  maneuver.age+=dt;maneuver.cooldown=Math.max(0,maneuver.cooldown-dt);
- const other=cars.find(candidate=>candidate!==car&&!candidate.done);
  const bend=curvatureAt(before.progress+35);
  const idealLane=clamp(bend.turn*8,-10,10);
  const clear=()=>{maneuver.type='clear';maneuver.side=0;maneuver.age=0;return {lane:idealLane,speedLimit:Infinity};};
@@ -619,7 +627,7 @@ function aiTraffic(car,before,driver,dt){
    commit('pass',maneuver.side);
   }else if(maneuver.type==='pass'){
    commit('follow',0);maneuver.cooldown=1.5;
-  }else if(gap<135&&bend.severity<.65&&maneuver.cooldown===0&&(car.speed>other.speed+4||(other.speed<30&&gap<55))){
+  }else if(gap<(driver.attackGap||135)&&bend.severity<.65&&maneuver.cooldown===0&&(car.speed>other.speed+(driver.closing||4)||(other.speed<30&&gap<55))){
    commit('pass',chooseSide());
   }else commit('follow',0);
  }else if(gap>-85&&lapDifference>0&&other.speed>car.speed+4){
@@ -659,8 +667,29 @@ function aiTraffic(car,before,driver,dt){
  }
  return {lane,speedLimit};
 }
+function aiTraffic(car,before,driver,dt){
+ const fresh=()=>({type:'clear',side:0,age:0,cooldown:0});
+ // Retain the two-car controller state for existing single-opponent races.
+ if(cars.length===2){
+  car.aiManeuver=car.aiManeuver||fresh();
+  return aiTrafficAgainst(car,before,driver,dt,cars.find(other=>other!==car&&!other.done),car.aiManeuver);
+ }
+ const states=car.aiTrafficStates||(car.aiTrafficStates={});
+ const neighbours=cars.filter(other=>other!==car&&!other.done&&Math.hypot(other.x-car.x,other.y-car.y)<180)
+  .sort((a,b)=>Math.hypot(a.x-car.x,a.y-car.y)-Math.hypot(b.x-car.x,b.y-car.y));
+ for(const key of Object.keys(states))if(!neighbours.some(other=>String(other.player)===key))delete states[key];
+ let traffic=null,speedLimit=Infinity;
+ for(const other of neighbours){
+  const state=states[other.player]||(states[other.player]=fresh());
+  const decision=aiTrafficAgainst(car,before,driver,dt,other,state);
+  speedLimit=Math.min(speedLimit,decision.speedLimit);
+  if(!traffic&&state.type!=='clear'){traffic=decision;car.aiManeuver=state;}
+ }
+ if(!traffic){car.aiManeuver=fresh();traffic={lane:clamp(curvatureAt(before.progress+35).turn*8,-10,10)};}
+ return {lane:traffic.lane,speedLimit};
+}
 function driveAI(car,before,model,dt){
- const driver=AI_DRIVERS[difficulty]||AI_DRIVERS.normal;
+ const driver=driverFor(car);
  const traffic=aiTraffic(car,before,driver,dt);
  let lookAhead=clamp(28+car.speed*.27,32,94);
  if(car.speed<40&&car.aiManeuver.type!=='clear')lookAhead=Math.min(lookAhead,8+car.speed*.15);
@@ -754,13 +783,15 @@ function physics(car,i,dt){
  car.particles=car.particles.filter(p=>(p.life-=dt)>0);if(car.flash>0)car.flash-=dt;
 }
 function resolveCollisions(dt){
- const [a,b]=cars;if(!a||!b||a.done||b.done)return;
+ for(let i=0;i<cars.length;i++)for(let j=i+1;j<cars.length;j++){
+ const a=cars[i],b=cars[j];if(a.done||b.done)continue;
  const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);
  if(d<23){
   const nx=d>.01?dx/d:Math.cos(a.heading),ny=d>.01?dy/d:Math.sin(a.heading),push=(23-d)*.5;
   a.x-=nx*push;b.x+=nx*push;a.y-=ny*push;b.y+=ny*push;
-  a.speed=Math.max(30,a.speed-54*dt);b.speed=Math.max(30,b.speed-54*dt);a.flash=.06;b.flash=.06;
+  a.speed=Math.max(0,a.speed-54*dt);b.speed=Math.max(0,b.speed-54*dt);a.flash=.06;b.flash=.06;
   const now=performance.now();if(now-lastCrashSoundAt>420){playTone(105,.12,.05);lastCrashSoundAt=now;}
+ }
  }
 }
 const trackPathCache=new WeakMap();
@@ -896,7 +927,7 @@ function drawCar(context,car){
  context.fillStyle='#a9344e';context.fillRect(-15,-5,3,3);context.fillRect(-15,2,3,3);context.fillStyle='#111725';context.fillRect(-12,-11,24,2);
  context.restore();
  context.fillStyle='#10151ddd';context.fillRect(car.x-19,car.y-27,38,11);
- context.fillStyle=car.color;context.font='bold 9px monospace';context.textAlign='center';context.fillText(car.isAI?'CPU':'P'+(car.player+1),car.x,car.y-19);
+ context.fillStyle=car.color;context.font='bold 9px monospace';context.textAlign='center';context.fillText(carName(car),car.x,car.y-19);
  for(const smoke of car.particles){
   context.globalAlpha=clamp(smoke.life/smoke.max,0,1)*.42;context.fillStyle='#e1e2df';context.beginPath();context.arc(car.x-smoke.dx,car.y+smoke.dy,smoke.size,0,Math.PI*2);context.fill();
  }
@@ -923,6 +954,7 @@ function updateTelemetry(){
  $('speedValue').textContent=Math.round(player.speed)+' km/h';
  $('cpValue').textContent=Math.min(player.checkpointPasses||0,checkpoints.length)+' / '+checkpoints.length;
  const best=bestLapRecords[lapRecordKey()];$('bestLapValue').textContent=best?format(best):'--:--.-';
+ $('position').textContent=(raceClassification().indexOf(player)+1)+'/'+cars.length;
  $('timer').textContent=format(currentLapTime(player));$('lap').textContent=Math.min(LAPS_TO_WIN,player.lap+1)+'/'+LAPS_TO_WIN;
  drawMiniMap();
 }
@@ -979,15 +1011,15 @@ function loop(now){
 function format(t){const m=Math.floor(t/60),s=(t%60).toFixed(1).padStart(4,'0');return String(m).padStart(2,'0')+':'+s;}
 function finishRace(){
  running=false;document.body.classList.remove('racing');cancelAnimationFrame(raf);game.classList.add('hidden');result.classList.remove('hidden');
- const winner=[...cars].sort((a,b)=>(a.finishTime??Infinity)-(b.finishTime??Infinity))[0];
+ const classification=raceClassification(),winner=classification[0];
  awardPoints(winner);updateAudio();
  if(stage===tracks.length-1)$('resultTitle').textContent='¡CAMPEONATO TERMINADO!';
  else if(mode==='solo')$('resultTitle').textContent=winner.isAI?'¡TE GANÓ EL RIVAL!':'¡GANASTE LA CARRERA!';
  else $('resultTitle').textContent='¡GANA EL JUGADOR '+(winner.player+1)+'!';
- const champion=Object.entries(championship).sort((a,b)=>b[1]-a[1])[0];
- const finalNote=stage===tracks.length-1?' · CAMPEÓN DE TEMPORADA: '+(champion[0]==='player1'?'JUGADOR 1':champion[0]==='player2'?'JUGADOR 2':'CPU')+' ('+champion[1]+' pts)':'';
+ const champion=[...cars].sort((a,b)=>(championship[scoreKey(b)]||0)-(championship[scoreKey(a)]||0))[0];
+ const finalNote=stage===tracks.length-1?' · CAMPEÓN DE TEMPORADA: '+carName(champion)+' ('+(championship[scoreKey(champion)]||0)+' pts)':'';
  const bestLap=bestLapRecords[lapRecordKey()];
- $('resultText').textContent=track.name+' · '+LAPS_TO_WIN+' vueltas · Tiempo total '+format(winner.finishTime??elapsed)+(winner.lapTimes.length?' · Mejor vuelta '+format(Math.min(...winner.lapTimes)):'')+' · '+standingsText()+finalNote+(bestLap?' · Récord guardado '+format(bestLap):'')+(cars.some(car=>car.newBestLap)?' · ¡NUEVO RÉCORD!':'');
+ $('resultText').textContent=classification.map((car,index)=>(index+1)+'º '+carName(car)+' '+(car.done?format(car.finishTime):'SIN TERMINAR')).join(' · ')+' · '+track.name+' · '+LAPS_TO_WIN+' vueltas · Tiempo total '+format(winner.finishTime??elapsed)+(winner.lapTimes.length?' · Mejor vuelta '+format(Math.min(...winner.lapTimes)):'')+' · '+standingsText()+finalNote+(bestLap?' · Récord guardado '+format(bestLap):'')+(cars.some(car=>car.newBestLap)?' · ¡NUEVO RÉCORD!':'');
  $('nextBtn').textContent=stage===tracks.length-1?'NUEVA TEMPORADA ↻':'SIGUIENTE CIRCUITO →';
  $('nextBtn').onclick=()=>stage===tracks.length-1?start(mode,0,false):start(mode,(stage+1)%tracks.length,true);
 }

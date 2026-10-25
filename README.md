@@ -39,7 +39,7 @@ Las superficies incluyen asfalto, tierra, pasto, hielo, volcánico y secciones m
 
 ## Funcionalidades actuales
 
-- Carrera para un jugador contra CPU y modo local de dos jugadores.
+- Carrera para un jugador contra **1, 2 o 3 CPU** (tres por defecto) y modo local de dos jugadores sin CPU.
 - Campeonato por carreras.
 - Cuenta regresiva, cronómetro, vueltas, checkpoints y resultados.
 - Récords de mejor vuelta guardados en `localStorage`.
@@ -62,6 +62,7 @@ node tests/validate-track-identity.mjs
 node tests/validate-integration.mjs
 node tests/validate-cpu.mjs
 node tests/validate-traffic.mjs
+node tests/validate-grid.mjs
 node tests/validate-driving.mjs
 node tests/validate-steering-inertia.mjs
 node tests/validate-barriers.mjs
@@ -73,7 +74,7 @@ La prueba de CPU exige una mejora de al menos 20 % frente a 0.24 en el mismo tra
 
 Prueba opcional de navegador: `node tests/browser-smoke.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
-## Conducción — build 0.27
+## Conducción — build 0.28
 
 La aceleración del Balanced pasa de 76 a 110, el frenado de 192 a 230 y la escala real de movimiento de 0,62 a 0,84. Los otros tres modelos se ajustan en la misma dirección y conservan sus diferencias. A igual velocidad indicada, el coche recorre un 35,5 % más de distancia. La pérdida de agarre por exceso de velocidad es progresiva y conserva dirección; frenar sigue permitiendo cerrar mejor una curva. ESPACIO reduce velocidad aunque se mantenga W y ayuda a rotar el coche. La recuperación del derrape usa tiempo real, evitando cambios según los FPS.
 
@@ -93,11 +94,19 @@ El rival usa acelerador y freno con las mismas prestaciones del modelo Balanced,
 
 La CPU de 0.25 calcula velocidades de curva con el agarre y el derrape reales, mira más adelante a velocidad alta y convierte el giro necesario en una entrada de volante proporcional a su capacidad física. Normal y Difícil pueden usar freno de mano en curvas exigentes y con espacio; Fácil conserva una conducción más conservadora. El freno de mano paga la misma pérdida de velocidad que en el coche humano.
 
-Frente a 0.24, Normal mejora entre 26,5 % y 40,4 % por pista. En Dusty Mesa mide 19,40 s (Difícil 18,82); en Sunset 22,39 s (Difícil 21,58). Todavía queda calibrar su competitividad humana, sobre todo en Sunset. Añadir rivales requiere ampliar tráfico, contactos y clasificación; aún hay una sola CPU.
+Frente a 0.24, Normal mejora entre 26,5 % y 40,4 % por pista. En Dusty Mesa mide 19,40 s (Difícil 18,82); en Sunset 22,39 s (Difícil 21,58). Todavía queda calibrar su competitividad humana, sobre todo en Sunset. En 0.28 ya se puede elegir hasta tres CPU; el modo clásico de un rival conserva su controlador y sigue disponible.
 
 En 0.27, el tráfico anticipa acercamientos hasta 0,75 s usando velocidad, dirección e inercia de giro actuales. Antes de adelantar elige un lado con espacio; durante el solapamiento reserva más separación. Si el borde deja al perseguidor sin una línea segura, cede espacio longitudinal. El frenado considera la componente de velocidad del rival en su dirección y las entradas laterales a su carril. No cambian la velocidad máxima, la potencia ni la física humana.
 
 La CPU mantiene el lado elegido durante el ataque, limita el tiempo de un intento y no copia cada cambio lateral del rival al defender. Al quedar a la par, la separación física tiene prioridad sobre la defensa. Un doblado sigue siendo un obstáculo; ante un coche más rápido con una vuelta de ventaja, la CPU cede espacio. En tráfico bloqueado usa su frenado normal y puede rodear un coche detenido a baja velocidad si la trayectoria deja margen de contacto.
+
+## Parrilla — build 0.28
+
+El menú permite elegir uno, dos o tres rivales. **CPU 1** conserva el estilo clásico. **Furia** inicia ataques con menor diferencia de velocidad, más anticipación y cambios de línea más rápidos. **Ápice** exige más diferencia para atacar y destaca por respuesta de dirección y margen de frenado más preciso. Las tres dificultades se aplican a cada estilo; todos usan el Balanced sin potencia, agarre ni velocidad máxima adicionales. El límite de ritmo nunca supera el calculado por la física compartida.
+
+El tráfico evalúa todos los coches cercanos y conserva una maniobra por rival; un coche seguro en otro carril no oculta un obstáculo más adelante. Los contactos se resuelven entre todos los pares, sin acelerar artificialmente coches detenidos. Nombres y colores propios permiten reconocer rivales en pista y minimapa.
+
+POS muestra el puesto actual. Los resultados ordenan a todos los participantes: primero quienes terminan por tiempo, después los demás por progreso. El campeonato puntúa **25/18/15/12**, con cero para quien no termina. El cierre de carrera conserva la espera máxima de 18 s después del primer finalista. Dos jugadores mantiene sus dos coches y cámaras divididas. La geometría y las escapatorias no cambian.
 
 ## Estructura
 
@@ -108,6 +117,8 @@ La CPU mantiene el lado elegido durante el ataque, limita el tiempo de un intent
 - `tests/`: validación de geometría, ancho completo, integración, conducción, récords, barreras y CPU; prueba opcional de Chromium.
 
 ## Validación conocida
+
+La prueba `validate-grid.mjs` comprueba el tamaño de parrilla, diferencias de ataque ante la misma situación, detección de varios coches, contactos por pares, clasificación, puntos por puesto y sin terminar, continuidad del campeonato y modo local. Ejecuta carreras de cuatro controladores en las 14 pistas en Normal, más Sunset/Dusty/hielo en Fácil y Difícil. En 0.28 pasaron esas 20 carreras con 80 finalizaciones y 240 vueltas válidas. El máximo desvío fue 36,8 frente al ancho físico de 42; quedaron contactos en Dusty y Coastline. También pasaron las 42 carreras clásicas, 14 de tráfico de dos coches, comprobaciones estructurales/físicas y Chromium con la parrilla ampliada. Esto comprueba carreras y checkpoints; no representa una partida humana.
 
 En 0.27, el benchmark de tráfico completa 14 carreras y 84 vueltas válidas; los frames con contacto bajan de 70 a 11 frente a 0.26 (84,3 % menos tiempo con contacto). Los 11 restantes aparecen en Dusty, donde esa referencia previa no registraba contactos; se conserva como regresión local pendiente de ajuste. Los otros 13 circuitos no registraron contactos en este escenario. Esto no garantiza carreras sin choques contra personas. Pasaron también las 42 carreras de dificultad (126 vueltas), sintaxis, integración, geometría, conducción, inercia, barreras y Chromium. El ritmo en pista libre se conserva.
 
