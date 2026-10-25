@@ -68,6 +68,7 @@ node tests/validate-scenery.mjs
 node tests/validate-finish.mjs
 node tests/validate-car-visuals.mjs
 node tests/validate-audio.mjs
+node tests/validate-menu.mjs
 node tests/validate-driving.mjs
 node tests/validate-steering-inertia.mjs
 node tests/validate-barriers.mjs
@@ -79,7 +80,7 @@ La prueba de CPU exige una mejora de al menos 20 % frente a 0.24 en el mismo tra
 
 Pruebas opcionales de navegador: `node tests/browser-smoke.cjs` y `node tests/browser-audio.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
-## Conducción — build 0.33
+## Conducción — build 0.34
 
 La aceleración del Balanced pasa de 76 a 110, el frenado de 192 a 230 y la escala real de movimiento de 0,62 a 0,84. Los otros tres modelos se ajustan en la misma dirección y conservan sus diferencias. A igual velocidad indicada, el coche recorre un 35,5 % más de distancia. La pérdida de agarre por exceso de velocidad es progresiva y conserva dirección; frenar sigue permitiendo cerrar mejor una curva. ESPACIO reduce velocidad aunque se mantenga W y ayuda a rotar el coche. La recuperación del derrape usa tiempo real, evitando cambios según los FPS.
 
@@ -149,6 +150,12 @@ Cuenta regresiva, salida, checkpoint, vuelta, récord y resultado tienen señale
 
 Todo se sintetiza con Web Audio, sin archivos de sonido externos. Si la API no existe o falla, la carrera sigue funcionando. La calidad percibida y el volumen en parlantes/auriculares y teléfonos siguen pendientes de escucha humana.
 
+## Pantalla inicial — build 0.34
+
+El paddock reúne configuración de carrera, garaje y vista previa. El mapa usa el trazado real, indica checkpoints, meta y sentido, y muestra el perfil de barreras efectivo y el récord de esa versión. El garaje dibuja el modelo y pintura elegidos con el mismo render de carrera. Las vistas previas no modifican la simulación.
+
+Las flechas y Enter funcionan en los selectores y botones del menú; antes el control global de carrera bloqueaba esas teclas. Al correr el foco pasa al lienzo y al volver regresa al título del menú. Los controles secundarios se consultan en un desplegable. En móvil la configuración se apila sin desbordar; todavía se necesita teclado para conducir. No se agregaron controles táctiles.
+
 ## Estructura
 
 - `index.html`: menú, opciones, interfaz de carrera y telemetría.
@@ -158,6 +165,8 @@ Todo se sintetiza con Web Audio, sin archivos de sonido externos. Si la API no e
 - `tests/`: validación de geometría, ancho completo, integración, conducción, récords, barreras y CPU; prueba opcional de Chromium.
 
 ## Validación conocida
+
+En 0.34 se comprueban las 14 vistas previas, checkpoints/récords/perfiles, 24 selecciones de modelo y pintura, ausencia de cambios en la simulación y continuidad de selección entre etapas. Chromium comprueba teclado nativo, foco, menú móvil, vistas previas y el flujo de carrera existente. También se repiten las pruebas físicas/estructurales y CPU/tráfico/parrilla focalizados, y la medición real de audio. No se declara resuelto el balance humano ni los errores del reporte de video, que todavía no pudo transferirse.
 
 En 0.33 pasaron las pruebas de grafo/ciclo de vida de audio y la medición real de Web Audio en Chromium: motor audible, respuesta de derrape, pico muestreado sin recorte, silencio tras pausa/OFF/menú, recuperación al encender, mezcla local y motivo de resultado. El analizador registró RMS 0 en pausa/OFF/menú durante esta prueba. Esto no evalúa gusto musical, volumen de dispositivos, latencia móvil ni interrupciones de todos los navegadores. También pasaron el flujo completo de Chromium, integración, geometría, conducción, inercia, colisiones, llegada y CPU/tráfico/parrilla focalizados.
 

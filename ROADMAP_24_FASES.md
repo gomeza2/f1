@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.33**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.34**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -161,9 +161,10 @@ La interfaz identifica la build como **0.33**, continuando la base 0.17 del comm
 - Pendiente: escucha con personas, teléfonos, interrupciones de navegador, volumen/latencia y más calibración.
 
 ### Fase 16 — Pantalla inicial, HUD y minimapa
-**Simplificación solicitada implementada en 0.26; comprobada automáticamente y en Chromium.**
+**HUD simplificado en 0.26 y paddock inicial implementado en 0.34; comprobados automáticamente y en Chromium.**
 
 - Pedido del usuario: pantalla inicial más linda y cómoda, con jerarquía clara, selección de carrera fácil de entender y buen uso en escritorio/móvil. Conservar accesibles opciones y controles.
+- Paddock con configuración, garaje, mapa real con checkpoints/meta/sentido, récord por versión y perfil efectivo. Vista del modelo/pintura con el render de carrera. Selectores y botones funcionan con teclado nativo; foco al lienzo y al volver al menú. Configuración móvil apilada y controles secundarios desplegables.
 - Velocidad actual, vueltas, checkpoints, cronómetro de vuelta, mejor tiempo y minimapa. Se retiraron velocidad objetivo, próxima curva, terreno y porcentaje de derrape.
 - Cronómetro relativo al inicio de cada vuelta; conserva la última al finalizar. El resultado mantiene tiempo total.
 - Minimap independiente del área de conducción, visible también bajo 1050 px desde 0.20 y con marco de cámara.
@@ -740,3 +741,29 @@ El usuario indicó que persisten varios errores y adjuntó tres grabaciones. La 
 ### Continuación vigente con «siguiente»
 
 Partir de 0.33 y verificar main. Priorizar la revisión del reporte de carrera si llega material accesible; corregir fallos reproducibles y repetir pruebas afectadas. Después continuar **fase 16**, pantalla inicial más linda/cómoda y HUD, conservando el espacio de conducción. Tabla de puntos (17), CPU/nombres (10) y pruebas/correcciones (23) siguen en el hito de base principal; son unas cuatro entregas orientativas, sujetas a los problemas reales que aparezcan. No marcar el balance humano ni las 24 fases como terminadas.
+
+
+## Avance — build 0.34 (25 de octubre de 2026)
+
+### Fase 16 — Paddock y selección de carrera
+
+- Se continúa desde main 0.33 (`c67321d`), conservando coches y audio ya publicados.
+- Menú organizado en configuración, garaje y presentación de próxima carrera. Se mantienen todas las opciones y modos existentes.
+- Vista previa de los 14 trazados reales, checkpoints, bandera de meta/sentido, perfil de barreras efectivo y récord de la versión actual. No cambia la pista activa ni sus coches.
+- Vista del coche con el mismo render de carrera, cuatro modelos/seis pinturas y descripción existente. Resumen de vueltas, rivales y dificultad junto a los botones.
+- Corrección funcional: el manejador global interceptaba flechas, Enter y espacio incluso en el menú. Ahora respeta controles nativos; al iniciar se enfoca el lienzo y al regresar el título. La selección de pista sigue el avance del campeonato.
+- Escritorio en dos columnas, disposición móvil apilada, controles secundarios desplegables, tamaños de selección cómodos y fuente de respaldo monoespaciada cuando la externa falla. Se conserva el HUD exterior y el espacio de conducción.
+- No cambia física, CPU, trazados, puntuación ni récords. No se añaden controles táctiles.
+
+### Comprobaciones
+
+- Sintaxis, integración HTML/archivos, diez originales/14 registros, identidad y geometría; conducción, inercia, colisiones, barreras, llegada, render de coches y grafo de audio: superados.
+- `validate-menu.mjs`: 14 mapas con checkpoints/récords/perfiles, resumen de rivales/dificultad, 24 combinaciones de modelo/pintura, vistas sin mutar simulación y selección conservada al avanzar.
+- Chromium: selectores con flechas/Enter, sonido con Enter, inicio con Enter/foco al lienzo, vistas previas, móvil sin desbordamiento, controles desplegables y flujo de carrera completo. Capturas de escritorio y móvil revisadas.
+- Audio real de Chromium: salida de motor/derrape, pausa/OFF/menú silenciosos, reanudación, dos humanos y motivo de resultados: superado. No constituye escucha humana.
+- Casos focalizados CPU/tráfico y parrilla Sunset/Dusty repetidos; no se repite la batería completa de 42/20 carreras en una fase de interfaz.
+- Pendientes: dispositivos físicos, controles táctiles, percepción humana del manejo y errores reportados en grabaciones que superan el límite de transferencia; no se afirma haberlas visto.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.34 y verificar main. Continuar **fase 17**, tabla clara de resultados/puntos por carrera y total, manteniendo nombres/orden de campeonato y sin terminar. Después revisión CPU/nombres (10) y pruebas/correcciones (23), sin considerar cerrados el balance humano ni los errores reportados.

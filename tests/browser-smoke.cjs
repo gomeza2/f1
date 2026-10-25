@@ -25,8 +25,28 @@ const server=http.createServer((req,res)=>{
   // Disable decorative hover motion so click stability does not depend on frame timing.
   await page.addStyleTag({content:'button{transition:none!important}button:hover{transform:none!important}'});
   assert.equal(await page.locator('#stageSelect option').count(),14);
+  assert.ok(await page.locator('#trackPreview').isVisible());assert.ok(await page.locator('#carPreview').isVisible());
+  await page.locator('#stageSelect').focus();await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
+  assert.equal(await page.inputValue('#stageSelect'),'1','Menu arrows were intercepted by game controls');
+  assert.match(await page.locator('#previewTrackName').textContent(),/NEON HARBOR/);
+  await page.selectOption('#stageSelect','0');
+  await page.selectOption('#carModel','corner');await page.selectOption('#carColor','cyan');
+  assert.match(await page.getAttribute('#carPreview','aria-label'),/CORNER KING.*NEON CYAN/);
+  await page.selectOption('#carModel','balanced');await page.selectOption('#carColor','pink');
+  await page.setViewportSize({width:1366,height:768});
+  const startBounds=await page.locator('#soloStart').boundingBox();assert.ok(startBounds.y+startBounds.height<=768,'Desktop start button requires scrolling');
+  await page.setViewportSize({width:1440,height:1000});
+  if(process.env.SCREENSHOT_PATH)await page.screenshot({path:process.env.SCREENSHOT_PATH.replace('.png','-menu.png'),fullPage:true});
+  await page.setViewportSize({width:390,height:844});
+  const menuWidth=await page.evaluate(()=>({width:document.documentElement.scrollWidth,viewport:innerWidth}));assert.ok(menuWidth.width<=menuWidth.viewport,'Mobile paddock overflows horizontally');
+  await page.locator('.controls-help summary').click();assert.ok(await page.locator('.controls-help .keys').isVisible());
+  if(process.env.SCREENSHOT_PATH)await page.screenshot({path:process.env.SCREENSHOT_PATH.replace('.png','-menu-mobile.png'),fullPage:true});
+  await page.locator('.controls-help summary').click();await page.setViewportSize({width:1440,height:1000});
+  await page.locator('#soundBtn').focus();await page.keyboard.press('Enter');assert.equal(await page.getAttribute('#soundBtn','aria-pressed'),'false');await page.keyboard.press('Enter');assert.equal(await page.getAttribute('#soundBtn','aria-pressed'),'true');
+
   assert.equal(await page.inputValue('#opponentCount'),'3');await page.selectOption('#opponentCount','1');
-  await page.click('[data-mode="solo"]');
+  await page.locator('#soloStart').focus();await page.keyboard.press('Enter');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'canvas1');
   async function checkRaceLayout(){
    const layout=await page.evaluate(()=>{
     const a=$('#canvas1'),b=$('.telemetry-strip');
@@ -193,7 +213,7 @@ const server=http.createServer((req,res)=>{
   await page.emulateMedia({reducedMotion:'reduce'});assert.equal((await page.evaluate(()=>window.testGame.vehicleVisual())).rolling,false);
   await page.emulateMedia({reducedMotion:'no-preference'});
   assert.deepEqual(errors,[]);
-  console.log('PASS: Chromium, input/yaw/release/countersteer, countdown, pause/resume, restart, menu, 14 tracks, fullscreen/aspect/compact HUD/lap clock/no scrolling, world-sized caches, split/close/overview cameras, mobile map and landscape space, traffic overtake, Dusty Mesa pace/race, ice CPU race/results/next stage, local two-player, viewport resizing, two/three CPUs, grid restart/results/next stage and four-car contact separation without generated speed and themed scenery in all 14 tracks, compact checkered notice, continuing human, pause/deadline, result focus/summary, four models/six paints/three qualities, wheel/brake input feedback and reduced motion.');
+  console.log('PASS: Chromium, input/yaw/release/countersteer, countdown, pause/resume, restart, menu, 14 tracks, fullscreen/aspect/compact HUD/lap clock/no scrolling, world-sized caches, split/close/overview cameras, mobile map and landscape space, traffic overtake, Dusty Mesa pace/race, ice CPU race/results/next stage, local two-player, viewport resizing, two/three CPUs, grid restart/results/next stage and four-car contact separation without generated speed and themed scenery in all 14 tracks, compact checkered notice, continuing human, pause/deadline, result focus/summary, four models/six paints/three qualities, wheel/brake input feedback, paddock route/car previews, native menu keyboard controls, mobile paddock and reduced motion.');
   console.log('Mobile checks cover visibility only; human handling, touch controls, audio and performance remain unverified.');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1}).finally(()=>server.close());
