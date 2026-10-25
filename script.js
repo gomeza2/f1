@@ -23,6 +23,7 @@ const wrapAngle=a=>Math.atan2(Math.sin(a),Math.cos(a));
 const pointDistance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const LAPS_TO_WIN=3;
 const ROAD_EDGE=42, WALL_EDGE=66;
+const PHYSICS_VERSION=2;
 const CAR_MODELS={
  balanced:{name:'BALANCED',maxSpeed:232,acceleration:110,braking:230,steering:1,grip:1,grass:1,description:'Equilibrado para aprender y competir.'},
  corner:{name:'CORNER KING',maxSpeed:218,acceleration:105,braking:255,steering:1.19,grip:1.15,grass:.86,description:'Más agarre y frenado; velocidad punta menor.'},
@@ -63,7 +64,7 @@ let countdownRemaining=0,goFlashRemaining=0,countdownShown='',finishNoticeKey=''
 const BEST_LAPS_KEY='pixelGP.bestLaps.v1';
 function readBestLapRecords(){try{const value=JSON.parse(localStorage.getItem(BEST_LAPS_KEY)||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value:{};}catch(error){return {};}}
 let bestLapRecords=readBestLapRecords();
-function lapRecordKey(item=track){return item.layoutVersion?item.name+'@'+item.layoutVersion:item.name;}
+function lapRecordKey(item=track){return (item.layoutVersion?item.name+'@'+item.layoutVersion:item.name)+':p'+PHYSICS_VERSION;}
 function saveBestLap(trackName,time){if(!Number.isFinite(time)||time<=0)return false;const previous=bestLapRecords[trackName];if(Number.isFinite(previous)&&previous<=time)return false;bestLapRecords[trackName]=time;try{localStorage.setItem(BEST_LAPS_KEY,JSON.stringify(bestLapRecords));}catch(error){}return true;}
 let keys=Object.create(null),cars=[],graphics='high',difficulty='normal',decorations=[],tireBarriers=[],checkpoints=[];
 let guardrailPaths=[],physicalBarriers=[],barrierBuckets=new Map();
@@ -725,12 +726,16 @@ function driverFor(car){
  return {...base,pace:Math.min(1,base.pace+style.pace),brakingMargin:Math.min(1,base.brakingMargin+style.braking),response:base.response+style.response,laneSpeed:base.laneSpeed+style.lane,attackGap:style.attackGap,closing:style.closing};
 }
 const WORLD_SPEED_SCALE=.84;
+function accelerationAtSpeed(speed,model){return model.acceleration*.68*(1-.55*clamp(speed/model.maxSpeed,0,1));}
 function vehicleHandling(speed,model,surface,safeSpeed,drift=0,hand=false){
  const excess=Math.max(0,speed-safeSpeed);
  const speedLoss=Math.min(.5,excess*.0032);
  const grip=clamp((1-speedLoss-drift*(hand?.05:.12))*model.grip*(SURFACE_GRIP[surface]||1),.38,1.15);
- const turnRate=(.95+speed/235*2.9)*model.steering*grip*(hand?1.18:1);
- return {grip,turnRate};
+ const mechanicalTurn=(.95+speed/235*2.9)*model.steering*grip*(hand?1.18:1);
+ // Finite tire force: at high speed the minimum corner radius grows with speed squared.
+ const lateralAcceleration=200*model.grip*(SURFACE_GRIP[surface]||1)*(hand?1.12:1);
+ const turnRate=Math.min(mechanicalTurn,lateralAcceleration/Math.max(30,speed*WORLD_SPEED_SCALE));
+ return {grip,turnRate,lateralAcceleration};
 }
 let aiSpeedPlan=[];
 function buildAiSpeedPlan(){
@@ -932,7 +937,7 @@ function physics(car,i,dt){
   controls={throttle:keys[k.up]?1:0,brake:keys[k.down]?1:0,hand};
  }
  const {throttle,brake,hand}=controls;car.handbrake=hand;car.braking=brake>0||hand;
- car.speed+=throttle*model.acceleration*dt;
+ car.speed+=throttle*accelerationAtSpeed(car.speed,model)*dt;
  car.speed-=brake*(hand?model.braking*1.27:model.braking)*dt;
  car.speed-=(throttle?2.6:20)*dt;
  if(hand)car.speed-=model.braking*.55*dt;

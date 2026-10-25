@@ -16,7 +16,7 @@ for(const other of game.tracks.slice(1)){const distance=normalizedShapeDistance(
  const signature=createHash('sha256').update(JSON.stringify({points:other.points,samples:other.samples,worldScale:other.worldScale,layoutVersion:other.layoutVersion})).digest('hex');assert.equal(signature,baseline.otherTracks[other.name],`${other.name} changed during the Sunset-only update`);
 }
 assert.ok(geometry.roadMargin>=32&&geometry.clearance>=32,'Sunset lost usable runoff or branch clearance');
-game.bestLapRecords['SUNSET CIRCUIT@2']=18;game.start('solo',0);assert.equal(game.lapRecordKey(),'SUNSET CIRCUIT@3');assert.ok(game.saveBestLap(game.lapRecordKey(),35));assert.equal(game.bestLapRecords['SUNSET CIRCUIT@2'],18);
+game.bestLapRecords['SUNSET CIRCUIT@2']=18;game.start('solo',0);assert.equal(game.lapRecordKey(),'SUNSET CIRCUIT@3:p2');assert.ok(game.saveBestLap(game.lapRecordKey(),35));assert.equal(game.bestLapRecords['SUNSET CIRCUIT@2'],18);
 assert.equal(game.checkpoints.length,9);assert.ok(game.checkpoints.every((gate,index,all)=>index===0||gate.progress>all[index-1].progress));
 const human=game.cars[0];game.placeCar(human,sunset.length-4,0);human.speed=100;game.setKeys({w:true});game.physics(human,0,.1);assert.ok(human.progress<20,'Shortcut probe did not cross the finish');assert.equal(human.lap,0,'Finish accepted a lap without all nine checkpoints');
 element('stageSelect').value='0';game.updateMenuPreview();assert.match(element('previewRouteInfo').textContent,/9 CHECKPOINTS/);assert.match(element('previewBarriers').textContent,/ABIERTO/);

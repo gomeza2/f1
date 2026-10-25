@@ -27,7 +27,7 @@ for(const difficulty of (process.argv.includes('--focused')?[]:['easy','normal',
   times.push(ai.finishTime);
   if(difficulty==='normal'){
    const lap=ai.finishTime/3,previous=baseline[game.track.name];
-   if(previous?.layoutVersion===game.track.layoutVersion)assert.ok(lap<=previous.normalLap*.8,`${game.track.name}: pace did not improve at least 20% over 0.24 (${lap.toFixed(2)}s)`);
+   if(game.PHYSICS_VERSION===1&&previous?.layoutVersion===game.track.layoutVersion)assert.ok(lap<=previous.normalLap*.8,`${game.track.name}: pace did not improve at least 20% over 0.24 (${lap.toFixed(2)}s)`);
    console.log(`PACE: ${game.track.name}, mean lap ${lap.toFixed(2)}s; handbrake frames ${handbrakeFrames}.`);
   }
   if(difficulty!=='easy'&&(stage===0||stage===2))assert.ok(handbrakeFrames>0,'The driver did not use its controlled drift tactic');

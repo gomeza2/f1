@@ -35,7 +35,7 @@ El registro conserva los 14 circuitos y los diez nombres originales. La ampliaci
 
 En **0.39 Sunset Circuit** gana un recorrido propio: recta principal larga, curva exterior amplia, sector interior enlazado y regreso técnico. Pasa de 3572 a 6304 unidades de recorrido (**+76,5 %**) y su mundo de 1400×896 a 1800×1152. El coche, el ancho de pista (84), la velocidad y el perfil abierto se mantienen. El minimapa/vista previa y nueve checkpoints utilizan la geometría nueva.
 
-El objetivo humano sigue siendo una vuelta aproximada de **25–45 segundos**, pendiente de calibración con jugadores. Sunset mide ahora **34,86 s** por vuelta de CPU Normal libre, frente a 22,39 s anteriores; Fácil 41,82 s y Difícil 33,89 s. No se ralentizó la CPU ni el coche para lograrlo. Los otros 13 trazados no cambian; no se promete que todos ya cumplan el objetivo humano. Los récords de Sunset se separan como versión 3 y se conservan los de la versión 2.
+El objetivo humano sigue siendo una vuelta aproximada de **25–45 segundos**, pendiente de calibración con jugadores. En 0.39 Sunset midió **34,86 s** por vuelta de CPU Normal libre, frente a 22,39 s anteriores; con la física de 0.40 la referencia Normal pasa a **39,78 s**. No se ralentizó la CPU ni el coche para lograrlo. Los otros 13 trazados no cambian; no se promete que todos ya cumplan el objetivo humano. Los récords de Sunset se separan como versión 3 y se conservan los de la versión 2.
 
 El perfil automático deja **siete pistas abiertas, cuatro con protección en curvas cerradas y tres con vallas parciales**. Sunset Circuit arranca sin muros. Podés seguir eligiendo vallas completas o cualquier otro perfil en el menú.
 
@@ -78,23 +78,30 @@ node tests/validate-results.mjs
 node tests/validate-rival-awareness.mjs
 node tests/validate-race-lifecycle.mjs
 node tests/validate-driving.mjs
+node tests/validate-driving-demand.mjs
 node tests/validate-steering-inertia.mjs
 node tests/validate-barriers.mjs
 ```
 
 La prueba de identidad detecta copias de un trazado aunque se escalen, giren o reflejen, y comprueba que Dusty Mesa se diferencia de las otras 13 pistas. Esto no evalúa la diversión ni sustituye jugar.
 
-La prueba de CPU exige una mejora de al menos 20 % frente a 0.24 en el mismo trazado, además de comprobar límites físicos, desplazamiento y coste del freno de mano. Usa el código real en un entorno DOM simulado: completa tres vueltas con checkpoints en las 14 pistas y las tres dificultades, verifica prestaciones compartidas y prueba frenado ante tráfico y recuperación. No sustituye una carrera humana.
+La prueba de CPU comprueba límites físicos, desplazamiento y coste del freno de mano. La comparación de mejora de ritmo frente a 0.24 corresponde a la física anterior; con la versión 2 se mide una referencia nueva porque cambiaron las reglas para humanos y rivales. Usa el código real en un entorno DOM simulado: completa tres vueltas con checkpoints en las 14 pistas y las tres dificultades, verifica prestaciones compartidas y prueba frenado ante tráfico y recuperación. No sustituye una carrera humana.
 
 Pruebas opcionales de navegador: `node tests/browser-smoke.cjs`, `node tests/browser-audio.cjs` y `node tests/browser-release.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
-## Conducción — build 0.39
+## Conducción — build 0.40
 
-La aceleración del Balanced pasa de 76 a 110, el frenado de 192 a 230 y la escala real de movimiento de 0,62 a 0,84. Los otros tres modelos se ajustan en la misma dirección y conservan sus diferencias. A igual velocidad indicada, el coche recorre un 35,5 % más de distancia. La pérdida de agarre por exceso de velocidad es progresiva y conserva dirección; frenar sigue permitiendo cerrar mejor una curva. ESPACIO reduce velocidad aunque se mantenga W y ayuda a rotar el coche. La recuperación del derrape usa tiempo real, evitando cambios según los FPS.
+La revisión de 0.40 responde a la conducción demasiado fácil reportada por el usuario. La aceleración cae progresivamente con la velocidad: Balanced alcanza 100 en unos 1,59 s y el 95 % de su máxima en 4,40 s en la prueba de aceleración. Los otros modelos conservan su identidad y velocidad máxima. La escala de movimiento sigue en 0,84.
 
-En 0.24, el giro acumula y descarga velocidad angular progresivamente. A velocidad alta se siente algo más pesado, pero conserva el giro máximo sostenido y el contravolante permite corregirlo. El freno de mano agiliza la rotación; los reinicios limpian la inercia y los impactos contra barreras la amortiguan. Esta integración de giro usa tiempo real.
+El giro está limitado por una fuerza lateral finita compartida: a alta velocidad crece el radio mínimo y una curva cerrada exige bajar la velocidad. Frenar devuelve una trayectoria más cerrada. Se conserva dirección recuperable, inercia de giro y freno de mano con coste de velocidad; la sensación final del derrape sigue pendiente de validación humana. La CPU construye su plan de frenado usando el mismo modelo; no recibe potencia, agarre ni dirección extra.
 
-Los circuitos ahora tienen dimensiones de mundo independientes del lienzo. La cámara cercana conserva coches legibles y anticipa el camino; C o VISTA muestra el circuito completo. Dos jugadores usa dos cámaras independientes para evitar que los coches se vuelvan diminutos en un mapa grande. El minimapa muestra ambas posiciones y las ventanas de cámara.
+Los récords de esta física usan sufijo `:p2` (por ejemplo, `SUNSET CIRCUIT@3:p2`). Se conservan los anteriores. No se comparan como récord vigente tiempos logrados con la física que permitía pasar curvas mucho más rápido.
+
+### Trabajo pendiente para la base
+
+El plan vigente tiene cinco bloques contando esta revisión: conducción; grava/pasto/barreras; motor y sonido; modo local de 2–4 jugadores; revisión final. El feedback reemplaza la estimación anterior de una sola entrega restante. Cada bloque puede necesitar varias iteraciones.
+
+La próxima entrega debe añadir escapatorias de grava que frenen y levanten polvo antes del pasto, con superficies visibles/físicas compartidas y barreras según la opción elegida. Después se rehace el sonido de motor y se amplía el modo local: hoy siguen funcionando **dos humanos**, y **tres/cuatro todavía no están implementados**. El editor y desbloqueos quedan fuera de este hito.
 
 ## Interfaz — build 0.26
 
@@ -152,6 +159,8 @@ No se cambian prestaciones, tamaños físicos, superficies, dificultad ni contro
 
 ## Audio — build 0.33
 
+**Revisión de calidad pendiente:** el usuario informó que la síntesis actual no se parece a un motor convincente. La próxima revisión de fase 15 debe reemplazar el timbre y respuesta al acelerador; las pruebas técnicas previas solo verifican salida y ciclo de vida.
+
 El motor sintetizado cambia de timbre según el coche y de régimen según velocidad, acelerador y frenado. El derrape y el terreno tienen capas propias. En modo local se mezclan los dos coches humanos; los checkpoints de las CPU lejanas no producen avisos que se confundan con los tuyos. La primera llegada de un rival conserva su señal de aviso y los impactos cercanos se escuchan según intensidad/proximidad.
 
 Cuenta regresiva, salida, checkpoint, vuelta, récord y resultado tienen señales distintas. El sistema limita las voces transitorias, suaviza entradas/salidas y usa una mezcla con compresión. Pausa, sonido OFF, pestaña oculta y menú silencian todas las capas; los resultados conservan una señal breve y paran el motor. Se reutiliza un único contexto de audio y los efectos terminados se desconectan. El botón mantiene su control de encendido/apagado y expone su estado accesible.
@@ -195,6 +204,8 @@ En una convergencia cercana en paralelo, la CPU establece antes su objetivo de c
 - `tests/`: validación de geometría, ancho completo, integración, conducción, récords, barreras y CPU; prueba opcional de Chromium.
 
 ## Validación conocida
+
+En 0.40, la nueva prueba de conducción mide aceleración progresiva, diferencia real de trayectoria entre 100/máxima y recuperación de radio al frenar, límite de fuerza lateral en cuatro superficies y separación de récords. Pasan conducción, inercia, integración, geometría, colisiones y pruebas de navegador/entrega. Se repiten carreras completas con la nueva física; las referencias de contacto previas quedan asociadas a su versión. El criterio nuevo comprueba finalización y evita contactos sostenidos (más de 1 s acumulado por carrera de parrilla o 0,5 s con dos coches), sin afirmar que no haya roces. La batería completa suma 76 carreras y 450 vueltas válidas: cero contactos en el tráfico de dos coches; 18 frames acumulados en parrillas Normal y uno en Sunset Fácil. Siguen pendientes los contactos en grupo y la valoración humana. Grava, motor nuevo y 3–4 jugadores siguen pendientes.
 
 En 0.39, `validate-sunset.mjs` compara con una referencia congelada de 0.38: recorrido +76,5 %, silueta distinta de la anterior y de las otras 13, huella física del coche/pista y prestaciones conservadas, nueve checkpoints, meta sin vuelta válida si faltan checkpoints, récord previo conservado y hashes de los otros 13 trazados idénticos. Geometría: margen de asfalto al borde del mundo 41,3 y separación libre entre ramales 42,5 unidades. Chromium comprueba el circuito, cámaras, mapa y flujo de juego; se revisan capturas reales de vista completa y menú. El tiempo de CPU no reemplaza una vuelta humana. Se repite la batería completa de 76 carreras/450 vueltas y se conserva el orden de dificultad. Sunset Normal/Difícil de parrilla no registra contactos; Fácil registra tres frames nuevos. Los contactos de Coastline Normal, Dusty Difícil y Meadow con dos coches siguen documentados.
 

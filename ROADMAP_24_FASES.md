@@ -6,9 +6,23 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.39**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.40**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
+
+## Prioridad vigente de la base — feedback posterior a 0.39
+
+El usuario reporta que se acelera demasiado rápido, puede completar curvas sin frenar, falta grava antes del pasto, el motor no resulta convincente y el modo local necesita 3–4 humanos. Este reporte reemplaza la estimación anterior de una entrega restante. **Cinco bloques principales contando la conducción en curso**, con posibilidad de varias iteraciones por bloque:
+
+| Orden | Fases del plan | Entrega y criterio de aceptación | Estado |
+|---|---|---|---|
+| 1 | 7, 8, 10, 23 | Aceleración progresiva, peso/inercia y radio que exijan frenar en curvas cerradas, recuperación justa. CPU con las mismas reglas; récords separados si cambia la física. Comprobar curvas rápidas/técnicas, coches y superficies con el usuario. | Primera revisión 0.40 implementada; sensación humana pendiente. |
+| 2 | 6, 4, 12, 13 | Pianos/asfalto → escapatoria de grava/tierra frenante → pasto, definidas por sector/lado. Dibujo, agarre, resistencia y partículas usan el mismo material. Respetar barreras automáticas/elegidas y no dibujar grava sobre otro ramal ni barreras invisibles. Recuperarse acelerando sin teletransporte ni velocidad generada. | Siguiente entrega. |
+| 3 | 15 | Sustituir timbre actual por motor convincente: pulsos/armónicos, carga/acelerador y régimen, transiciones/cambios suaves, freno/derrape/grava con mezcla moderada. Recursos propios o con licencia verificada. Escucha humana obligatoria antes de aprobar calidad; conservar silencio en pausa/OFF/menú. | Pendiente; el audio actual no se considera aceptado por el usuario. |
+| 4 | 17, 2, 16, 22 | Mejorar dos jugadores y ampliar a 3/4 humanos: selector, entradas independientes/configurables, cámaras legibles, HUD/tiempos/CP por persona, nombres/colores, contactos, clasificación y puntos de todos. Controles sin solaparse con R/C/Esc; prever mandos para evitar depender de muchas teclas simultáneas. Probar teclado real/mandos, pausa/reinicio y modos 1/2/3/4. | Pendiente; hoy solo 2 humanos. |
+| 5 | 23, 24 | Revisión final en pistas, dificultades, coches, superficies/perfiles y cantidades de humanos; cronometraje humano 25–45 s donde corresponda, salidas/recuperación, rendimiento medido y publicación verificable. Corregir lo hallado antes de declarar base decente. | Pendiente; validación continua en cada bloque. |
+
+Editor, desbloqueos y desafíos extra quedan fuera de este hito. No ampliar más trazados para compensar una conducción que aún no está aceptada.
 
 ### Fase 1 — Auditoría y estabilidad
 **En curso continuo.**
@@ -71,7 +85,7 @@ La interfaz identifica la build como **0.39**, continuando la base 0.17 del comm
 - Pendiente: probar el agarre y la salida de pista jugando.
 
 ### Fase 7 — Derrape y respuesta física
-**Mejora de control de 0.20 e inercia de giro de 0.24 implementadas; sensación humana pendiente.**
+**Reabierta por feedback: aceleración progresiva y límite lateral implementados en 0.40; sensación humana y refinamiento de derrape pendientes.**
 
 - Aceleración, frenado y desplazamiento aumentados en los cuatro modelos. Balanced 76→110 de aceleración, 192→230 de frenado y escala real .62→.84.
 - Dirección más rápida con pérdida progresiva de agarre al exceder la velocidad de curva; se evita el antiguo mínimo .14 que dejaba al coche casi sin giro.
@@ -80,7 +94,8 @@ La interfaz identifica la build como **0.39**, continuando la base 0.17 del comm
 - Inercia de giro en 0.24: velocidad angular progresiva, algo más de peso a alta velocidad, recuperación mediante contravolante y respuesta más rápida al usar freno de mano. Reinicios limpian la inercia y los impactos de vallas la amortiguan.
 - Física y planificación de curvas de CPU comparten `vehicleHandling`; no se compensan cambios con ventajas exclusivas del rival.
 - Pruebas reproducibles de aceleración, velocidad real, radio de giro, dirección rápida, freno de mano y terrenos; repetir carreras completas de CPU y tráfico tras el ajuste.
-- Pendiente: sensación del derrape con personas, contactos impredecibles y persistencia por versión de física si los récords dejan de ser comparables.
+- 0.40: potencia de aceleración progresiva y giro limitado por fuerza lateral compartida. Récords con sufijo de física `:p2`, conservando anteriores. No se considera cerrado el control hasta probarlo con personas.
+- Pendiente: sensación del derrape con personas, entrada/salida y recuperación, contactos y recalibración en cada superficie.
 
 ### Fase 8 — CPU y trazada ideal
 **Mejora de ritmo y controlador implementada en 0.25; contraste humano y tráfico agresivo pendientes.**
@@ -155,7 +170,7 @@ La interfaz identifica la build como **0.39**, continuando la base 0.17 del comm
 - Sin cambios de prestaciones, volumen de colisión, controles ni CPU. Pendiente: percepción humana a velocidad real y ampliar opciones cosméticas posteriormente.
 
 ### Fase 15 — Audio
-**Motor, terreno, derrape y señales mejorados en 0.33; grafo y salida real comprobados en Chromium. Escucha humana pendiente.**
+**Reabierta: implementación técnica 0.33 comprobada, pero el usuario rechaza la calidad del motor. Sustitución y escucha pendientes.**
 
 - Timbres/régimen de motor según modelo y conducción; mezcla de los dos humanos en modo local. Capas de derrape y terreno.
 - Cuenta regresiva, salida, checkpoints/vueltas/récords y llegada/resultados diferenciados; evita avisos de checkpoints de CPU. Impactos próximos con intensidad y límite de repetición.
@@ -180,7 +195,7 @@ La interfaz identifica la build como **0.39**, continuando la base 0.17 del comm
 - Dos tablas con tiempos/diferencias/mejor vuelta, puntos ganados y clasificación acumulada; humanos y colores identificados. Sin terminar recibe cero puntos. Empates de puntos comparten puesto; final empatada se informa sin elegir campeón arbitrario.
 - Pruebas automáticas y Chromium de tablas, continuidad y móvil; contrarreloj/desafíos siguen pendientes.
 - Carrera contra CPU.
-- Dos jugadores en el mismo dispositivo.
+- Dos jugadores en el mismo dispositivo; mejorar su lectura/controles y ampliar a 3/4 humanos, todavía pendiente.
 - Campeonato por puntos.
 - Añadir contrarreloj, carreras personalizadas y retos de circuito.
 
@@ -901,3 +916,28 @@ Partir de 0.38 y verificar main. La siguiente prioridad de producto es volver a 
 El usuario preguntó cuánto falta para una base importante y decente. Estimación comunicada: **dos entregas contando esta** (Sunset y revisión final), con posibilidad de una adicional si aparecen fallos importantes. Después de publicar 0.39 queda **una revisión principal de jugabilidad/correcciones**, sujeta a lo que revelen las pruebas humanas. No es un compromiso de terminar todos los errores ni las 24 fases; editor/desbloqueos/desafíos no forman parte de ese hito.
 
 Partir de 0.39 y verificar main. Próxima prioridad: **fase 23, revisión final del hito**, conservando Sunset y comprobando cortes/salidas de pista, reinicios/pausa, campeonato y contactos pendientes. Evitar añadir modos o agrandar más pistas antes de cerrar esta evaluación; si llega video accesible, priorizar sus fallos reproducibles. No marcar las funciones futuras de las 24 fases como completas.
+
+
+## Avance — build 0.40 (25 de octubre de 2026)
+
+### Fase 7 reabierta — el feedback humano manda sobre las simulaciones
+
+- Base main verificada en `07a5235`. Se registra el reporte de aceleración demasiado rápida, curvas que no exigen frenar, falta de grava frenante, sonido de motor insatisfactorio y pedido de mejorar 2 jugadores/ampliar a 3–4.
+- Se replanifica el hito en los cinco bloques detallados al principio. La estimación anterior de una entrega final queda reemplazada; no se agregan las funciones futuras al código sin probarlas ni se afirma que ya estén hechas.
+- Primera revisión: aceleración efectiva disminuye según velocidad. Balanced 0–100 1,59 s y 95 % de máxima 4,40 s; Corner 1,69/4,34, Speed 1,40/4,21 y Rally 1,57/4,13 s en prueba de aceleración. Máximas, tamaños, pistas y escala de movimiento intactos.
+- Fuerza lateral finita según modelo/material: el radio mínimo crece con velocidad; se mantiene la dirección recuperable y frenar permite cerrar la trayectoria. El freno de mano mantiene coste de velocidad. No se presenta esto como un modelo final de deriva o sensación humana ya aceptada.
+- CPU reconstruye su plan con el mismo `vehicleHandling`; aceleración compartida mediante `accelerationAtSpeed`. No se añade potencia, agarre o dirección exclusiva. Normal libre Sunset 39,78 s y Dusty 23,50 s son nuevas referencias, no tiempos comparables con reglas anteriores.
+- Física 2: récords `nombre@trazado:p2`; claves previas permanecen guardadas. No se fuerzan mejores tiempos frente a 0.24 cuando cambió el modelo físico.
+
+### Pruebas y limitaciones de esta revisión
+
+- `validate-driving-demand.mjs`: progresión de 0–100 y aproximación a máxima en cuatro modelos, radio observado mayor al ir rápido, frenado que recupera radio, límite lateral en asfalto/tierra/pasto/hielo y preservación de récords anteriores: superado.
+- Se corrige un requisito antiguo de test que exigía llegar a 100 en un segundo: contradecía el feedback actual. Ahora se comprueba respuesta útil y progresiva. Las aserciones de cero contacto asociadas a física anterior se conservan para esa versión; física 2 registra contactos nuevos y exige finalizar sin amontonamientos sostenidos (≤1 s acumulado en parrilla, ≤0,5 s con dos coches en tres vueltas). No se interpreta ese presupuesto como ausencia de errores.
+- Se descarta una variante de planificación por carril que elevó los contactos de Sunset 3→10. Se conserva la planificación compartida existente, usando la nueva capacidad física de giro.
+- Chromium completo y entrega sin instrumentación: superados, con nuevos récords y controles/cámaras/pausa/resultados/modo local preservados. Conducción/inercia, geometría/identidad, HTML/archivos/70 perfiles, Sunset y récords, colisiones, barreras, conciencia de rivales, ciclo de carrera, llegada/resultados, menú, coches y grafo de audio: superados.
+- Batería completa nueva: 42 carreras clásicas/126 vueltas, 20 de parrilla/240 vueltas y 14 de tráfico/84 vueltas: **76 carreras y 450 vueltas válidas**. Dificultades ordenadas en las 14 pistas y prestaciones compartidas comprobadas. Tráfico de dos coches: cero contactos en esa referencia. Parrilla Normal: Sunset 3, Dusty 5, Volcano 5, Champion 1 y Meadow 4 frames de contacto (18 total); Fácil añade 1 en Sunset y Difícil cero en sus tres pistas de prueba. No se presenta esta física como libre de contactos ni se comparan directamente los tiempos con reglas anteriores.
+- La calidad del audio actual permanece rechazada por el usuario; que la señal se produzca no acredita un motor convincente. Grava/tierra de escape antes del pasto, dibujo/barreras asociados y 3–4 humanos todavía no se implementan en esta entrega.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.40 y verificar main. Revisar primero el feedback humano de la nueva conducción. Siguiente bloque de desarrollo: **fases 6/4**, escapatorias de grava/tierra frenante seguidas de pasto, materiales compartidos entre dibujo/física/partículas y respeto de opciones de barreras. Después **15 motor**, **17/2/16 local 2–4 humanos**, y **23/24 revisión final**. Mantener el plan de cinco bloques como guía, sin prometer un número fijo de entregas ni declarar la base aceptada solo por las pruebas automáticas.
