@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.30**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.31**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -134,9 +134,10 @@ La interfaz identifica la build como **0.30**, continuando la base 0.17 del comm
 - Pendiente: revisión humana, medir rendimiento y enriquecer hitos de pistas con poco espacio sin invadir conducción.
 
 ### Fase 13 — Efectos de terreno y cierre visual
-**Primera capa implementada y revisada.**
+**Bandera y feedback de llegada implementados en 0.31; efectos de terreno existentes conservados.**
 
-- Pedido del usuario: bandera a cuadros y transición de llegada claras, sin ocultar la conducción de quienes siguen corriendo; considerar reducción de movimiento.
+- Bandera a cuadros compacta fuera del lienzo al llegar el primer coche. Quienes siguen en pista conservan controles; reloj de cierre de 18 s, pausa y reanudación coherentes.
+- Bandera de resultados con tres ciclos de animación y preferencia de movimiento reducido. Resumen personal, ganador identificado y foco al título. La tabla de puntos queda pendiente en fase 17.
 - Partículas de derrape y salida de pista.
 - Marcas de neumáticos limitadas para mantener el rendimiento.
 - Textura volcánica con piedras oscuras y destellos de calor.
@@ -650,3 +651,33 @@ Partir de 0.29 y verificar main. Próxima fase: **12**, mejorar ambientación y 
 ### Continuación vigente con «siguiente»
 
 Partir de 0.30 y verificar main. Próxima fase: **13**, efectos/feedback y bandera a cuadros solicitada; conservar la visibilidad de quienes siguen compitiendo, los límites de partículas y la accesibilidad. Después abordar pantalla inicial y tabla de puntos en sus fases, manteniendo el pedido de mejores CPU/nombres registrado en fase 10. No repetir la ambientación ya comprobada ni cambiar geometría sin validación de recorrido y vueltas humanas.
+
+
+## Avance — build 0.31 (25 de octubre de 2026)
+
+### Fase 13 — Bandera y cierre de carrera
+
+- Base limpia y remota verificada en `0da765e`.
+- Aviso con icono a cuadros en la franja de estado existente, fuera del lienzo. Identifica a quien terminó e indica que el jugador puede seguir; al llegar el jugador muestra su puesto y espera a los rivales.
+- Se centraliza la condición de cierre: todos terminan o 18 s después del primer finalista válido. El contador se congela al pausar; el aviso se restaura al reanudar. Los avisos hablados cambian por llegada y el contador queda excluido del anuncio por segundo.
+- Resultados con bandera propia de CSS, animación limitada a tres ciclos (4,8 s) y desactivación por `prefers-reduced-motion`. Identifica al ganador y añade puesto/tiempo personal o sin terminar; en modo local muestra ambos tiempos.
+- Foco programático al título de resultados; botones de siguiente circuito y menú conservados. Se protege el cierre contra llamadas repetidas para evitar sumar puntos dos veces.
+- No se cambian física, CPU, trazados, límites de partículas, récords ni puntos por puesto. No se añade una superposición de llegada sobre la pista.
+
+### Errores encontrados y comprobaciones
+
+- La primera revisión perdía el aviso de llegada después de pausa/reanudación. Se corrigió y se añadió la regresión a Node y Chromium.
+- `tests/validate-finish.mjs`: primeros finalistas, continuidad del humano, ausencia de anuncios cada frame/segundo, plazo exacto, pausa/reanudación, cronómetro de última vuelta, puesto/tiempo, sin terminar, puntos una vez, reinicio y modo local.
+- Chromium: aviso no reduce ni tapa el lienzo; humano sigue acelerando, reloj en pausa y aviso restaurado, móvil vertical/horizontal sin scroll de carrera, reinicio limpia bandera, foco en resultados, resumen, tres ciclos de animación y movimiento reducido. Revisadas capturas de aviso y resultados en escritorio/móvil.
+- Sintaxis, IDs/archivos, diez originales/14 registros, geometría, identidad, cuatro modelos, dirección, colisiones/recuperación y barreras (37 contornos/11174 puntos): superados. Casos focalizados de CPU/tráfico y parrilla Sunset/Dusty: dos carreras/24 vueltas válidas. No se repiten las 42 carreras clásicas ni las 20 de parrilla completas: no cambia el controlador ni la física.
+- Repetición final de Chromium superada tras corregir pausa/reanudación; nueva captura del aviso sin superposición revisada. Siguen pendientes conducción humana, audio y medición de rendimiento/dispositivos físicos.
+
+### Hito orientativo — base principal buena y cómoda
+
+Ante la consulta del usuario, se estima **unas seis entregas después de 0.31**: fase 14 (coches), 15 (audio), 16 (pantalla inicial/HUD), 17 (resultados/tabla de puntos), otra pasada de fase 10 (CPU/nombres) y fase 23 (pruebas completas/correcciones). Es una estimación de alcance, no una garantía de que no aparezcan regresiones ni una declaración de terminado. Editor, progresión ampliada y otras mecánicas permanecen en las 24 fases para ampliaciones posteriores.
+
+La base debe permitir entrar, configurar y correr cómodamente; reconocer coches/rivales y estados de carrera; consultar resultados/puntos claros; y completar las pistas con CPU competitiva y sin errores bloqueantes. El balance requiere probar contra personas, especialmente los tiempos de Sunset/Dusty y las escapatorias.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.31 y verificar main. Próxima fase: **14**, mejorar lectura y respuesta visual de los coches, conservando los cuatro modelos, pinturas, física y controles. Seguir después audio, pantalla inicial y tabla de puntos; mantener la pasada de CPU/nombres y las pruebas finales como parte del hito de base principal. No marcar completo el balance humano ni volver a desarrollar la bandera que ya está implementada.

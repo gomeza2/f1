@@ -65,6 +65,7 @@ node tests/validate-traffic.mjs
 node tests/validate-grid.mjs
 node tests/validate-collisions.mjs
 node tests/validate-scenery.mjs
+node tests/validate-finish.mjs
 node tests/validate-driving.mjs
 node tests/validate-steering-inertia.mjs
 node tests/validate-barriers.mjs
@@ -76,7 +77,7 @@ La prueba de CPU exige una mejora de al menos 20 % frente a 0.24 en el mismo tra
 
 Prueba opcional de navegador: `node tests/browser-smoke.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
-## Conducción — build 0.30
+## Conducción — build 0.31
 
 La aceleración del Balanced pasa de 76 a 110, el frenado de 192 a 230 y la escala real de movimiento de 0,62 a 0,84. Los otros tres modelos se ajustan en la misma dirección y conservan sus diferencias. A igual velocidad indicada, el coche recorre un 35,5 % más de distancia. La pérdida de agarre por exceso de velocidad es progresiva y conserva dirección; frenar sigue permitiendo cerrar mejor una curva. ESPACIO reduce velocidad aunque se mantenga W y ayuda a rotar el coche. La recuperación del derrape usa tiempo real, evitando cambios según los FPS.
 
@@ -124,6 +125,12 @@ La colocación usa variación determinista y distancia exacta a todos los segmen
 
 Detallados añade sombras, relieve, ventanas, público y detalles pequeños; Retro simplifica, y Rendimiento reduce densidad y detalles. La decoración se genera una vez por circuito/calidad y se dibuja en el fondo cacheado. No cambia geometría, superficies, coches, física, CPU ni puntos.
 
+## Bandera a cuadros — build 0.31
+
+Cuando termina el primer coche, aparece un aviso con bandera en la franja de estado, fuera del lienzo. Si todavía estás corriendo, podés continuar hasta que todos terminen o se cumplan **18 segundos desde el primer finalista**. El reloj de cierre se detiene con la pausa y el aviso se recupera al reanudar. Al terminar vos, se informa tu puesto y se conserva el tiempo de tu última vuelta.
+
+Los resultados muestran una bandera con una animación breve de tres ciclos, el nombre del ganador y un resumen de tu puesto/tiempo o «sin terminar». En dos jugadores se muestran los tiempos de ambos. La preferencia del sistema **reducir movimiento** desactiva la animación. El foco pasa al título de resultados y el lector de pantalla recibe avisos por llegada, sin anunciar cada segundo del reloj. Cerrar dos veces no duplica los puntos.
+
 ## Estructura
 
 - `index.html`: menú, opciones, interfaz de carrera y telemetría.
@@ -133,6 +140,8 @@ Detallados añade sombras, relieve, ventanas, público y detalles pequeños; Ret
 - `tests/`: validación de geometría, ancho completo, integración, conducción, récords, barreras y CPU; prueba opcional de Chromium.
 
 ## Validación conocida
+
+En 0.31, `validate-finish.mjs` comprueba primer finalista, continuidad humana, plazo de 18 s, pausa/reanudación, resumen personal, vueltas/tiempos, sin terminar, puntos una sola vez, reinicio y dos jugadores. Chromium comprueba además bandera/aviso sin reducir el lienzo, distribución móvil, continuación de controles, foco, animación limitada y movimiento reducido. Pasaron integración, geometría, conducción, inercia, contactos, barreras y casos focalizados de CPU/tráfico/parrilla. No se modifica la física ni se repiten todas las carreras de 0.29.
 
 `validate-scenery.mjs` comprueba las 14 pistas en tres calidades: 962 colocaciones, huella visible dentro del espacio reservado, separación exacta de pista, límites del mundo, distancia entre objetos, generación reproducible y reutilización de caché. Detallados suma 385 objetos y Rendimiento 247 entre las 14 pistas. Pasaron también integración, geometría, conducción, inercia, barreras, contactos/recuperación, casos focalizados de CPU/tráfico, carreras de parrilla en Sunset/Dusty y Chromium con render de los 14 escenarios. Se revisaron capturas de ocho entornos. No se midieron FPS ni se repitió en esta etapa toda la batería de carreras de 0.29; la física y los controladores no cambian.
 

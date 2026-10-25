@@ -59,7 +59,7 @@ const TRACK_BARRIERS=['open','half','open','corners','corners','open','corners',
 tracks.forEach((item,index)=>{item.surface=TRACK_SURFACES[index]||'asphalt';item.defaultBarriers=TRACK_BARRIERS[index]||'full';item.dirtRanges=item.surface==='mixed'?[[item.length*.24,item.length*.33],[item.length*.66,item.length*.75]]:[];});
 let cameraMode='near';
 let stage=0,mode='solo',track=tracks[0],running=false,paused=false,raf=0,last=0,elapsed=0;
-let countdownRemaining=0,goFlashRemaining=0,countdownShown='';
+let countdownRemaining=0,goFlashRemaining=0,countdownShown='',finishNoticeKey='';
 const BEST_LAPS_KEY='pixelGP.bestLaps.v1';
 function readBestLapRecords(){try{const value=JSON.parse(localStorage.getItem(BEST_LAPS_KEY)||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value:{};}catch(error){return {};}}
 let bestLapRecords=readBestLapRecords();
@@ -564,7 +564,7 @@ function start(m,s=Number($('stageSelect').value),keepSeason=false){
  placeCar(cars[0],4,mode==='duo'?-18:-15);
  cars.slice(1).forEach((car,index)=>placeCar(car,mode==='solo'?78+index*70:4,mode==='solo'?(index%2?-16:16):18));
  const requestedBarrierMode=$('barrierMode')?.value||'auto';barrierMode=requestedBarrierMode==='auto'?track.defaultBarriers:requestedBarrierMode;guardrailRanges=guardrailRangesForTrack();trackFeatures=buildTrackFeatures();
- decorations=decorationsForTrack();tireBarriers=barriersForTrack();buildPhysicalBarriers();skidMarks=[];terrainParticles=[];elapsed=0;countdownRemaining=3;goFlashRemaining=0;countdownShown='';paused=false;running=true;keys=Object.create(null);
+ decorations=decorationsForTrack();tireBarriers=barriersForTrack();buildPhysicalBarriers();skidMarks=[];terrainParticles=[];elapsed=0;finishNoticeKey='';countdownRemaining=3;goFlashRemaining=0;countdownShown='';paused=false;running=true;keys=Object.create(null);
  document.body.classList.add('racing');menu.classList.add('hidden');result.classList.add('hidden');game.classList.remove('hidden');
  $('views').classList.toggle('pixelated',graphics==='retro');$('views').classList.toggle('performance',graphics==='lite');
  $('trackName').textContent=track.name;$('stageLabel').textContent=String(stage+1).padStart(2,'0');if($('trackCount'))$('trackCount').textContent=String(tracks.length).padStart(2,'0');
@@ -580,8 +580,11 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
 window.addEventListener('blur',()=>{keys=Object.create(null);});
 function togglePause(){
- if(!running)return;paused=!paused;$('status').textContent=paused?'PAUSA — ESC PARA SEGUIR':'¡A FONDO!';updateAudio();
- if(!paused){last=performance.now();raf=requestAnimationFrame(loop);}
+ if(!running)return;paused=!paused;
+ if(paused){$('status').textContent='PAUSA — ESC PARA SEGUIR';$('status').classList.remove('checkered-status');}
+ else if(raceFinishState().finishers.length)updateFinishFeedback(true);
+ else $('status').textContent='¡A FONDO!';
+ updateAudio();if(!paused){last=performance.now();raf=requestAnimationFrame(loop);}
 }
 function gateCrossed(gate,fromX,fromY,toX,toY,heading){
  const tx=Math.cos(gate.angle),ty=Math.sin(gate.angle),nx=-ty,ny=tx;
@@ -1033,12 +1036,33 @@ function currentLapTime(car){
  if(car.done)return car.lapTimes[car.lapTimes.length-1]||0;
  return Math.max(0,elapsed-car.lapStartTime);
 }
+// One deadline and one announcement source for all race-ending paths.
+function raceFinishState(){
+ const finishers=cars.filter(car=>car.done&&Number.isFinite(car.finishTime)).sort((a,b)=>a.finishTime-b.finishTime||a.player-b.player);
+ const remaining=finishers.length?Math.max(0,18-(elapsed-finishers[0].finishTime)):null;
+ return {finishers,remaining,closed:cars.length>0&&(cars.every(car=>car.done)||remaining===0)};
+}
+function updateFinishFeedback(force=false){
+ const state=raceFinishState(),clock=$('finishClock');
+ $('status').classList.toggle('checkered-status',state.finishers.length>0);
+ clock.classList.toggle('hidden',!state.finishers.length);
+ if(!state.finishers.length){clock.textContent='';return;}
+ clock.textContent='CIERRE '+Math.ceil(state.remaining)+' s';
+ const key=state.finishers.map(car=>car.player).join(',');
+ if(key===finishNoticeKey&&!force)return;
+ finishNoticeKey=key;
+ const human=cars[0],latest=state.finishers[state.finishers.length-1];
+ if(mode==='solo'&&human.done&&Number.isFinite(human.finishTime)){
+  $('status').textContent='LLEGASTE '+(raceClassification().indexOf(human)+1)+'.º / '+cars.length+(state.closed?' · CARRERA TERMINADA':' · ESPERANDO RIVALES');
+ }else $('status').textContent=carName(latest)+' TERMINÓ · '+(mode==='solo'?'SEGUÍ CORRIENDO':'SIGUEN EN PISTA');
+}
 function updateTelemetry(){
  const player=cars[0];if(!player)return;
  $('speedValue').textContent=Math.round(player.speed)+' km/h';
  $('cpValue').textContent=Math.min(player.checkpointPasses||0,checkpoints.length)+' / '+checkpoints.length;
  const best=bestLapRecords[lapRecordKey()];$('bestLapValue').textContent=best?format(best):'--:--.-';
  $('position').textContent=(raceClassification().indexOf(player)+1)+'/'+cars.length;
+ updateFinishFeedback();
  $('timer').textContent=format(currentLapTime(player));$('lap').textContent=Math.min(LAPS_TO_WIN,player.lap+1)+'/'+LAPS_TO_WIN;
  drawMiniMap();
 }
@@ -1087,21 +1111,23 @@ function loop(now){
  }
  if(goFlashRemaining>0&&countdownRemaining<=0)goFlashRemaining=Math.max(0,goFlashRemaining-dt);
  updateGroundEffects(dt);updateAudio();drawFrame();updateTelemetry();
- const finishers=cars.filter(car=>car.done);
- if(cars.every(car=>car.done)){finishRace();return;}
- if(finishers.length&&elapsed-Math.min(...finishers.map(car=>car.finishTime))>18){finishRace();return;}
+ if(raceFinishState().closed){finishRace();return;}
  raf=requestAnimationFrame(loop);
 }
 function format(t){const m=Math.floor(t/60),s=(t%60).toFixed(1).padStart(4,'0');return String(m).padStart(2,'0')+':'+s;}
 function finishRace(){
+ if(!running)return;
  running=false;document.body.classList.remove('racing');cancelAnimationFrame(raf);game.classList.add('hidden');result.classList.remove('hidden');
  const classification=raceClassification(),winner=classification[0];
- awardPoints(winner);updateAudio();
+ awardPoints();updateAudio();
  if(stage===tracks.length-1)$('resultTitle').textContent='¡CAMPEONATO TERMINADO!';
- else if(mode==='solo')$('resultTitle').textContent=winner.isAI?'¡TE GANÓ EL RIVAL!':'¡GANASTE LA CARRERA!';
+ else if(mode==='solo')$('resultTitle').textContent=winner.isAI?'¡GANÓ '+carName(winner)+'!':'¡GANASTE LA CARRERA!';
  else $('resultTitle').textContent='¡GANA EL JUGADOR '+(winner.player+1)+'!';
  const champion=[...cars].sort((a,b)=>(championship[scoreKey(b)]||0)-(championship[scoreKey(a)]||0))[0];
  const finalNote=stage===tracks.length-1?' · CAMPEÓN DE TEMPORADA: '+carName(champion)+' ('+(championship[scoreKey(champion)]||0)+' pts)':'';
+ const human=cars[0];
+ $('resultTitle').focus({preventScroll:true});
+ $('finishSummary').textContent=mode==='solo'?(human.done&&Number.isFinite(human.finishTime)?'TU PUESTO '+(classification.indexOf(human)+1)+'.º / '+cars.length+' · TU TIEMPO '+format(human.finishTime):'SIN TERMINAR · '+human.lap+' / '+LAPS_TO_WIN+' VUELTAS'):'P1 '+(cars[0].done?format(cars[0].finishTime):'SIN TERMINAR')+' · P2 '+(cars[1].done?format(cars[1].finishTime):'SIN TERMINAR');
  const bestLap=bestLapRecords[lapRecordKey()];
  $('resultText').textContent=classification.map((car,index)=>(index+1)+'º '+carName(car)+' '+(car.done?format(car.finishTime):'SIN TERMINAR')).join(' · ')+' · '+track.name+' · '+LAPS_TO_WIN+' vueltas · Tiempo total '+format(winner.finishTime??elapsed)+(winner.lapTimes.length?' · Mejor vuelta '+format(Math.min(...winner.lapTimes)):'')+' · '+standingsText()+finalNote+(bestLap?' · Récord guardado '+format(bestLap):'')+(cars.some(car=>car.newBestLap)?' · ¡NUEVO RÉCORD!':'');
  $('nextBtn').textContent=stage===tracks.length-1?'NUEVA TEMPORADA ↻':'SIGUIENTE CIRCUITO →';

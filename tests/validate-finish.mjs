@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import {loadGame} from './helpers/game-harness.mjs';
+const {game,element}=loadGame();element('opponentCount').value='3';game.start('solo',0);
+assert.equal(game.raceFinishState().remaining,null);assert.equal(game.raceFinishState().closed,false);
+const [human,first,second]=game.cars;
+let announcements=0,message=element('status').textContent;
+Object.defineProperty(element('status'),'textContent',{get(){return message},set(value){message=value;announcements++;},configurable:true});
+first.done=true;first.finishTime=60;game.setElapsed(60);game.updateFinishFeedback();
+assert.match(message,/CPU 1 TERMINÓ.*SEGUÍ CORRIENDO/);assert.equal(announcements,1);
+assert.equal(element('finishClock').textContent,'CIERRE 18 s');
+for(const time of [60.1,60.5,61.1,62]){game.setElapsed(time);game.updateFinishFeedback();}
+assert.equal(announcements,1,'Live region repeats each frame or countdown second');assert.equal(element('finishClock').textContent,'CIERRE 16 s');
+assert.equal(game.raceFinishState().closed,false,'First CPU finish ended a race before the human could continue');
+game.togglePause();assert.match(message,/PAUSA/);game.togglePause();assert.match(message,/CPU 1 TERMINÓ.*SEGUÍ CORRIENDO/);announcements=1;
+second.done=true;second.finishTime=65;game.setElapsed(65);game.updateFinishFeedback();assert.equal(announcements,2);
+human.done=true;human.finishTime=70;human.lapTimes=[23,24,23];game.setElapsed(70);game.updateTelemetry();
+assert.match(message,/LLEGASTE 3\.º \/ 4/);assert.equal(element('timer').textContent,'00:23.0');
+game.setElapsed(77.99);assert.equal(game.raceFinishState().closed,false);
+game.setElapsed(78);assert.equal(game.raceFinishState().closed,true);assert.equal(game.raceFinishState().remaining,0);
+game.finishRace();assert.equal(game.running,false);assert.match(element('finishSummary').textContent,/TU PUESTO 3\.º \/ 4.*01:10.0/);
+const points=JSON.stringify(game.championship);game.finishRace();assert.equal(JSON.stringify(game.championship),points,'Race awarded points twice');
+game.start('solo',0,true);assert.equal(game.raceFinishState().remaining,null);assert.equal(element('finishClock').textContent,'');assert.equal(game.raceFinishState().closed,false);
+game.cars[1].done=true;game.cars[1].finishTime=50;game.setElapsed(68);game.finishRace();assert.match(element('finishSummary').textContent,/SIN TERMINAR/);
+assert.equal(game.championship.player1,15,'A DNF incorrectly added points');
+// Local two-player: the unfinished human keeps racing until the same deadline.
+game.start('duo',0);game.cars[0].done=true;game.cars[0].finishTime=40;game.setElapsed(42);game.updateFinishFeedback();
+assert.match(element('status').textContent,/P1 TERMINÓ.*SIGUEN EN PISTA/);assert.equal(game.raceFinishState().closed,false);
+game.cars[1].done=true;game.cars[1].finishTime=45;game.setElapsed(45);assert.equal(game.raceFinishState().closed,true);
+game.finishRace();assert.match(element('finishSummary').textContent,/P1 00:40.0.*P2 00:45.0/);
+console.log('PASS: first-finisher notice, no per-frame live announcements, 18-second deadline, continuing human, last-lap freeze, personal summary, DNF, points awarded once, restart and local two-player.');

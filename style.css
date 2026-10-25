@@ -135,3 +135,20 @@ body.racing .racebottom{flex:0 0 auto;padding-top:5px;font-size:8px;flex-wrap:no
 }
 
 .raceinfo{flex-wrap:wrap;row-gap:6px}
+
+/* Finish feedback stays in the existing status row, outside the driving canvas. */
+.race-status{display:flex;align-items:center;gap:10px;min-width:0;flex-wrap:wrap;row-gap:4px}
+.checkered-pattern,.checkered-status::before{background-color:#f2f5ed;background-image:conic-gradient(#f2f5ed 25%,#172136 0 50%,#f2f5ed 0 75%,#172136 0);background-size:16px 16px}
+.checkered-status{display:inline-flex;align-items:center;gap:8px;color:var(--lime)}
+.checkered-status::before{content:'';display:inline-block;flex:0 0 24px;width:24px;height:16px;background-size:8px 8px;border:1px solid #9ba4b7}
+.race-status #finishClock{font:inherit;color:#b4c1cf;white-space:nowrap}
+.result-flag{position:relative;width:102px;height:76px;margin:0 auto 18px}
+.flag-pole{position:absolute;left:17px;top:0;width:4px;height:76px;background:linear-gradient(90deg,#617c86,#d0dfd7);border-radius:2px}
+.flag-cloth{position:absolute;left:21px;top:3px;width:72px;height:48px;border:1px solid #97a9b6;transform-origin:0 50%;transform:skewY(-5deg);box-shadow:3px 5px 0 #0004;animation:flag-arrival 1.6s ease-in-out 3}
+#finishSummary{font:700 22px Rajdhani,Arial,sans-serif;color:var(--cyan);line-height:1.4;margin:12px 0}
+@keyframes flag-arrival{0%,100%{transform:skewY(-5deg) scaleX(1)}50%{transform:skewY(3deg) scaleX(.92)}}
+@media(max-width:760px){.race-status{gap:5px}.checkered-status{gap:5px;font-size:6px}.checkered-status::before{width:18px;height:12px;flex-basis:18px;background-size:6px 6px}.race-status #finishClock{font-size:6px}#finishSummary{font-size:19px}}
+@media(max-height:520px) and (orientation:landscape){.checkered-status{font-size:6px}.checkered-status::before{width:18px;height:12px;flex-basis:18px}.result-flag{margin-bottom:10px;height:62px}.flag-pole{height:62px}}
+@media(prefers-reduced-motion:reduce){.flag-cloth{animation:none;transform:none}}
+
+#resultTitle:focus{outline:2px solid #39e8e833;outline-offset:6px}
