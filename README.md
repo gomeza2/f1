@@ -14,7 +14,7 @@ Para publicarlo, podés habilitar GitHub Pages desde **Settings → Pages** y us
 - **Jugador 2:** flechas para acelerar, frenar y girar; ENTER freno de mano.
 - **R:** reinicia la carrera actual.
 - **C / botón VISTA:** alterna vista cercana y circuito completo en modo individual. Dos jugadores usa pantalla dividida, con una cámara y contador de vuelta por jugador.
-- **ESC:** pausa o reanuda la carrera. Si estás en pantalla completa, también permite salir.
+- **ESC:** pausa o reanuda la carrera. Si estás en pantalla completa, también permite salir. La pestaña oculta pausa automáticamente; al volver se reanuda de forma manual. Pausar limpia las teclas mantenidas: volvé a acelerar al continuar.
 - **Pantalla completa:** botón en la cabecera.
 
 ## Opciones
@@ -71,6 +71,7 @@ node tests/validate-audio.mjs
 node tests/validate-menu.mjs
 node tests/validate-results.mjs
 node tests/validate-rival-awareness.mjs
+node tests/validate-race-lifecycle.mjs
 node tests/validate-driving.mjs
 node tests/validate-steering-inertia.mjs
 node tests/validate-barriers.mjs
@@ -82,7 +83,7 @@ La prueba de CPU exige una mejora de al menos 20 % frente a 0.24 en el mismo tra
 
 Pruebas opcionales de navegador: `node tests/browser-smoke.cjs` y `node tests/browser-audio.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
-## Conducción — build 0.36
+## Conducción — build 0.37
 
 La aceleración del Balanced pasa de 76 a 110, el frenado de 192 a 230 y la escala real de movimiento de 0,62 a 0,84. Los otros tres modelos se ajustan en la misma dirección y conservan sus diferencias. A igual velocidad indicada, el coche recorre un 35,5 % más de distancia. La pérdida de agarre por exceso de velocidad es progresiva y conserva dirección; frenar sigue permitiendo cerrar mejor una curva. ESPACIO reduce velocidad aunque se mantenga W y ayuda a rotar el coche. La recuperación del derrape usa tiempo real, evitando cambios según los FPS.
 
@@ -172,6 +173,14 @@ La llegada muestra dos tablas: carrera (puesto, piloto, tiempo/diferencia, mejor
 
 Los empates de puntos comparten puesto en el campeonato. Si la última etapa termina con líderes empatados se informa el empate, en lugar de elegir un campeón por orden interno. Una nueva temporada reinicia los puntos. Las tablas se apilan en pantallas pequeñas, conservan encabezados accesibles y el foco de llegada permanece en el título. Contrarreloj y desafíos todavía no están implementados.
 
+## Estabilidad de carrera — build 0.37
+
+La pausa cancela el frame pendiente antes de reanudar, evitando ciclos duplicados cuando se pulsa muy rápido. Dibuja el aviso inmediatamente, muestra SEGUIR en el botón y limpia teclas mantenidas. Ocultar la pestaña congela carrera y sonido; volver no reanuda sin una acción del jugador. Reiniciar recupera el estado normal del botón.
+
+Los tiempos se redondean en décimas enteras antes de separar minutos y segundos: `59,96 s` aparece como `01:00.0`, en lugar de `00:60.0`. No cambia el tiempo usado para récords o posiciones.
+
+En una convergencia cercana en paralelo, la CPU establece antes su objetivo de carril, usando la dirección y física compartidas. Se conservan potencia, agarre, aceleración, límites y superficies. No se aplica un desplazamiento lateral directo.
+
 ## Estructura
 
 - `index.html`: menú, opciones, interfaz de carrera y telemetría.
@@ -181,6 +190,8 @@ Los empates de puntos comparten puesto en el campeonato. Si la última etapa ter
 - `tests/`: validación de geometría, ancho completo, integración, conducción, récords, barreras y CPU; prueba opcional de Chromium.
 
 ## Validación conocida
+
+En 0.37 pasan 76 carreras de la batería completa (450 vueltas válidas), Chromium y Web Audio real, además de las pruebas estructurales/físicas. La regresión de ciclo de carrera prueba 100 pausas/reanudaciones rápidas, una sola cadena de frames, teclas liberadas, pausa por evento de visibilidad, reinicio/menú y redondeo al minuto. El tráfico de dos coches baja de 12 a 7 frames con contacto: Sunset/Neon/Dusty quedan en cero, pero aparecen siete en Meadow. En parrilla Normal el total sigue en cuatro: Jungle pasa a cero y Coastline de tres a cuatro; Dusty Fácil pasa a cero y Difícil registra dos. Se conserva este registro de regresiones locales y no se declara libre de contactos ni equilibrado contra personas.
 
 En 0.36, la revisión de CPU supera las 42 carreras clásicas (126 vueltas), conserva el orden de dificultad en las 14 pistas y prueba el seguimiento próximo solo ante convergencia en paralelo. En parrilla Normal, Sunset/Dusty bajan a cero fotogramas con contacto y el total de las 14 pistas pasa de 15 a 4 (uno en Jungle y tres en Coastline). Se registra un contacto en Dusty Fácil, donde la referencia anterior tenía cero. El tráfico de dos coches suma 12 frames de contacto frente a 11 previos (Dusty 10 y Neon 2); queda pendiente de corrección. No se considera una solución universal. Las 76 carreras de la batería completa suman 450 vueltas válidas. Chromium comprueba nombres, carreras, menú, resultados, controles y pantallas adaptables. Las pruebas de conciencia de rivales, integración/física/colisiones/barreras y sistemas existentes pasan; el balance con personas sigue pendiente.
 

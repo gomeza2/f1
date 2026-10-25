@@ -84,6 +84,13 @@ const server=http.createServer((req,res)=>{
   await page.keyboard.down('a');await page.waitForTimeout(180);await page.keyboard.up('a');
   assert.ok(await page.evaluate(()=>window.testGame.cars[0].yawRate<0),'Keyboard countersteer failed');
   await page.keyboard.down('s');await page.waitForTimeout(100);assert.ok((await page.evaluate(()=>window.testGame.vehicleVisual())).braking);await page.keyboard.up('s');await page.waitForTimeout(60);assert.equal((await page.evaluate(()=>window.testGame.vehicleVisual())).braking,false);
+  // Dispatch the real visibility handler with a synthetic hidden state.
+  await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
+  assert.ok(await page.evaluate(()=>window.testGame.paused));assert.equal(await page.getAttribute('#pauseBtn','aria-pressed'),'true');
+  const hiddenTime=await page.evaluate(()=>window.testGame.elapsed);await page.waitForTimeout(120);assert.equal(await page.evaluate(()=>window.testGame.elapsed),hiddenTime);
+  await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
+  assert.ok(await page.evaluate(()=>window.testGame.paused),'Visibility return resumed automatically');
+  await page.click('#pauseBtn');assert.equal(await page.getAttribute('#pauseBtn','aria-pressed'),'false');
   await page.click('#pauseBtn');assert.ok(await page.evaluate(()=>window.testGame.paused));
   const pausedTime=await page.evaluate(()=>window.testGame.elapsed);
   await page.setViewportSize({width:1920,height:1080});await page.waitForTimeout(100);

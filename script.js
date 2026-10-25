@@ -655,6 +655,7 @@ function start(m,s=Number($('stageSelect').value),keepSeason=false){
  const requestedBarrierMode=$('barrierMode')?.value||'auto';barrierMode=requestedBarrierMode==='auto'?track.defaultBarriers:requestedBarrierMode;guardrailRanges=guardrailRangesForTrack();trackFeatures=buildTrackFeatures();
  decorations=decorationsForTrack();tireBarriers=barriersForTrack();buildPhysicalBarriers();skidMarks=[];terrainParticles=[];elapsed=0;finishNoticeKey='';countdownRemaining=3;goFlashRemaining=0;countdownShown='';paused=false;running=true;keys=Object.create(null);
  document.body.classList.add('racing');menu.classList.add('hidden');result.classList.add('hidden');game.classList.remove('hidden');
+ $('pauseBtn').textContent='Ⅱ PAUSA';$('pauseBtn').setAttribute('aria-pressed','false');
  $('views').classList.toggle('pixelated',graphics==='retro');$('views').classList.toggle('performance',graphics==='lite');
  $('trackName').textContent=track.name;$('stageLabel').textContent=String(stage+1).padStart(2,'0');if($('trackCount'))$('trackCount').textContent=String(tracks.length).padStart(2,'0');
  $('helpText').textContent=mode==='duo'?'P1 WASD + ESPACIO · P2 FLECHAS + ENTER':'W acelerar · S frenar · A/D girar · ESPACIO freno de mano';
@@ -671,11 +672,12 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
 window.addEventListener('blur',()=>{keys=Object.create(null);});
 function togglePause(){
- if(!running)return;paused=!paused;
+ if(!running)return;paused=!paused;keys=Object.create(null);cancelAnimationFrame(raf);
+ $('pauseBtn').textContent=paused?'▶ SEGUIR':'Ⅱ PAUSA';$('pauseBtn').setAttribute('aria-pressed',String(paused));
  if(paused){$('status').textContent='PAUSA — ESC PARA SEGUIR';$('status').classList.remove('checkered-status');}
  else if(raceFinishState().finishers.length)updateFinishFeedback(true);
  else $('status').textContent='¡A FONDO!';
- updateAudio();if(!paused){last=performance.now();raf=requestAnimationFrame(loop);}
+ updateAudio();drawFrame();if(!paused){last=performance.now();raf=requestAnimationFrame(loop);}
 }
 function gateCrossed(gate,fromX,fromY,toX,toY,heading){
  const tx=Math.cos(gate.angle),ty=Math.sin(gate.angle),nx=-ty,ny=tx;
@@ -892,7 +894,9 @@ function driveAI(car,before,model,dt){
  const laneOffset=traffic.lane;
  const allowHandbrake=driver.handbrake&&car.aiManeuver.type==='clear'&&Math.abs(before.offset)<ROAD_EDGE-8;
  let targetSpeed=Math.min(aiTargetSpeed(before.progress,model,driver,allowHandbrake),traffic.speedLimit);
- car.aiLane=(car.aiLane||0)+clamp(laneOffset-(car.aiLane||0),-driver.laneSpeed*dt,driver.laneSpeed*dt);
+ // Establish the reserved target lane sooner; actual turning still uses shared vehicle physics.
+ const laneStep=driver.laneSpeed*dt*(car.aiManeuver.type==='alongside'&&lookAhead<clamp(28+car.speed*.27,32,94)?1.5:1);
+ car.aiLane=(car.aiLane||0)+clamp(laneOffset-(car.aiLane||0),-laneStep,laneStep);
  const targetBase=sampleAt(before.progress+lookAhead);
  const target={x:targetBase.x-Math.sin(targetBase.angle)*car.aiLane,y:targetBase.y+Math.cos(targetBase.angle)*car.aiLane};
  const error=wrapAngle(Math.atan2(target.y-car.y,target.x-car.x)-car.heading);
@@ -1258,7 +1262,11 @@ function loop(now){
  if(raceFinishState().closed){finishRace();return;}
  raf=requestAnimationFrame(loop);
 }
-function format(t){const m=Math.floor(t/60),s=(t%60).toFixed(1).padStart(4,'0');return String(m).padStart(2,'0')+':'+s;}
+function format(t){
+ if(!Number.isFinite(t)||t<0)return '--:--.-';
+ const tenths=Math.round(t*10),minutes=Math.floor(tenths/600),seconds=Math.floor(tenths%600/10),decimal=tenths%10;
+ return String(minutes).padStart(2,'0')+':'+String(seconds).padStart(2,'0')+'.'+decimal;
+}
 function finishRace(){
  if(!running)return;
  running=false;audioResultActive=true;releaseAudioVoices();document.body.classList.remove('racing');cancelAnimationFrame(raf);game.classList.add('hidden');result.classList.remove('hidden');
@@ -1297,7 +1305,7 @@ function drawFullScreenButton(){
  const button=$('fullscreenBtn');
  if(button)button.textContent=document.fullscreenElement?'⛶ SALIR DE PANTALLA COMPLETA':'⛶ PANTALLA COMPLETA';
 }
-document.addEventListener('visibilitychange',updateAudio);
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!paused)togglePause();updateAudio();});
 document.addEventListener('fullscreenchange',()=>{drawFullScreenButton();if(running)resize();});
 window.addEventListener('keydown',e=>{
  if(e.key==='Escape'&&document.fullscreenElement&&document.exitFullscreen){document.exitFullscreen().catch(()=>{});}

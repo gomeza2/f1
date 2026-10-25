@@ -17,4 +17,11 @@ car.speed=10;assert.equal(game.aiLookAhead(car),9.5,'Stopped-obstacle steering r
 assert.deepEqual(Array.from(Object.values(game.AI_PERSONALITIES),p=>p.name),['TRAZO','FURIA','ÁPICE']);
 for(const count of [1,2,3]){element('opponentCount').value=String(count);game.updateMenuPreview();const names=Object.values(game.AI_PERSONALITIES).map(p=>p.name);for(let i=0;i<3;i++)assert.equal(element('opponentSummary').textContent.includes(names[i]),i<count);}
 for(const level of ['easy','normal','hard']){game.setDifficulty(level);for(const personality of ['racer','attacker','precise']){car.personality=personality;const driver=game.driverFor(car);assert.ok(driver.pace<=1&&driver.brakingMargin<=1);assert.equal(driver.handbrake,level!=='easy');}}
+// A close overlap may change the target lane faster, but still uses normal physics.
+element('opponentCount').value='1';game.start('solo',0);const [obstacle,follower]=game.cars;
+game.placeCar(follower,150,0);game.placeCar(obstacle,175,0);follower.speed=100;obstacle.speed=80;
+const speed=follower.speed;game.physics(follower,1,1/30);
+assert.equal(follower.aiManeuver.type,'alongside');
+assert.ok(Math.abs(Math.abs(follower.aiLane)-game.driverFor(follower).laneSpeed*1.5/30)<1e-6,'Close conflict did not establish the reserved lane sooner');
+assert.ok(follower.speed-speed<=game.CAR_MODELS.balanced.acceleration/30,'Close conflict added power');
 console.log('PASS: nearby converging overlap shortens target; safe parallel, distant and finished rivals do not; all opponents considered, low-speed recovery preserved, named roster matches selected count and difficulty has no added physical power.');

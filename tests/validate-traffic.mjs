@@ -111,6 +111,7 @@ for(const stage of stages){
   for(const car of game.cars){assert.ok(Number.isFinite(car.x)&&Number.isFinite(car.speed));maxOffset=Math.max(maxOffset,car.offroad);assert.ok(car.offroad<42,`${game.track.name}: traffic pushed a car off the road`)}
  }
  assert.ok(game.cars.every(car=>car.lap===3),`${game.track.name}: traffic prevented a complete race`);
+ if([0,1,2].includes(stage))assert.equal(contacts,0,`${game.track.name}: reference two-car overlap contacts returned`);
  totalContacts+=contacts;
  console.log(`PASS: ${game.track.name}, two finishers, max offset ${maxOffset.toFixed(1)}, contact frames ${contacts}.`);
 }

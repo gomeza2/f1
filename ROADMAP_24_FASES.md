@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.36**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.37**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -220,7 +220,7 @@ La interfaz identifica la build como **0.36**, continuando la base 0.17 del comm
 - Añadir controles y ajustes útiles para distintas pantallas y preferencias visuales.
 
 ### Fase 23 — Balance y pruebas completas
-**Pendiente de validación en navegador.**
+**Batería completa y flujo de Chromium comprobados en 0.37; correcciones de pausa/tiempo implementadas. Balance humano y contactos residuales pendientes.**
 
 - Completar carreras en cada pista y dificultad.
 - Probar perfiles de barreras y coches.
@@ -821,3 +821,30 @@ Partir de 0.35 y verificar main. Próxima entrega: revisión de **CPU y nombres 
 ### Continuación vigente con «siguiente»
 
 Partir de 0.36 y verificar main. Próxima entrega: **fase 23**, batería de juego y correcciones para la base principal, priorizando contactos residuales (Jungle/Coastline Normal, Dusty Fácil y tráfico de dos coches en Dusty/Neon), pausa/reinicios/checkpoints y carreras humanas reproducibles. Mantener el objetivo de vueltas más largas y pistas abiertas para la siguiente revisión de trazados, validando geometría y ritmo humano. El hito principal no equivale a completar modos futuros, editor ni las 24 fases; no declarar el juego libre de errores.
+
+
+## Avance — build 0.37 (25 de octubre de 2026)
+
+### Fase 23 — Pruebas completas y estabilidad
+
+- Base main verificada en `19e8fe9`; los cambios anteriores ya estaban publicados.
+- Se reproduce el riesgo de dos cadenas de `requestAnimationFrame` al pausar/reanudar antes de consumir el frame programado. Pausa cancela el pendiente, limpia teclas, dibuja la superposición inmediatamente y actualiza etiqueta/estado accesible. Reanudar programa una sola cadena.
+- Ocultar la pestaña pausa una carrera activa; la vuelta requiere acción manual y no cambia una pausa ya existente. Se conserva el silencio de pausa/OFF/menú y reinicio recupera el botón normal.
+- Se corrige el redondeo que podía mostrar `00:60.0`: primero se calculan décimas enteras, luego minutos/segundos. Los tiempos internos/orden/récords no se redondean ni se migran.
+- La CPU establece 1,5 veces más rápido su objetivo de carril solo en el conflicto cercano ya detectado por el seguimiento corto. No mueve directamente el coche ni añade fuerza/dirección, potencia o agarre. El resto de las decisiones conserva sus parámetros.
+- Se descarta anticipar más ampliamente el seguimiento corto: añadía contactos y salidas locales. Se conserva el disparador por proximidad de 0.36.
+
+### Resultados comprobados
+
+- `validate-race-lifecycle.mjs`: 100 pausas/reanudaciones rápidas, una cadena de frames, cancelación en pausa/menú, teclas no retenidas, evento oculto/repetido/vuelta visible sin reanudación automática, reinicio local y límites de redondeo al minuto: superado.
+- `validate-rival-awareness.mjs` añade reacción de carril en un conflicto real por física, sin potencia extra. Regresión en tráfico impide volver a introducir contactos en las carreras de dos coches Sunset/Neon/Dusty.
+- Batería completa: **42 carreras clásicas/126 vueltas**, **20 de parrilla/240 vueltas** y **14 de tráfico/84 vueltas**; 76 carreras y 450 vueltas válidas. Dificultades ordenadas y prestaciones compartidas conservadas.
+- Tráfico de dos coches: 12→7 frames de contacto; Sunset/Neon/Dusty en cero. Los siete aparecen en Meadow, que antes tenía cero: regresión local abierta.
+- Parrilla Normal: total 4→4; Jungle 1→0 y Coastline 3→4, otras pistas cero. Dusty Fácil 1→0; Dusty Difícil 0→2. No se presenta la reducción de un escenario como ausencia de contactos en todos.
+- Chromium completo y Web Audio real: carrera/pausa/reinicio/menú, evento de visibilidad simulado, foco/teclado, pantalla completa/resize, HUD/minimapa, bandera/resultados/puntos, 14 pistas, tráfico/parrilla, coches/calidades, dos humanos y móvil: superados. Audio: motor/derrape, silencio muestreado en pausa/OFF/menú, reanudación y resultados.
+- Sintaxis, HTML/archivos/diez originales/14 pistas/70 perfiles, geometría/identidad, conducción, inercia, colisiones, barreras (37 contornos/11174 puntos), escenarios (962 colocaciones), menú, llegada, resultados y coches: superados. No se han medido FPS de dispositivos ni reemplazado una carrera humana por las simulaciones.
+- Pendientes: contactos residuales indicados, sensaciones humanas/salidas de pista, dispositivos físicos y revisión de las grabaciones que no pudieron transferirse por superar 32 MiB. La base no se declara libre de errores y el balance humano sigue abierto.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.37 y verificar main. Continuar **fase 24**, consolidación de entrega web y documentación sin perder estas regresiones; mantener pruebas de estabilidad y registro de contactos. El editor, contrarreloj/desafíos, progresión ampliada y otras partes de las 24 fases siguen pendientes. Una revisión futura de trazados debe conservar escapatorias y validar el objetivo de 25–45 s con conducción humana.
