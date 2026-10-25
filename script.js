@@ -753,7 +753,7 @@ function physics(car,i,dt){
   const runoffMaterial=track.surface==='dirt'?'dirt':track.surface==='volcanic'?'volcanic':track.surface==='ice'?'ice':track.surface==='coastal'?'coastal':'grass';
   const baseDrag=runoffMaterial==='grass'?34:runoffMaterial==='ice'?58:(runoffMaterial==='dirt'||runoffMaterial==='volcanic'||runoffMaterial==='coastal')?54:82;
   const edgeDrag=runoffMaterial==='grass'?2.2:(runoffMaterial==='dirt'||runoffMaterial==='volcanic'||runoffMaterial==='coastal')?2.8:4.6;
-  car.speed=Math.max(14,car.speed-(baseDrag+roadEdge*edgeDrag)*model.grass*dt);
+  car.speed=Math.max(Math.min(14,car.speed),car.speed-(baseDrag+roadEdge*edgeDrag)*model.grass*dt);
   car.drift=Math.max(car.drift,.28);
  }
  // The rendered rails and tires are also the physical collision geometry.
@@ -761,7 +761,7 @@ function physics(car,i,dt){
  if(hitBarrier)after=nearestOnTrack(car.x,car.y);
  const side=Math.sign(after.offset)||1,nx=-Math.sin(after.angle),ny=Math.cos(after.angle);
  if(!hitBarrier&&Math.abs(after.offset)>92){
-  car.speed=Math.max(12,car.speed-(100+(Math.abs(after.offset)-92)*2.2)*dt);
+  car.speed=Math.max(Math.min(12,car.speed),car.speed-(100+(Math.abs(after.offset)-92)*2.2)*dt);
   if(Math.abs(after.offset)>112){car.x=after.x+nx*side*108;car.y=after.y+ny*side*108;car.speed*=.76;after=nearestOnTrack(car.x,car.y);}
  }
  updateProgress(car,after,previousX,previousY);
@@ -783,16 +783,35 @@ function physics(car,i,dt){
  car.particles=car.particles.filter(p=>(p.life-=dt)>0);if(car.flash>0)car.flash-=dt;
 }
 function resolveCollisions(dt){
- for(let i=0;i<cars.length;i++)for(let j=i+1;j<cars.length;j++){
- const a=cars[i],b=cars[j];if(a.done||b.done)continue;
- const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);
- if(d<23){
-  const nx=d>.01?dx/d:Math.cos(a.heading),ny=d>.01?dy/d:Math.sin(a.heading),push=(23-d)*.5;
-  a.x-=nx*push;b.x+=nx*push;a.y-=ny*push;b.y+=ny*push;
-  a.speed=Math.max(0,a.speed-54*dt);b.speed=Math.max(0,b.speed-54*dt);a.flash=.06;b.flash=.06;
-  const now=performance.now();if(now-lastCrashSoundAt>420){playTone(105,.12,.05);lastCrashSoundAt=now;}
+ const active=cars.filter(car=>!car.done),origins=new Map(active.map(car=>[car,{x:car.x,y:car.y}]));
+ const impacted=new Set(),moved=new Set();
+ // Iterate the small grid: resolving one pair can overlap another or a wall.
+ for(let pass=0;pass<16;pass++){
+  let depth=0;
+  for(let i=0;i<active.length;i++)for(let j=i+1;j<active.length;j++){
+   const a=active[i],b=active[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);
+   if(d>=23)continue;
+   depth=Math.max(depth,23-d);
+   const nx=d>.001?dx/d:Math.cos(a.heading),ny=d>.001?dy/d:Math.sin(a.heading);
+   const key=i+','+j;
+   if(!impacted.has(key)){
+    const av=Math.cos(a.heading)*nx+Math.sin(a.heading)*ny,bv=Math.cos(b.heading)*nx+Math.sin(b.heading)*ny;
+    const closing=Math.max(0,a.speed*av-b.speed*bv);
+    // Dissipate closing motion only; no artificial acceleration or rebound.
+    a.speed=Math.max(0,a.speed-closing*.65*Math.max(0,av));
+    b.speed=Math.max(0,b.speed-closing*.65*Math.max(0,-bv));
+    if(closing>8){a.flash=.06;b.flash=.06;const now=performance.now();if(now-lastCrashSoundAt>420){playTone(105,.12,.05);lastCrashSoundAt=now;}}
+    impacted.add(key);
+   }
+   const push=(23-d+.01)*.5,ax=a.x,ay=a.y,bx=b.x,by=b.y;
+   a.x-=nx*push;a.y-=ny*push;b.x+=nx*push;b.y+=ny*push;
+   // Reuse exactly the same visible rail/tire geometry after a car pushes us.
+   resolveBarrierContact(a,ax,ay);resolveBarrierContact(b,bx,by);moved.add(a);moved.add(b);
+  }
+  if(depth<.01)break;
  }
- }
+ // Contact movement may cross a real gate; keep checkpoints and telemetry coherent.
+ for(const car of moved){const from=origins.get(car);updateProgress(car,nearestOnTrack(car.x,car.y),from.x,from.y);}
 }
 const trackPathCache=new WeakMap();
 function getTrackPath(){

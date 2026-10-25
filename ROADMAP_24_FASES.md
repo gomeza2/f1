@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.28**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.29**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -113,15 +113,16 @@ La interfaz identifica la build como **0.28**, continuando la base 0.17 del comm
 - Normal: ritmo intermedio, menor margen y cambio lateral más rápido.
 - Difícil: mayor precisión y aprovechamiento del coche, respetando sus prestaciones.
 - En las 14 pistas las simulaciones verifican difícil más rápido que normal, y normal más rápido que fácil.
-- Pendiente: errores razonables y personalidades defensiva, agresiva y técnica; calibrar frente a personas.
+- Pendiente: errores razonables, más rasgos defensivos y calibración de estilos frente a personas. Furia y Ápice ya introducen ataque y precisión diferentes desde 0.28.
 
 ### Fase 11 — Choques y recuperación
-**Primera capa implementada; pendiente de pruebas.**
+**Separación de grupos, impacto y recuperación desde reposo corregidos en 0.29; validación registrada abajo.**
 
-- Colisiones entre vehículos.
-- Rebote y penalización de velocidad en vallas.
-- Recuperación automática en zonas abiertas.
-- Mejorar separación de coches y control después de impactos.
+- Resolución iterativa de pares con reconciliación de vallas/neumáticos después de cada empujón; conserva la geometría visible compartida.
+- Impacto según velocidad relativa normal, una vez por pareja y paso; sin frenazo fijo por roce paralelo, aceleración del coche golpeado ni rebote añadido.
+- Cruces válidos de meta/checkpoints y datos de posición coherentes después del contacto.
+- El terreno no arranca un coche detenido; los cuatro modelos recuperan desde reposo con física ordinaria en asfalto, tierra e hielo.
+- Pruebas de amontonamiento de cuatro coches, valla, impacto, 30/120 FPS, meta y recuperación. Pendiente: conducción humana y contactos residuales; se conserva el volumen circular aproximado entre coches.
 
 ### Fase 12 — Escenarios y objetos ambientales
 **Primera capa implementada.**
@@ -587,3 +588,29 @@ Partir de 0.27 y verificar la revisión remota. Próxima fase: **10**, ampliar l
 ### Continuación vigente con «siguiente»
 
 Partir de 0.28 y verificar main. Próxima fase: **11**, revisar contactos en grupo, separación tras impactos, interacción con barreras y recuperación con varios coches y modelos. Mantener los contactos residuales como referencia y no declararlos resueltos por completar carreras. Conservar la parrilla, estilos, interfaz compacta y pistas abiertas. Después continuar ambientación/feedback, sin ampliar circuitos antes de validar geometría y duración humana.
+
+
+## Avance — build 0.29 (25 de octubre de 2026)
+
+### Fase 11 — Contactos y recuperación
+
+- Base limpia y remota verificada en `42cbaff`.
+- La prueba nueva detectó que una única pasada por las parejas dejaba coches interpenetrados en un amontonamiento. Ahora se resuelve hasta 16 pasadas, con salida temprana al separar el grupo.
+- Cada empujón vuelve a comprobar las mismas vallas/neumáticos visibles. El caso de cuatro coches contra una valla se separa conservando el lado permitido y sin añadir velocidad.
+- Se reemplaza la pérdida fija de 54×dt por impacto normal relativo, una vez por pareja en el paso. Se disipa velocidad de los coches que se acercan; no se acelera a la víctima ni se añade rebote. El roce paralelo a la misma velocidad no frena por sí solo.
+- Los empujones finales actualizan posición, terreno y cruces reales de checkpoints/meta. La prueba exige contar una meta válida una vez, sin perder ni duplicar la vuelta.
+- Se corrige otra fuente de aceleración artificial: los mínimos de 14/12 en escapatorias se limitan a la velocidad que ya tenía el coche. Detenido sin acelerador permanece detenido; el acelerador y la dirección siguen permitiendo recuperar desde reposo.
+- Se conservan parrilla, estilos, prestaciones, HUD, pistas y zonas abiertas. No se añade una recuperación exclusiva de CPU mediante teletransporte.
+
+### Comprobaciones
+
+- `tests/validate-collisions.mjs`: fallo original reproducido antes del arreglo; separación de cuatro coches, inmovilidad, roce paralelo, alcance/frontal, 30/120 FPS, valla, meta y recuperación desde reposo de cuatro modelos en tres superficies.
+- **20 carreras de parrilla, 80 finalizaciones y 240 vueltas válidas**: Normal en 14 pistas; Fácil/Difícil en Sunset, Dusty y hielo. Máximo desvío 36,8, dentro del ancho físico de 42. Normal registra 15 frames con contacto (10 Dusty, 5 Coastline), frente a 19 en 0.28; Difícil 3 frente a 4; Fácil cero en las tres pistas comprobadas.
+- **42 carreras clásicas y 126 vueltas válidas**, dificultades ordenadas y prestaciones compartidas conservadas. Tráfico de dos controladores: **14 carreras/84 vueltas**, 11 frames con contacto; no se declara eliminado todo contacto.
+- Superadas sintaxis, IDs HTML/archivos, diez originales/14 registros, geometría, identidad de trazados, conducción, inercia y barreras (37 contornos/11174 puntos).
+- Chromium: amontonamiento de cuatro coches sin velocidad generada ni checkpoints falsos, carrera completa de parrilla, resultados/siguiente circuito, controles, pausa, reinicio, menú, fullscreen, resize, HUD/cronómetro, minimapa móvil y dos jugadores. Captura de separación revisada.
+- Pendientes: conducción humana, contactos residuales, volumen circular simplificado entre coches, táctil/audio y rendimiento medido. La recuperación de los cuatro modelos se comprobó mediante controlador automático con física real, no con una persona al volante.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.29 y verificar main. Próxima fase: **12**, mejorar ambientación y colocación de elementos temáticos sin ocultar curvas ni perder las escapatorias. Mantener las nuevas pruebas de contacto, las carreras de parrilla y el benchmark clásico. El balance humano, contactos residuales y la forma simplificada entre coches siguen documentados; no declarar terminadas las 24 fases ni agrandar trazados sin revisar geometría y duración de vuelta humana.

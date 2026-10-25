@@ -63,6 +63,7 @@ node tests/validate-integration.mjs
 node tests/validate-cpu.mjs
 node tests/validate-traffic.mjs
 node tests/validate-grid.mjs
+node tests/validate-collisions.mjs
 node tests/validate-driving.mjs
 node tests/validate-steering-inertia.mjs
 node tests/validate-barriers.mjs
@@ -74,7 +75,7 @@ La prueba de CPU exige una mejora de al menos 20 % frente a 0.24 en el mismo tra
 
 Prueba opcional de navegador: `node tests/browser-smoke.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
-## Conducción — build 0.28
+## Conducción — build 0.29
 
 La aceleración del Balanced pasa de 76 a 110, el frenado de 192 a 230 y la escala real de movimiento de 0,62 a 0,84. Los otros tres modelos se ajustan en la misma dirección y conservan sus diferencias. A igual velocidad indicada, el coche recorre un 35,5 % más de distancia. La pérdida de agarre por exceso de velocidad es progresiva y conserva dirección; frenar sigue permitiendo cerrar mejor una curva. ESPACIO reduce velocidad aunque se mantenga W y ayuda a rotar el coche. La recuperación del derrape usa tiempo real, evitando cambios según los FPS.
 
@@ -108,6 +109,12 @@ El tráfico evalúa todos los coches cercanos y conserva una maniobra por rival;
 
 POS muestra el puesto actual. Los resultados ordenan a todos los participantes: primero quienes terminan por tiempo, después los demás por progreso. El campeonato puntúa **25/18/15/12**, con cero para quien no termina. El cierre de carrera conserva la espera máxima de 18 s después del primer finalista. Dos jugadores mantiene sus dos coches y cámaras divididas. La geometría y las escapatorias no cambian.
 
+## Contactos y recuperación — build 0.29
+
+La separación entre coches se resuelve hasta 16 veces por paso, comprobando de nuevo las mismas vallas y neumáticos visibles después de cada empujón. Así una pareja no queda encajada de nuevo al separar otra. La pérdida de velocidad depende del acercamiento real en el contacto y se aplica una sola vez por pareja en ese paso: un roce paralelo sin acercamiento no recibe un frenazo fijo y un choque frontal disipa más velocidad, sin generar aceleración ni rebote artificial.
+
+Los desplazamientos por contacto actualizan la posición en pista y los cruces válidos de checkpoints/meta. El mínimo de velocidad de las escapatorias ya no pone en marcha un coche detenido sin acelerar; se conserva el avance lento para recuperar con acelerador y dirección normales. No se añaden teletransportes de CPU ni se elimina terreno de recuperación.
+
 ## Estructura
 
 - `index.html`: menú, opciones, interfaz de carrera y telemetría.
@@ -117,6 +124,10 @@ POS muestra el puesto actual. Los resultados ordenan a todos los participantes: 
 - `tests/`: validación de geometría, ancho completo, integración, conducción, récords, barreras y CPU; prueba opcional de Chromium.
 
 ## Validación conocida
+
+En 0.29 pasaron las 20 carreras de parrilla (240 vueltas), 42 clásicas (126 vueltas), 14 de tráfico de dos coches (84 vueltas), comprobaciones estructurales/físicas y Chromium. La parrilla Normal conserva contactos residuales en Dusty y Coastline: 15 frames en total frente a 19 en 0.28; no se declara libre de choques. Los nuevos casos de colisión y recuperación también pasaron.
+
+`validate-collisions.mjs` reproduce y comprueba amontonamientos de cuatro coches, inmovilidad sin entrada, roces paralelos, alcance/frontal, respuesta igual a 30/120 FPS, empujones contra una valla y cruce de meta por contacto sin duplicar vueltas. También comprueba recuperación desde reposo de los cuatro modelos en asfalto, tierra e hielo, sin saltos de posición. La colisión entre coches conserva su aproximación circular de 23 unidades; no es una simulación de carrocerías deformables.
 
 La prueba `validate-grid.mjs` comprueba el tamaño de parrilla, diferencias de ataque ante la misma situación, detección de varios coches, contactos por pares, clasificación, puntos por puesto y sin terminar, continuidad del campeonato y modo local. Ejecuta carreras de cuatro controladores en las 14 pistas en Normal, más Sunset/Dusty/hielo en Fácil y Difícil. En 0.28 pasaron esas 20 carreras con 80 finalizaciones y 240 vueltas válidas. El máximo desvío fue 36,8 frente al ancho físico de 42; quedaron contactos en Dusty y Coastline. También pasaron las 42 carreras clásicas, 14 de tráfico de dos coches, comprobaciones estructurales/físicas y Chromium con la parrilla ampliada. Esto comprueba carreras y checkpoints; no representa una partida humana.
 
