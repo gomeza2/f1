@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.32**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.33**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -152,11 +152,13 @@ La interfaz identifica la build como **0.32**, continuando la base 0.17 del comm
 - Sin cambios de prestaciones, volumen de colisión, controles ni CPU. Pendiente: percepción humana a velocidad real y ampliar opciones cosméticas posteriormente.
 
 ### Fase 15 — Audio
-**Primera capa implementada.**
+**Motor, terreno, derrape y señales mejorados en 0.33; grafo y salida real comprobados en Chromium. Escucha humana pendiente.**
 
-- Sonido de motor, cuenta regresiva y choques.
-- Interruptor de sonido.
-- Pendiente: probar en distintos navegadores y equilibrar volumen, variedad y latencia.
+- Timbres/régimen de motor según modelo y conducción; mezcla de los dos humanos en modo local. Capas de derrape y terreno.
+- Cuenta regresiva, salida, checkpoints/vueltas/récords y llegada/resultados diferenciados; evita avisos de checkpoints de CPU. Impactos próximos con intensidad y límite de repetición.
+- Mezcla con compresión, máximo de ocho voces transitorias, rampas suaves y limpieza de nodos. Un contexto reutilizado; pausa/OFF/menú/pestaña oculta silencian las capas.
+- Interruptor con estado accesible y carrera funcional sin Web Audio.
+- Pendiente: escucha con personas, teléfonos, interrupciones de navegador, volumen/latencia y más calibración.
 
 ### Fase 16 — Pantalla inicial, HUD y minimapa
 **Simplificación solicitada implementada en 0.26; comprobada automáticamente y en Chromium.**
@@ -707,3 +709,34 @@ Partir de 0.31 y verificar main. Próxima fase: **14**, mejorar lectura y respue
 ### Continuación vigente con «siguiente»
 
 Partir de 0.32 y verificar main. Próxima fase: **15**, mejorar motor, frenado/derrape, impactos y señales sonoras conservando el interruptor, evitando saturación y respetando pausa/menú. Después pantalla inicial/HUD (16), resultados/puntos (17), pasada de CPU/nombres (10) y pruebas/correcciones (23): **unas cinco entregas estimadas** para el hito de base principal, sujetas a lo que encuentren las pruebas. Mantener físicas, pistas abiertas y render de coches recién comprobado.
+
+
+## Avance — build 0.33 (25 de octubre de 2026)
+
+### Fase 15 — Motor, agarre y señales sonoras
+
+- La fase 14 se publicó y verificó primero en `5cda006`. Ante el nuevo «siguiente» se continuó con esta fase, sin reemplazar ni perder el render de coches.
+- Motor con capa fundamental/subgrave y filtro; timbre y régimen vinculado a modelo, velocidad, acelerador y frenado. El régimen sonoro es un recurso arcade, no introduce cambios mecánicos.
+- Ruido propio generado para derrape/frenado y terreno; mezcla normalizada para hasta dos humanos. Los rivales no duplican sus motores en esa mezcla.
+- Señales distintas de cuenta regresiva, salida, checkpoint, vuelta, récord y resultados. Se corrige la confusión de checkpoints de CPU que sonaban como los del jugador. Solo la primera llegada de CPU avisa el cierre; el humano conserva su señal de llegada.
+- Impactos limitados por proximidad, intensidad y tiempo mínimo. Una corrección estática de penetración contra valla ya no suena como un choque.
+- Un contexto reutilizado, mezcla maestra con compresión, rampas suaves y límite de ocho voces transitorias. Fuentes/filtros se desconectan al terminar; el motivo de resultados espera la limpieza de las voces de carrera.
+- Pausa, OFF, pestaña oculta y menú silencian motor/capas/efectos. Se conserva solo una breve señal en resultados, con motores apagados. Recupera contextos suspendidos desde gestos de usuario; si Web Audio falta o falla, el juego continúa.
+- No cambian física, dificultad, superficies, trazados, puntuación ni controles.
+
+### Errores encontrados y comprobaciones
+
+- Se corrigió que repetidos pedidos de silencio podían posponer el fin de una voz: ahora cada fuente inicia su salida una sola vez. Prueba de regresión incluida.
+- La primera medición de Chromium se hizo antes de que el analizador tuviera un bloque; se inicializó antes del intervalo de muestra. No se confundió esa lectura inicial vacía con una comprobación auditiva.
+- `tests/validate-audio.mjs`: cuatro timbres, mezcla de humanos, derrape/terreno, CPU sin avisos de checkpoint, límite de voces y limpieza, pausa/OFF/visibilidad/menú, reutilización, modo local, motivo final, corrección estática silenciosa y fallback sin API/constructor fallido: superados.
+- `tests/browser-audio.cjs`: Web Audio real tras clic de usuario, motor y derrape audibles en muestras, silencio tras pausa/OFF/menú, recuperación al encender, contexto reutilizado, dos humanos y resultados: superados. Muestra de motor RMS 0,0206/pico 0,0505; silencio muestreado RMS 0. No constituye escucha humana ni medición de latencia móvil.
+- Chromium completo: controles, coches/pinturas/calidades, pausa, menú, HUD, fullscreen/resize, minimapa, bandera/resultados, parrilla y modo local: superado. Sintaxis, HTML/archivos, geometría/identidad, diez originales/14 registros, conducción, inercia, colisiones/recuperación y llegada: superados. Casos focalizados CPU/tráfico y dos carreras de parrilla (24 vueltas): superados.
+- Pase final de barreras (37 contornos/11174 puntos) y repetición del grafo tras la última limpieza: superados. Escucha humana, hardware, interrupciones reales de dispositivos y balance siguen pendientes.
+
+### Reporte de carrera real del usuario
+
+El usuario indicó que persisten varios errores y adjuntó tres grabaciones. La herramienta de transferencia rechazó los archivos por superar 32 MiB cada uno; no se pudieron reproducir ni atribuir fallos concretos al video. Se solicitó un recorte/comprimido bajo ese límite o capturas. Revisar ese material y priorizar errores reales antes de declarar estable la base. Las pruebas automáticas no invalidan el reporte del usuario.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.33 y verificar main. Priorizar la revisión del reporte de carrera si llega material accesible; corregir fallos reproducibles y repetir pruebas afectadas. Después continuar **fase 16**, pantalla inicial más linda/cómoda y HUD, conservando el espacio de conducción. Tabla de puntos (17), CPU/nombres (10) y pruebas/correcciones (23) siguen en el hito de base principal; son unas cuatro entregas orientativas, sujetas a los problemas reales que aparezcan. No marcar el balance humano ni las 24 fases como terminadas.

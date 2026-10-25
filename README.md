@@ -67,6 +67,7 @@ node tests/validate-collisions.mjs
 node tests/validate-scenery.mjs
 node tests/validate-finish.mjs
 node tests/validate-car-visuals.mjs
+node tests/validate-audio.mjs
 node tests/validate-driving.mjs
 node tests/validate-steering-inertia.mjs
 node tests/validate-barriers.mjs
@@ -76,9 +77,9 @@ La prueba de identidad detecta copias de un trazado aunque se escalen, giren o r
 
 La prueba de CPU exige una mejora de al menos 20 % frente a 0.24 en el mismo trazado, además de comprobar límites físicos, desplazamiento y coste del freno de mano. Usa el código real en un entorno DOM simulado: completa tres vueltas con checkpoints en las 14 pistas y las tres dificultades, verifica prestaciones compartidas y prueba frenado ante tráfico y recuperación. No sustituye una carrera humana.
 
-Prueba opcional de navegador: `node tests/browser-smoke.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
+Pruebas opcionales de navegador: `node tests/browser-smoke.cjs` y `node tests/browser-audio.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
-## Conducción — build 0.32
+## Conducción — build 0.33
 
 La aceleración del Balanced pasa de 76 a 110, el frenado de 192 a 230 y la escala real de movimiento de 0,62 a 0,84. Los otros tres modelos se ajustan en la misma dirección y conservan sus diferencias. A igual velocidad indicada, el coche recorre un 35,5 % más de distancia. La pérdida de agarre por exceso de velocidad es progresiva y conserva dirección; frenar sigue permitiendo cerrar mejor una curva. ESPACIO reduce velocidad aunque se mantenga W y ayuda a rotar el coche. La recuperación del derrape usa tiempo real, evitando cambios según los FPS.
 
@@ -140,6 +141,14 @@ Las ruedas delanteras muestran la dirección suavizada del coche. La rodadura si
 
 No se cambian prestaciones, tamaños físicos, superficies, dificultad ni controles. Las geometrías de carrocería y los estados de dibujo están separados del modelo de conducción; el render no modifica el estado del coche.
 
+## Audio — build 0.33
+
+El motor sintetizado cambia de timbre según el coche y de régimen según velocidad, acelerador y frenado. El derrape y el terreno tienen capas propias. En modo local se mezclan los dos coches humanos; los checkpoints de las CPU lejanas no producen avisos que se confundan con los tuyos. La primera llegada de un rival conserva su señal de aviso y los impactos cercanos se escuchan según intensidad/proximidad.
+
+Cuenta regresiva, salida, checkpoint, vuelta, récord y resultado tienen señales distintas. El sistema limita las voces transitorias, suaviza entradas/salidas y usa una mezcla con compresión. Pausa, sonido OFF, pestaña oculta y menú silencian todas las capas; los resultados conservan una señal breve y paran el motor. Se reutiliza un único contexto de audio y los efectos terminados se desconectan. El botón mantiene su control de encendido/apagado y expone su estado accesible.
+
+Todo se sintetiza con Web Audio, sin archivos de sonido externos. Si la API no existe o falla, la carrera sigue funcionando. La calidad percibida y el volumen en parlantes/auriculares y teléfonos siguen pendientes de escucha humana.
+
 ## Estructura
 
 - `index.html`: menú, opciones, interfaz de carrera y telemetría.
@@ -149,6 +158,8 @@ No se cambian prestaciones, tamaños físicos, superficies, dificultad ni contro
 - `tests/`: validación de geometría, ancho completo, integración, conducción, récords, barreras y CPU; prueba opcional de Chromium.
 
 ## Validación conocida
+
+En 0.33 pasaron las pruebas de grafo/ciclo de vida de audio y la medición real de Web Audio en Chromium: motor audible, respuesta de derrape, pico muestreado sin recorte, silencio tras pausa/OFF/menú, recuperación al encender, mezcla local y motivo de resultado. El analizador registró RMS 0 en pausa/OFF/menú durante esta prueba. Esto no evalúa gusto musical, volumen de dispositivos, latencia móvil ni interrupciones de todos los navegadores. También pasaron el flujo completo de Chromium, integración, geometría, conducción, inercia, colisiones, llegada y CPU/tráfico/parrilla focalizados.
 
 En 0.32, `validate-car-visuals.mjs` verifica 72 combinaciones de modelo/pintura/calidad, conservación del color en impactos, luces, giro/contravolante, rodadura, reposo, marcas bajo las ruedas, reinicio, movimiento reducido y dibujo sin mutar la simulación ni dejar transformaciones abiertas. Chromium comprobó los modelos/pinturas/calidades con el render real y el feedback de dirección/freno con teclado. Pasaron conducción, inercia, geometría, integración, contactos, llegada, barreras y casos focalizados de CPU/tráfico/parrilla. Se conservan los tiempos de las carreras de referencia de Sunset/Dusty; no se repiten todas las carreras de 0.29 en una etapa de dibujo.
 

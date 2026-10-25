@@ -1,0 +1,27 @@
+// Optional: Playwright + Chromium; measures real Web Audio output, not perceived quality.
+const {chromium}=require('playwright');
+const fs=require('node:fs'),http=require('node:http'),path=require('node:path'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..'),source=fs.readFileSync(path.join(root,'script.js'),'utf8');
+const bridge=`let probe=null,originalContext=null;window.audioTest={skipCountdown(){countdownRemaining=0},info(){originalContext=originalContext||audioContext;return {state:audioContext?.state,active:audioOutputAllowed(),now:audioContext?.currentTime,paused,countdown:countdownRemaining,hidden:document.hidden,reused:originalContext===audioContext,voices:audioVoices.size,channels:audioChannels.map(c=>({engine:c.gain.gain.value,skid:c.skid.gain.gain.value,terrain:c.terrain.gain.gain.value}))}},sample(){if(!probe){probe=audioContext.createAnalyser();probe.fftSize=2048;audioCompressor.connect(probe)}const values=new Float32Array(probe.fftSize);probe.getFloatTimeDomainData(values);let sum=0,peak=0;for(const value of values){sum+=value*value;peak=Math.max(peak,Math.abs(value))}return {rms:Math.sqrt(sum/values.length),peak}},result(){cancelAnimationFrame(raf);elapsed=61;cars.forEach((c,i)=>{c.done=true;c.finishTime=60+i;c.lap=3});finishRace()}};`;
+const server=http.createServer((req,res)=>{const file=req.url==='/'?'index.html':req.url.slice(1);if(!['index.html','style.css','script.js'].includes(file)){res.writeHead(404).end();return}res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html');res.end(fs.readFileSync(path.join(root,file)))});
+(async()=>{await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
+try{
+ const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.route('https://fonts.googleapis.com/**',r=>r.abort());await page.route('**/script.js',r=>r.fulfill({contentType:'text/javascript',body:source.replace(/\}\)\(\);\s*$/,bridge+'})();')}));
+ await page.goto('http://127.0.0.1:'+server.address().port);await page.addStyleTag({content:'button{transition:none!important}button:hover{transform:none!important}'});await page.click('[data-mode="solo"]');await page.waitForTimeout(250);
+ assert.equal((await page.evaluate(()=>window.audioTest.info())).state,'running');await page.evaluate(()=>window.audioTest.sample());
+ await page.evaluate(()=>window.audioTest.skipCountdown());await page.keyboard.down('w');await page.waitForTimeout(700);
+ const engine=await page.evaluate(()=>window.audioTest.sample());assert.ok(engine.rms>1e-5,'Real engine output is silent: '+JSON.stringify(await page.evaluate(()=>window.audioTest.info())));assert.ok(engine.peak<.95,'Output clipped');
+ await page.keyboard.down(' ');await page.keyboard.down('d');await page.waitForTimeout(180);
+ assert.ok((await page.evaluate(()=>window.audioTest.info())).channels[0].skid>0,'Skid layer did not react to handbrake');await page.keyboard.up(' ');await page.keyboard.up('d');await page.keyboard.up('w');
+ await page.click('#pauseBtn');await page.waitForTimeout(300);const paused=await page.evaluate(()=>window.audioTest.sample());assert.ok(paused.rms<1e-5,'Pause did not silence audio');
+ await page.click('#soundBtn');assert.equal(await page.getAttribute('#soundBtn','aria-pressed'),'false');await page.keyboard.press('Escape');await page.keyboard.down('w');await page.waitForTimeout(250);await page.keyboard.up('w');
+ const muted=await page.evaluate(()=>window.audioTest.sample());assert.ok(muted.rms<1e-5,'Muted race still produced output');
+ await page.click('#soundBtn');assert.equal(await page.getAttribute('#soundBtn','aria-pressed'),'true');await page.waitForTimeout(250);assert.ok((await page.evaluate(()=>window.audioTest.sample())).rms>1e-5,'Unmute did not recover audio');
+ await page.click('#backBtn');await page.waitForTimeout(300);const menu=await page.evaluate(()=>window.audioTest.sample());assert.ok(menu.rms<1e-5,'Menu left engine running audibly');
+ await page.click('[data-mode="duo"]');await page.evaluate(()=>window.audioTest.skipCountdown());await page.waitForTimeout(250);const duo=await page.evaluate(()=>window.audioTest.info());assert.equal(duo.reused,true);assert.equal(duo.channels.length,2);assert.ok(duo.channels.every(c=>c.engine>0));
+ await page.evaluate(()=>window.audioTest.result());await page.waitForTimeout(130);const result=await page.evaluate(()=>window.audioTest.sample());assert.ok(result.rms>1e-5,'Results motif was silent');
+ await page.click('#menuBtn');await page.waitForTimeout(300);assert.ok((await page.evaluate(()=>window.audioTest.sample())).rms<1e-5,'Results sound continued in menu');assert.deepEqual(errors,[]);
+ console.log('PASS: real Chromium Web Audio, trusted-click startup, engine output, skid response, unclipped sampled peak, pause/OFF/menu silence, ON recovery, reused context, two-player mix and results motif.');console.log(JSON.stringify({engine,paused,muted,menu,result}));
+ console.log('This checks output and lifecycle; subjective balance, speakers/headphones, mobile latency and browser interruption remain unverified.');
+}finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1}).finally(()=>server.close());
