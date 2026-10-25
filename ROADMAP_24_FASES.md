@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.29**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.30**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -113,6 +113,7 @@ La interfaz identifica la build como **0.29**, continuando la base 0.17 del comm
 - Normal: ritmo intermedio, menor margen y cambio lateral más rápido.
 - Difícil: mayor precisión y aprovechamiento del coche, respetando sus prestaciones.
 - En las 14 pistas las simulaciones verifican difícil más rápido que normal, y normal más rápido que fácil.
+- Pedido del usuario: revisar otra vez competitividad de CPU y nombres. Usar nombres ficticios reconocibles y coherentes en pista, minimapa, resultados y puntos; conservar identificadores internos y contrastar ritmo en Sunset/Dusty con vueltas humanas.
 - Pendiente: errores razonables, más rasgos defensivos y calibración de estilos frente a personas. Furia y Ápice ya introducen ataque y precisión diferentes desde 0.28.
 
 ### Fase 11 — Choques y recuperación
@@ -125,15 +126,17 @@ La interfaz identifica la build como **0.29**, continuando la base 0.17 del comm
 - Pruebas de amontonamiento de cuatro coches, valla, impacto, 30/120 FPS, meta y recuperación. Pendiente: conducción humana y contactos residuales; se conserva el volumen circular aproximado entre coches.
 
 ### Fase 12 — Escenarios y objetos ambientales
-**Primera capa implementada.**
+**Ambientación y colocación mejoradas en 0.30; comprobaciones registradas abajo.**
 
-- Decoraciones temáticas generadas según el circuito.
-- Elementos costeros, rocas, vegetación y estructuras.
-- Mejorar sombras, escalas, variedad y colocación sin obstruir la pista.
+- Catorce perfiles temáticos con vegetación, rocas, estructuras, tribunas, público y elementos industriales; paletas y detalles propios.
+- Colocación reproducible con variación espacial, prioridad para hitos grandes y separación entre objetos. Distancia exacta a los segmentos completos, incluida huella visual y sombras; 124 unidades libres desde el centro de pista.
+- Respeta bordes del mundo y escapatorias; fondos estáticos cacheados y densidad/detalles según calidad.
+- Pendiente: revisión humana, medir rendimiento y enriquecer hitos de pistas con poco espacio sin invadir conducción.
 
-### Fase 13 — Efectos de terreno
+### Fase 13 — Efectos de terreno y cierre visual
 **Primera capa implementada y revisada.**
 
+- Pedido del usuario: bandera a cuadros y transición de llegada claras, sin ocultar la conducción de quienes siguen corriendo; considerar reducción de movimiento.
 - Partículas de derrape y salida de pista.
 - Marcas de neumáticos limitadas para mantener el rendimiento.
 - Textura volcánica con piedras oscuras y destellos de calor.
@@ -153,17 +156,19 @@ La interfaz identifica la build como **0.29**, continuando la base 0.17 del comm
 - Interruptor de sonido.
 - Pendiente: probar en distintos navegadores y equilibrar volumen, variedad y latencia.
 
-### Fase 16 — HUD y minimapa
+### Fase 16 — Pantalla inicial, HUD y minimapa
 **Simplificación solicitada implementada en 0.26; comprobada automáticamente y en Chromium.**
 
+- Pedido del usuario: pantalla inicial más linda y cómoda, con jerarquía clara, selección de carrera fácil de entender y buen uso en escritorio/móvil. Conservar accesibles opciones y controles.
 - Velocidad actual, vueltas, checkpoints, cronómetro de vuelta, mejor tiempo y minimapa. Se retiraron velocidad objetivo, próxima curva, terreno y porcentaje de derrape.
 - Cronómetro relativo al inicio de cada vuelta; conserva la última al finalizar. El resultado mantiene tiempo total.
 - Minimap independiente del área de conducción, visible también bajo 1050 px desde 0.20 y con marco de cámara.
 - Chromium verifica proporción, ausencia de scroll, HUD exterior y visibilidad en escritorio, móvil vertical/horizontal y pantalla completa. Pendiente: dispositivos físicos, controles táctiles y conducción humana.
 
-### Fase 17 — Modos de carrera
+### Fase 17 — Modos de carrera y tabla de puntos
 **Base implementada; expansión pendiente.**
 
+- Pedido del usuario: tabla de puntos legible con puesto, piloto, puntos por carrera y total; marcar sin terminar y mantener orden/nombres entre etapas.
 - Carrera contra CPU.
 - Dos jugadores en el mismo dispositivo.
 - Campeonato por puntos.
@@ -614,3 +619,34 @@ Partir de 0.28 y verificar main. Próxima fase: **11**, revisar contactos en gru
 ### Continuación vigente con «siguiente»
 
 Partir de 0.29 y verificar main. Próxima fase: **12**, mejorar ambientación y colocación de elementos temáticos sin ocultar curvas ni perder las escapatorias. Mantener las nuevas pruebas de contacto, las carreras de parrilla y el benchmark clásico. El balance humano, contactos residuales y la forma simplificada entre coches siguen documentados; no declarar terminadas las 24 fases ni agrandar trazados sin revisar geometría y duración de vuelta humana.
+
+
+## Avance — build 0.30 (25 de octubre de 2026)
+
+### Fase 12 — Ambientación con escapatorias libres
+
+- Base limpia y remota verificada en `57aafe8`. La decoración anterior repetía una cuadrícula, usaba muestreo salteado para distancia y no reservaba la huella completa.
+- Nuevo catálogo temático para los 14 circuitos: vegetación propia, cactus/mesetas, pinos/cabañas, selva, basalto, arquitectura nocturna, puerto, grúas/contenedores/tanques, tribunas con público y pradera con flores. Dibujado original con primitivas de Canvas, sin recursos externos nuevos.
+- Variación reproducible de posición, tamaño y tipo; hitos grandes se colocan antes de llenar huecos. Cada objeto reserva su radio completo, sombra incluida; evita otros objetos y bordes del mundo.
+- Distancia exacta a los segmentos completos y margen libre de 124 unidades desde el centro de pista, para conservar las escapatorias. La decoración nueva no añade obstáculos físicos ni muros.
+- Detallados incorpora sombras, capas y detalles; Retro simplifica; Rendimiento reduce densidad/detalles. Caché de colocación por circuito/calidad y fondo estático compartido con el render existente.
+- No cambian trazados, récords, superficies, física, CPU, campeonato ni el HUD despejado.
+
+### Comprobaciones
+
+- `tests/validate-scenery.mjs`: 962 colocaciones en 14 pistas y tres calidades. Comprueba huella visible, distancia a segmentos, límites de mundo, separación entre objetos, variedad, generación repetible y caché. Detallados: 385 objetos; Rendimiento: 247.
+- Chromium renderizó los 14 escenarios sin errores. Se revisaron capturas de puerto, desierto, hielo, estadio, selva, volcán, costa e industria; curvas y escapatorias permanecen legibles. Campeón tiene menos decoración por el espacio disponible, sin forzar objetos dentro del margen.
+- Superados controles, pausa, reinicio, menú, fullscreen, resize, HUD/cronómetro, minimapa móvil, gráficos Retro/Rendimiento, carreras CPU de Dusty/hielo, parrilla completa/resultados/siguiente etapa y separación de cuatro coches.
+- Superadas sintaxis, IDs HTML/archivos, diez originales/14 registros, geometría, identidad, colisiones/recuperación, CPU/tráfico focalizados y dos carreras completas de parrilla en Sunset/Dusty (24 vueltas válidas). No se repiten las 42 carreras clásicas ni las 20 de parrilla completas: esta etapa no modifica física ni controladores; la referencia publicada de 0.29 se conserva.
+- Pase final de conducción, inercia y barreras superado: cuatro modelos, cámaras/terrenos, 37 contornos y 11174 puntos geométricos. No se midieron FPS ni se condujo en un teléfono; la comprobación móvil cubre distribución y visibilidad.
+
+### Pedidos añadidos durante esta etapa
+
+- Fase 16: pantalla inicial más linda y cómoda.
+- Fase 13: bandera a cuadros y cierre visual de carrera.
+- Fase 17: tabla de puntos clara por carrera y total.
+- Fase 10: otra revisión de competitividad y nombres ficticios de los rivales, manteniendo coherencia entre las pantallas. Se incorporan como trabajo pendiente, sin marcarlo implementado ni mezclarlo con esta etapa.
+
+### Continuación vigente con «siguiente»
+
+Partir de 0.30 y verificar main. Próxima fase: **13**, efectos/feedback y bandera a cuadros solicitada; conservar la visibilidad de quienes siguen compitiendo, los límites de partículas y la accesibilidad. Después abordar pantalla inicial y tabla de puntos en sus fases, manteniendo el pedido de mejores CPU/nombres registrado en fase 10. No repetir la ambientación ya comprobada ni cambiar geometría sin validación de recorrido y vueltas humanas.

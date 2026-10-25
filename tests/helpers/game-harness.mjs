@@ -23,7 +23,7 @@ export function loadGame() {
   const source = readFileSync(new URL('../../script.js', import.meta.url), 'utf8');
   const expose = `globalThis.testGame={start,physics,placeCar,setupCar,aiTraffic,trafficApproach,AI_DRIVERS,AI_PERSONALITIES,driverFor,raceClassification,awardPoints,standingsText,finishRace,CAR_MODELS,WORLD_SPEED_SCALE,vehicleHandling,updateSteeringInertia,raceCamera,toggleCamera,overviewZoom,usesSplitScreen,lapRecordKey,saveBestLap,currentLapTime,updateTelemetry,
     get championship(){return championship},get bestLapRecords(){return bestLapRecords},sampleAt,nearestOnTrack,curvatureAt,resolveCollisions,guardrailActive,barrierContoursForTrack,resolveBarrierContact,projectToSegment,closestSegments,
-    get physicalBarriers(){return physicalBarriers},get guardrailPaths(){return guardrailPaths},
+    get decorations(){return decorations},decorationsForTrack,SCENERY_THEMES,TRACK_SCENERY,SCENERY_CLEARANCE,drawSceneryObject,get physicalBarriers(){return physicalBarriers},get guardrailPaths(){return guardrailPaths},
     get checkpoints(){return checkpoints},get tracks(){return tracks},get cars(){return cars},get track(){return track},
     tick(dt){elapsed+=dt;cars.forEach((car,i)=>{if(!car.done)physics(car,i,dt)});const contact=cars.some((a,i)=>!a.done&&cars.slice(i+1).some(b=>!b.done&&Math.hypot(a.x-b.x,a.y-b.y)<23-1e-6));resolveCollisions(dt);return contact},
     setKeys(value){keys=value},setDifficulty(value){difficulty=value}};`;

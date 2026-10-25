@@ -398,17 +398,112 @@ function updateGaragePreview(){
  preview.innerHTML='<span class="paint-dot" style="background:'+paint.hex+'"></span><strong>'+car.name+'</strong><span>'+Math.round(car.maxSpeed)+' KM/H MAX</span><span>AGARRE '+Math.round(car.grip*100)+'%</span><small>'+car.description+'</small>';
  preview.style.setProperty('--car-paint',paint.hex);
 }
+const SCENERY_CLEARANCE=124;
+const SCENERY_THEMES={
+ park:{kinds:['tree','tree','tent','stands'],leaf:'#327951',light:'#71a66a',stone:'#88917c',roof:'#3cbab5',ground:'#4c694a'},
+ harbor:{kinds:['container','warehouse','crane'],leaf:'#275c59',light:'#6ab6af',stone:'#5e7580',roof:'#3cbab5',ground:'#53766e'},
+ desert:{kinds:['cactus','mesa','rock'],leaf:'#49704d',light:'#8b9b62',stone:'#99704c',roof:'#d29b61',ground:'#d0ad71'},
+ night:{kinds:['building','building','tent'],leaf:'#25384f',light:'#8194b7',stone:'#34455f',roof:'#b85c8c',ground:'#34465d'},
+ snow:{kinds:['pine','pine','cabin','rock'],leaf:'#367f75',light:'#e3f3ef',stone:'#b3cece',roof:'#d4eeee',ground:'#a9c7bd'},
+ jungle:{kinds:['canopy','canopy','rock','tent'],leaf:'#196044',light:'#4d925d',stone:'#6d8170',roof:'#aeaa65',ground:'#2a6345'},
+ volcano:{kinds:['basalt','basalt','rock'],leaf:'#563d45',light:'#c96545',stone:'#51434e',roof:'#bf6146',ground:'#59444a'},
+ city:{kinds:['building','warehouse','tent'],leaf:'#347269',light:'#7fa29a',stone:'#435669',roof:'#43ada8',ground:'#4e786e'},
+ valley:{kinds:['pine','rock','tree'],leaf:'#326858',light:'#78a088',stone:'#7c898e',roof:'#749e89',ground:'#4e7462'},
+ stadium:{kinds:['stands','stands','tent','tree'],leaf:'#3f7955',light:'#81aa64',stone:'#738484',roof:'#398a97',ground:'#547453'},
+ coast:{kinds:['palm','palm','rock','tent'],leaf:'#246b57',light:'#61a778',stone:'#d2c59b',roof:'#4ab6bd',ground:'#baad7a'},
+ canyon:{kinds:['mesa','rock','cactus','tent'],leaf:'#69764b',light:'#9ba36c',stone:'#a07b56',roof:'#d3915c',ground:'#b09365'},
+ meadow:{kinds:['tree','flowers','flowers','tent'],leaf:'#397b45',light:'#8bb967',stone:'#8c9779',roof:'#cfb76c',ground:'#648751'},
+ industrial:{kinds:['container','tank','crane','warehouse'],leaf:'#41685e',light:'#9eb1a8',stone:'#607076',roof:'#bc9860',ground:'#657565'}
+};
+const TRACK_SCENERY=['park','harbor','desert','night','snow','jungle','volcano','city','valley','stadium','coast','canyon','meadow','industrial'];
+const sceneryCache=new WeakMap();
+function sceneryRandom(x,y,salt=0){
+ let value=Math.imul(x+stage*131+salt*977,374761393)^Math.imul(y+salt*37,668265263);
+ value=Math.imul(value^(value>>>13),1274126177);return ((value^(value>>>16))>>>0)/4294967296;
+}
 function decorationsForTrack(){
- const list=[];
- for(let y=24;y<track.worldHeight-25;y+=42)for(let x=24;x<track.worldWidth-20;x+=44){
-  let nearest=Infinity;
-  for(let i=0;i<track.samples.length;i+=2)nearest=Math.min(nearest,Math.hypot(x-track.samples[i].x,y-track.samples[i].y));
-  if(nearest>82){
-   const type=Math.abs(Math.floor(x*3+y*7+stage*13))%11;
-   if(type<7)list.push({x,y,type,size:9+(type%4)*2});
-  }
+ let cached=sceneryCache.get(track);if(!cached){cached=new Map();sceneryCache.set(track,cached);}
+ if(cached.has(graphics))return cached.get(graphics);
+ const list=[],candidates=[],theme=SCENERY_THEMES[TRACK_SCENERY[stage]],density=graphics==='high'?.86:graphics==='retro'?.63:.4;
+ for(let row=0,y=38;y<track.worldHeight-38;row++,y+=48)for(let col=0,x=38;x<track.worldWidth-38;col++,x+=50){
+  if(sceneryRandom(col,row)>density)continue;
+  const px=x+(sceneryRandom(col,row,1)-.5)*28,py=y+(sceneryRandom(col,row,2)-.5)*28;
+  const kind=theme.kinds[Math.floor(sceneryRandom(col,row,3)*theme.kinds.length)];
+  const large=['stands','warehouse','crane','tank'].includes(kind);
+  const size=(large?14:8)+sceneryRandom(col,row,4)*6,radius=size*2.2+4;
+  if(px-radius<0||py-radius<0||px+radius>track.worldWidth||py+radius>track.worldHeight)continue;
+  // Exact segment distance, including the full object/shadow footprint and recovery lane.
+  if(nearestOnTrack(px,py).distance<SCENERY_CLEARANCE+radius)continue;
+  candidates.push({x:px,y:py,kind,size,radius,large,variant:sceneryRandom(col,row,5),theme:TRACK_SCENERY[stage]});
  }
- return list;
+ // Give larger landmarks room before filling gaps with vegetation.
+ candidates.sort((a,b)=>Number(b.large)-Number(a.large));
+ for(const item of candidates)if(!list.some(other=>Math.hypot(other.x-item.x,other.y-item.y)<other.radius+item.radius+5))list.push(item);
+ list.sort((a,b)=>a.y-b.y);cached.set(graphics,list);return list;
+}
+function drawSceneryObject(context,d){
+ const palette=SCENERY_THEMES[d.theme],s=d.size,detail=graphics==='high';
+ context.save();context.translate(d.x,d.y);
+ const rect=(x,y,w,h,color)=>{context.fillStyle=color;context.fillRect(x*s,y*s,w*s,h*s);};
+ const poly=(points,color)=>{context.fillStyle=color;context.beginPath();points.forEach(([x,y],i)=>i?context.lineTo(x*s,y*s):context.moveTo(x*s,y*s));context.closePath();context.fill();};
+ const oval=(x,y,rx,ry,color)=>{context.fillStyle=color;context.beginPath();context.ellipse(x*s,y*s,rx*s,ry*s,0,0,Math.PI*2);context.fill();};
+ // All scenery is static, cached and beyond the recovery strip; shadows stay bounded.
+ if(graphics!=='lite'){
+  if(detail)oval(0,0,1.65,.8,palette.ground);
+  oval(.3,.35,1.35,.52,'#08132030');
+ }
+ if(['tree','canopy','palm','pine','cactus'].includes(d.kind)){
+  rect(-.12,-.3,.24,1.05,'#5b4936');
+  if(d.kind==='palm'){
+   poly([[-.1,.6],[.12,.6],[.3,-.85],[.1,-.9]],'#8c7250');
+   for(let i=0;i<6;i++){const a=i*Math.PI/3+d.variant;poly([[.2,-.8],[.2+Math.cos(a)*1.65,-.8+Math.sin(a)*.9],[.2+Math.cos(a+.4)*.9,-.8+Math.sin(a+.4)*.6]],i%2?palette.leaf:palette.light);}
+  }else if(d.kind==='pine'){
+   poly([[0,-1.75],[-1.05,.55],[1.05,.55]],palette.leaf);
+   poly([[0,-1.75],[-.8,-.1],[.65,-.2]],palette.light);
+   if(detail)poly([[-.6,.1],[-.86,.5],[.8,.5],[.5,.15]],d.theme==='snow'?'#d3e8e5':palette.light);
+  }else if(d.kind==='cactus'){
+   rect(-.2,-1.4,.4,2,palette.leaf);rect(-.85,-.65,.7,.25,palette.leaf);rect(-.85,-1,.25,.5,palette.leaf);rect(.15,-.2,.6,.25,palette.leaf);rect(.5,-.6,.25,.6,palette.leaf);rect(-.1,-1.3,.1,1.7,palette.light);
+   if(detail){oval(-.65,.65,.4,.15,palette.stone);rect(.02,-1.55,.16,.2,'#e6c16d');}
+  }else{
+   oval(0,-.55,1.1,1,palette.leaf);oval(-.43,-.9,.72,.7,palette.light);oval(.6,-.5,.65,.72,palette.leaf);
+   if(d.kind==='canopy'){oval(.1,-1.3,.68,.52,palette.light);rect(-.04,-1.45,.09,.7,'#75a865');}
+   if(detail){oval(-.55,-1.1,.22,.15,'#a5c87555');rect(.1,-.15,.1,.25,'#b3c38855');}
+  }
+ }else if(['rock','mesa','basalt'].includes(d.kind)){
+  poly([[-1.15,.4],[-.9,-.6],[-.25,-1.05],[.65,-.9],[1.2,.1],[.8,.6]],palette.stone);
+  poly([[-.9,-.6],[-.25,-1.05],[.65,-.9],[.5,-.15],[-.4,-.05]],d.kind==='basalt'?'#70606a':d.theme==='snow'?'#e7f3f1':palette.roof);
+  poly([[.5,-.15],[.65,-.9],[1.2,.1],[.8,.6]],'#15252d3a');
+  if(d.kind==='mesa'){rect(-.6,-.55,1.05,.16,'#d6af79');rect(-.85,.15,1.8,.12,'#6c513d');}
+  if(d.kind==='basalt'){poly([[-.6,-.2],[-.1,-.1],[.05,.2],[.6,.3],[.2,.38],[-.2,.08]],'#e27b4b');if(detail)rect(-.05,-.13,.12,.17,'#ffc06b');}
+ }else if(d.kind==='flowers'){
+  oval(0,0,1.25,.65,palette.leaf);
+  for(let i=0;i<(detail?12:6);i++){const a=i*2.4,r=.3+(i%3)*.32;rect(Math.cos(a)*r,Math.sin(a)*r*.55,.13,.13,i%3===0?'#f1d780':i%3===1?'#dddab9':'#d88ca2');}
+ }else if(d.kind==='tent'){
+  rect(-1,.1,2,.65,'#273f4c');poly([[-1.25,.1],[0,-1.05],[1.25,.1]],palette.roof);poly([[0,-1.05],[0,.1],[1.25,.1]],'#ffffff35');rect(-.3,.25,.6,.5,'#172c39');
+  if(detail){rect(-1.2,.65,2.4,.12,'#c6c7a3');rect(.75,-.9,.07,1.7,'#263b3d');rect(.82,-.9,.5,.25,track.accent);}
+ }else if(d.kind==='stands'){
+  rect(-1.45,-.8,2.9,1.65,'#334554');rect(-1.5,-1.1,3,.45,palette.roof);
+  for(let row=0;row<3;row++){rect(-1.3,-.45+row*.4,2.6,.15,'#7b8d96');if(graphics!=='lite')for(let col=0;col<8;col++)rect(-1.25+col*.34,-.56+row*.4,.12,.13,['#d7dbb6',track.accent,'#de9f86','#76b9b0'][(col+row)%4]);}
+  rect(-1.5,.85,3,.14,'#182735');if(detail){rect(-1.35,-.68,.08,1.5,'#a6b6ac');rect(1.25,-.68,.08,1.5,'#a6b6ac');}
+ }else if(d.kind==='container'){
+  rect(-1.35,-.6,2.7,1.25,'#273844');rect(-1.35,-.85,2.7,1.05,palette.roof);rect(-1.35,.2,2.7,.25,'#142b3a55');
+  if(graphics!=='lite')for(let i=0;i<8;i++)rect(-1.2+i*.32,-.75,.05,.8,'#d4dfcf55');rect(.75,-.55,.35,.2,track.accent);
+ }else if(d.kind==='crane'){
+  rect(-.7,.3,1.4,.65,'#354750');rect(-.15,-1.6,.3,2,'#d5af59');rect(-1.4,-1.7,2.9,.25,'#dabd6e');
+  poly([[-1.3,-1.45],[0,-2],[1.4,-1.45],[.9,-1.45],[0,-1.8],[-.8,-1.45]],'#796e4b');rect(1.1,-1.4,.06,1.1,'#263e47');rect(.98,-.35,.3,.25,'#d6b863');
+  if(detail)for(let i=0;i<4;i++)rect(-.13,-1.3+i*.4,.26,.08,'#394b4d');
+ }else if(d.kind==='tank'){
+  rect(-1,-.5,2,1.3,'#3f515a');oval(0,.8,1,.4,'#31434d');oval(0,-.5,1,.48,'#c0c9bf');oval(-.1,-.55,.7,.3,'#91a59f');rect(-.12,-.6,.24,.2,palette.roof);
+  if(detail){rect(-.8,.05,1.6,.12,'#ddb363');rect(.65,-.35,.09,1.2,'#b2c0b7');}
+ }else{
+  const tower=d.kind==='building';
+  rect(-1,-.7,2,1.5,palette.stone);rect(-1,-1.1,2,1.2,palette.roof);poly([[-1,-1.1],[-.65,-1.45],[1.3,-1.45],[1,-1.1]],palette.light);poly([[1,-1.1],[1.3,-1.45],[1.3,.4],[1,.8]],'#1b2c3b');
+  if(d.kind==='cabin'){poly([[-1.2,-1.1],[0,-1.9],[1.2,-1.1]],palette.roof);rect(-.3,.15,.6,.65,'#496263');}
+  const windows=detail?4:2;for(let i=0;i<windows;i++)rect(-.8+i*1.6/windows,-.48,.2,.25,tower?track.accent:'#b3c8ba');
+  if(detail&&tower){rect(-.2,-1.5,.12,.4,'#263649');rect(-.6,-.95,1.1,.12,track.accent);}
+  if(detail&&d.kind==='warehouse'){rect(-.45,-.05,.9,.75,'#344e56');for(let i=0;i<4;i++)rect(-.4,.05+i*.16,.8,.04,'#799293');}
+ }
+ context.restore();
 }
 function resize(){
  const bounds=$('views').getBoundingClientRect(),availableWidth=Math.max(1,bounds.width-8),availableHeight=Math.max(1,bounds.height-8);
@@ -864,37 +959,7 @@ function renderStaticBackground(context){
  context.fillStyle=track.grass;context.fillRect(0,0,track.worldWidth,track.worldHeight);
  for(let y=0;y<track.worldHeight;y+=36){context.fillStyle=(Math.floor(y/36)%2)?'#ffffff05':'#0b2b1a0a';context.fillRect(0,y,track.worldWidth,18);}
  renderGroundTexture(context);
- for(const d of decorations){
-  if(track.environment==='coast'||stage===10){
-   // Vegetación de costa: palmeras angulares y rocas claras, identidad propia del circuito.
-   context.fillStyle='#6b5039';context.fillRect(d.x-2,d.y-8,4,15);
-   context.strokeStyle='#1b5b49';context.lineWidth=3;context.lineCap='round';
-   for(const a of [-2.7,-1.8,-.9,0,.9]){context.beginPath();context.moveTo(d.x,d.y-7);context.lineTo(d.x+Math.cos(a)*d.size,d.y-7+Math.sin(a)*d.size*.62);context.stroke();}
-   context.fillStyle='#dfd2a2';context.beginPath();context.ellipse(d.x+d.size*.8,d.y+4,d.size*.7,d.size*.35,.35,0,Math.PI*2);context.fill();
-  }else if(track.environment==='rally'||stage===11){
-   // Rocas angulares en el cañón, con pequeños arbustos resistentes.
-   context.fillStyle=d.type%2?'#6e533b':'#886845';context.beginPath();context.moveTo(d.x-d.size,d.y+4);context.lineTo(d.x-d.size*.55,d.y-d.size*.55);context.lineTo(d.x+d.size*.2,d.y-d.size);context.lineTo(d.x+d.size,d.y+3);context.closePath();context.fill();
-   context.fillStyle='#667044';context.fillRect(d.x+d.size*.3,d.y-5,3,9);
-  }else if(track.environment==='meadow'||stage===12){
-   context.strokeStyle='#b3da72';context.lineWidth=2;context.beginPath();context.moveTo(d.x-d.size,d.y+3);context.lineTo(d.x+d.size,d.y-4);context.stroke();context.fillStyle='#2c6a39';context.beginPath();context.arc(d.x,d.y-7,d.size*.55,0,Math.PI*2);context.fill();
-  }else if(track.environment==='industrial'||stage===13){
-   context.fillStyle='#3b4449';context.fillRect(d.x-d.size,d.y-d.size*.65,d.size*2,d.size*1.3);context.fillStyle='#ffcc63';context.fillRect(d.x-d.size*.5,d.y-d.size*.25,d.size,3);context.fillStyle='#bbc5ca';context.fillRect(d.x-2,d.y-d.size,4,d.size*.4);
-  }else if(stage===1||stage===3||stage===7){
-   context.fillStyle='#233348';context.fillRect(d.x-d.size*.75,d.y-d.size*1.5,d.size*1.5,d.size*1.5);
-   context.fillStyle=track.accent;context.fillRect(d.x-d.size*.43,d.y-d.size*1.15,3,4);context.fillRect(d.x+d.size*.05,d.y-d.size*.8,3,4);
-  }else if(stage===2){
-   context.fillStyle='#9b7750';context.fillRect(d.x-4,d.y-4,8,8);context.fillStyle='#557047';context.fillRect(d.x-2,d.y-12,4,12);context.fillRect(d.x-8,d.y-8,6,3);
-  }else if(stage===4){
-   context.fillStyle='#e2f5f6';context.beginPath();context.moveTo(d.x,d.y-d.size*1.7);context.lineTo(d.x-d.size,d.y+d.size*.5);context.lineTo(d.x+d.size,d.y+d.size*.5);context.fill();
-   context.fillStyle='#337967';context.fillRect(d.x-2,d.y,4,7);
-  }else if(stage===5){
-   context.fillStyle='#4f3d2a';context.fillRect(d.x-2,d.y-8,4,15);context.fillStyle=d.type%2?'#164831':'#2e7145';context.beginPath();context.arc(d.x,d.y-10,d.size,0,Math.PI*2);context.fill();
-  }else if(stage===6){
-   context.fillStyle='#3c333b';context.beginPath();context.arc(d.x,d.y,d.size,0,Math.PI*2);context.fill();context.fillStyle='#d65d3e';context.fillRect(d.x-2,d.y-2,4,Math.max(3,d.size*.5));
-  }else{
-   context.fillStyle='#604d3d';context.fillRect(d.x-2,d.y-7,4,10);context.fillStyle=d.type%2?'#1e5a3d':'#2f7950';context.beginPath();context.arc(d.x,d.y-10,d.size,0,Math.PI*2);context.fill();context.fillStyle='#8bbf65';context.fillRect(d.x-2,d.y-14,4,3);
-  }
- }
+ for(const d of decorations)drawSceneryObject(context,d);
  // Capas de asfalto y vallas metálicas con postes.
  drawTrackSurface(context);drawGuardrails(context);
  // Animated center-line dashes stay separate from the cached asphalt.

@@ -64,6 +64,7 @@ node tests/validate-cpu.mjs
 node tests/validate-traffic.mjs
 node tests/validate-grid.mjs
 node tests/validate-collisions.mjs
+node tests/validate-scenery.mjs
 node tests/validate-driving.mjs
 node tests/validate-steering-inertia.mjs
 node tests/validate-barriers.mjs
@@ -75,7 +76,7 @@ La prueba de CPU exige una mejora de al menos 20 % frente a 0.24 en el mismo tra
 
 Prueba opcional de navegador: `node tests/browser-smoke.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
-## Conducción — build 0.29
+## Conducción — build 0.30
 
 La aceleración del Balanced pasa de 76 a 110, el frenado de 192 a 230 y la escala real de movimiento de 0,62 a 0,84. Los otros tres modelos se ajustan en la misma dirección y conservan sus diferencias. A igual velocidad indicada, el coche recorre un 35,5 % más de distancia. La pérdida de agarre por exceso de velocidad es progresiva y conserva dirección; frenar sigue permitiendo cerrar mejor una curva. ESPACIO reduce velocidad aunque se mantenga W y ayuda a rotar el coche. La recuperación del derrape usa tiempo real, evitando cambios según los FPS.
 
@@ -115,6 +116,14 @@ La separación entre coches se resuelve hasta 16 veces por paso, comprobando de 
 
 Los desplazamientos por contacto actualizan la posición en pista y los cruces válidos de checkpoints/meta. El mínimo de velocidad de las escapatorias ya no pone en marcha un coche detenido sin acelerar; se conserva el avance lento para recuperar con acelerador y dirección normales. No se añaden teletransportes de CPU ni se elimina terreno de recuperación.
 
+## Escenarios — build 0.30
+
+Los 14 circuitos tienen perfiles de ambientación propios: parque de Sunset, puerto, noche urbana, desierto, nieve, selva, volcán, ciudad, valle, estadio, costa, cañón, pradera e industria. Se combinan árboles, palmeras, pinos, cactus, mesetas, basalto, flores, carpas, tribunas con público, depósitos, contenedores, grúas y tanques, con paletas y detalles originales dibujados en Canvas.
+
+La colocación usa variación determinista y distancia exacta a todos los segmentos del circuito. Cada objeto reserva su huella completa, incluida sombra, y deja **124 unidades libres desde el centro de pista**; también respeta el borde del mundo y los otros objetos. La decoración queda fuera de las escapatorias habituales. La señalización de carrera y barreras conservan su función junto al trazado.
+
+Detallados añade sombras, relieve, ventanas, público y detalles pequeños; Retro simplifica, y Rendimiento reduce densidad y detalles. La decoración se genera una vez por circuito/calidad y se dibuja en el fondo cacheado. No cambia geometría, superficies, coches, física, CPU ni puntos.
+
 ## Estructura
 
 - `index.html`: menú, opciones, interfaz de carrera y telemetría.
@@ -124,6 +133,8 @@ Los desplazamientos por contacto actualizan la posición en pista y los cruces v
 - `tests/`: validación de geometría, ancho completo, integración, conducción, récords, barreras y CPU; prueba opcional de Chromium.
 
 ## Validación conocida
+
+`validate-scenery.mjs` comprueba las 14 pistas en tres calidades: 962 colocaciones, huella visible dentro del espacio reservado, separación exacta de pista, límites del mundo, distancia entre objetos, generación reproducible y reutilización de caché. Detallados suma 385 objetos y Rendimiento 247 entre las 14 pistas. Pasaron también integración, geometría, conducción, inercia, barreras, contactos/recuperación, casos focalizados de CPU/tráfico, carreras de parrilla en Sunset/Dusty y Chromium con render de los 14 escenarios. Se revisaron capturas de ocho entornos. No se midieron FPS ni se repitió en esta etapa toda la batería de carreras de 0.29; la física y los controladores no cambian.
 
 En 0.29 pasaron las 20 carreras de parrilla (240 vueltas), 42 clásicas (126 vueltas), 14 de tráfico de dos coches (84 vueltas), comprobaciones estructurales/físicas y Chromium. La parrilla Normal conserva contactos residuales en Dusty y Coastline: 15 frames en total frente a 19 en 0.28; no se declara libre de choques. Los nuevos casos de colisión y recuperación también pasaron.
 
