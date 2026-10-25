@@ -33,11 +33,13 @@ Antes de correr podés elegir gráficos, dificultad, circuito, coche, color y pe
 
 El registro conserva los 14 circuitos y los diez nombres originales. La ampliación de 0.22 se conserva: Champion Road tiene una nueva recta larga y un sector técnico, y Coastline Run, Rally Canyon, Meadow Run e Industrial Mix tienen ramales separados para que sus caminos no se superpongan. El coche y el ancho de conducción conservan su tamaño. En 0.23, Dusty Mesa estrena un trazado triangular de tierra: recta rápida superior, “S” técnica al este y regreso diagonal. Sigue abierto y conserva su nombre y lugar en el campeonato.
 
-El objetivo de diseño de recorrido es una vuelta aproximada de **25–45 segundos**, pendiente de calibración con jugadores. La CPU ya no se ralentiza para encajar en ese rango: en 0.25, Normal mide **19,4–29,3 s** según la pista. Sus tiempos se contrastan con vueltas humanas y se conservan las escapatorias. No se amplió ningún trazado en esta actualización.
+En **0.39 Sunset Circuit** gana un recorrido propio: recta principal larga, curva exterior amplia, sector interior enlazado y regreso técnico. Pasa de 3572 a 6304 unidades de recorrido (**+76,5 %**) y su mundo de 1400×896 a 1800×1152. El coche, el ancho de pista (84), la velocidad y el perfil abierto se mantienen. El minimapa/vista previa y nueve checkpoints utilizan la geometría nueva.
+
+El objetivo humano sigue siendo una vuelta aproximada de **25–45 segundos**, pendiente de calibración con jugadores. Sunset mide ahora **34,86 s** por vuelta de CPU Normal libre, frente a 22,39 s anteriores; Fácil 41,82 s y Difícil 33,89 s. No se ralentizó la CPU ni el coche para lograrlo. Los otros 13 trazados no cambian; no se promete que todos ya cumplan el objetivo humano. Los récords de Sunset se separan como versión 3 y se conservan los de la versión 2.
 
 El perfil automático deja **siete pistas abiertas, cuatro con protección en curvas cerradas y tres con vallas parciales**. Sunset Circuit arranca sin muros. Podés seguir eligiendo vallas completas o cualquier otro perfil en el menú.
 
-Las superficies incluyen asfalto, tierra, pasto, hielo, volcánico y secciones mixtas. En las pistas mixtas, el agarre, las partículas y el minimapa cambian según el sector. Cada pista tiene entre cinco y siete checkpoints secuenciales según su longitud, para evitar recortes grandes entre sectores. Los récords se separan por versión del recorrido: se conservan los anteriores, pero no compiten con los tiempos de los trazados nuevos.
+Las superficies incluyen asfalto, tierra, pasto, hielo, volcánico y secciones mixtas. En las pistas mixtas, el agarre, las partículas y el minimapa cambian según el sector. Cada pista tiene entre cinco y nueve checkpoints secuenciales según su longitud, para evitar recortes grandes entre sectores. Los récords se separan por versión del recorrido: se conservan los anteriores, pero no compiten con los tiempos de los trazados nuevos.
 
 ## Funcionalidades actuales
 
@@ -60,6 +62,7 @@ Con Node.js, desde la raíz y sin dependencias adicionales:
 ```sh
 node --check script.js
 node tests/validate-tracks.mjs
+node tests/validate-sunset.mjs
 node tests/validate-track-identity.mjs
 node tests/validate-integration.mjs
 node tests/validate-cpu.mjs
@@ -85,7 +88,7 @@ La prueba de CPU exige una mejora de al menos 20 % frente a 0.24 en el mismo tra
 
 Pruebas opcionales de navegador: `node tests/browser-smoke.cjs`, `node tests/browser-audio.cjs` y `node tests/browser-release.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
-## Conducción — build 0.38
+## Conducción — build 0.39
 
 La aceleración del Balanced pasa de 76 a 110, el frenado de 192 a 230 y la escala real de movimiento de 0,62 a 0,84. Los otros tres modelos se ajustan en la misma dirección y conservan sus diferencias. A igual velocidad indicada, el coche recorre un 35,5 % más de distancia. La pérdida de agarre por exceso de velocidad es progresiva y conserva dirección; frenar sigue permitiendo cerrar mejor una curva. ESPACIO reduce velocidad aunque se mantenga W y ayuda a rotar el coche. La recuperación del derrape usa tiempo real, evitando cambios según los FPS.
 
@@ -193,6 +196,8 @@ En una convergencia cercana en paralelo, la CPU establece antes su objetivo de c
 
 ## Validación conocida
 
+En 0.39, `validate-sunset.mjs` compara con una referencia congelada de 0.38: recorrido +76,5 %, silueta distinta de la anterior y de las otras 13, huella física del coche/pista y prestaciones conservadas, nueve checkpoints, meta sin vuelta válida si faltan checkpoints, récord previo conservado y hashes de los otros 13 trazados idénticos. Geometría: margen de asfalto al borde del mundo 41,3 y separación libre entre ramales 42,5 unidades. Chromium comprueba el circuito, cámaras, mapa y flujo de juego; se revisan capturas reales de vista completa y menú. El tiempo de CPU no reemplaza una vuelta humana. Se repite la batería completa de 76 carreras/450 vueltas y se conserva el orden de dificultad. Sunset Normal/Difícil de parrilla no registra contactos; Fácil registra tres frames nuevos. Los contactos de Coastline Normal, Dusty Difícil y Meadow con dos coches siguen documentados.
+
 En 0.38, la prueba de entrega abre los archivos originales sin instrumentar el juego, bajo `/f1/`. La apertura directa de archivos quedó pendiente: este Chromium administrado la bloqueó con `ERR_BLOCKED_BY_ADMINISTRATOR`. Prepara recursos antiguos en caché, verifica carga de JS/CSS con la misma versión, las 14 pistas, configuración, cuenta regresiva, conducción por teclado, pausa/reinicio/menú y ausencia de errores de JavaScript. Pasan el flujo completo de Chromium, audio real, integración con versiones y comprobaciones focalizadas/estructurales. La batería completa de 76 carreras corresponde a 0.37: esta entrega no cambia la simulación. La URL pública no pudo comprobarse porque el proxy devolvió 403 al conectar con `gomeza2.github.io`; no se afirma que Pages esté desplegado.
 
 En 0.37 pasan 76 carreras de la batería completa (450 vueltas válidas), Chromium y Web Audio real, además de las pruebas estructurales/físicas. La regresión de ciclo de carrera prueba 100 pausas/reanudaciones rápidas, una sola cadena de frames, teclas liberadas, pausa por evento de visibilidad, reinicio/menú y redondeo al minuto. El tráfico de dos coches baja de 12 a 7 frames con contacto: Sunset/Neon/Dusty quedan en cero, pero aparecen siete en Meadow. En parrilla Normal el total sigue en cuatro: Jungle pasa a cero y Coastline de tres a cuatro; Dusty Fácil pasa a cero y Difícil registra dos. Se conserva este registro de regresiones locales y no se declara libre de contactos ni equilibrado contra personas.
@@ -225,7 +230,7 @@ Las barreras de 0.21 siguen contornos cerrados del ancho de pista, sin los plieg
 
 Pendientes: balance contra personas, contactos residuales en tráfico, tráfico humano impredecible, nuevos perfiles personalizados, audio, rendimiento medido y conducción móvil. El minimapa ya permanece visible en pantallas pequeñas. Todavía no hay controles táctiles; las pruebas móviles comprueban distribución y visibilidad, sin conducción humana en un teléfono.
 
-La fase 5 continúa: Champion Road y Dusty Mesa ya tienen geometría propia; quedan ocho originales con estructuras similares por revisar, conservando conducción, CPU, cámara y barreras. El registro detallado está en la hoja de ruta.
+La fase 5 continúa: Champion Road, Dusty Mesa y Sunset ya tienen rediseños propios; quedan siete originales con estructuras similares por revisar, conservando conducción, CPU, cámara y barreras. El registro detallado está en la hoja de ruta.
 
 ## Hoja de ruta
 

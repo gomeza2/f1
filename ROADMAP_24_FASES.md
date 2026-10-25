@@ -6,7 +6,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.38**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.39**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -29,14 +29,15 @@ La interfaz identifica la build como **0.38**, continuando la base 0.17 del comm
 - Pendiente: conducción humana y diferentes navegadores/dispositivos físicos.
 
 ### Fase 3 — Geometría y recorrido de las pistas
-**Primera mejora completa implementada en 0.22 y comprobada automáticamente; balance humano pendiente.**
+**Ampliación de 0.22 y rediseño largo de Sunset en 0.39 comprobados automáticamente y en Chromium; balance humano pendiente.**
 
 - Mundos ampliados a 1400×896 o 1300×832, independientes del canvas. Se conservan tamaño del coche, ancho de conducción y prestaciones de 0.21.
 - Champion Road rediseñado: recta larga, frenadas y sector técnico; los 14 nombres y el orden del campeonato se conservan.
 - Coastline, Meadow e Industrial separan además los pares de ramales conflictivos. Cuatro trazados largos antes tenían distancia central 62–75 frente a ancho 84; ahora todas las pistas superan el margen de seguridad del test.
 - Validación del ancho completo, límites del mundo y proximidad no local entre segmentos, con casos sintéticos que prueban que el detector encuentra solapes sin cruce central.
-- Entre cinco y siete checkpoints por longitud y récords separados por versión de trazado, conservando los datos anteriores.
-- Objetivo pedido por el usuario: vuelta aproximada 25–45 s; referencia de CPU Normal 32,5–44,1 s. No se ralentiza artificialmente el coche para obtenerlo.
+- Entre cinco y nueve checkpoints por longitud y récords separados por versión de trazado, conservando los datos anteriores. Sunset 0.39 usa nueve y récord @3.
+- Sunset 0.39: 6304 unidades (+76,5 %), mundo 1800×1152, recta larga/curva exterior/sector interior/regreso técnico; coche, ancho y velocidad intactos, perfil abierto. CPU Normal libre 34,86 s.
+- Objetivo pedido por el usuario: vuelta humana aproximada 25–45 s. En 0.39 CPU Normal libre mide 19,40–34,86 s según pista; Sunset 34,86 s. No se ralentiza artificialmente el coche para obtenerlo.
 - Pendiente: evaluación humana de ritmo y dificultad y continuar dando identidad geométrica a los otros nueve originales.
 
 ### Fase 4 — Barreras y perfiles de circuito
@@ -50,14 +51,15 @@ La interfaz identifica la build como **0.38**, continuando la base 0.17 del comm
 - Pendiente: perfiles personalizados/solo neumáticos, pruebas humanas contra todas las transiciones y validación integral de anchura en pistas cercanas a los bordes.
 
 ### Fase 5 — Variedad de circuitos
-**Dos originales rediseñados; mejora de Dusty Mesa implementada en 0.23. Validación final registrada más abajo.**
+**Champion, Dusty y Sunset rediseñados; Sunset 0.39 tiene identidad geométrica comprobada. Resto y balance humano pendientes.**
 
 - Champion Road (0.22): recta larga y sector de curvas enlazadas, conservando su identidad de carrera final.
 - Dusty Mesa (0.23): silueta triangular, recta rápida arriba, “S” al este y regreso diagonal; tierra, perfil abierto y cinco checkpoints conservados.
 - La separación libre mínima entre ramales de Dusty pasa de 37,9 a 73,3; referencia Normal de 28,91 s por vuelta, dentro del objetivo 25–45 s.
 - Comprobación de identidad geométrica independiente de escala, traslación, giro, reflejo, sentido y colocación de la meta. El nuevo Dusty se distingue de las otras 13 pistas; la prueba detecta una copia transformada.
 - Récord de Dusty separado como versión 3; se conservan los datos de la versión 2. Las otras 13 pistas no cambian sus registros ni su geometría.
-- Pendiente: diferenciar los otros ocho originales, sin convertir la variedad en cambios de color ni perder las escapatorias; evaluación humana de ritmo y diversión.
+- Sunset (0.39): silueta propia, comparada sin escala/giro/reflejo contra la anterior y las otras 13; no se acepta una variante que se parecía a Champion.
+- Pendiente: diferenciar los otros siete originales, sin convertir la variedad en cambios de color ni perder las escapatorias; evaluación humana de ritmo y diversión.
 
 ### Fase 6 — Superficies mixtas
 **Primera capa implementada y corregida en build 0.16.**
@@ -871,3 +873,31 @@ Partir de 0.37 y verificar main. Continuar **fase 24**, consolidación de entreg
 ### Continuación vigente con «siguiente»
 
 Partir de 0.38 y verificar main. La siguiente prioridad de producto es volver a **fases 3/5**, recorrido y variedad: ampliar/rediseñar Sunset con más recorrido útil, escapatorias y objetivo humano de 25–45 s, conservando coche/ancho/velocidad y comprobando geometría/checkpoints/CPU. No ralentizar artificialmente el coche. Mantener abiertos los contactos registrados y las pruebas de la base. Modos nuevos, progreso ampliado, editor, perfiles personalizados y otras partes del plan siguen pendientes; haber hecho una primera entrega de fase 24 no completa las 24 fases.
+
+
+## Avance — build 0.39 (25 de octubre de 2026)
+
+### Fases 3/5 — Sunset largo y con identidad propia
+
+- Base main verificada en `673291d`; no se sobrescriben cambios locales ajenos.
+- Se rediseña solo Sunset: recta principal larga, curva exterior amplia, sector interior enlazado y regreso técnico. Se conservan nombre/orden, asfalto y perfil automático abierto. El jugador puede seguir eligiendo los otros perfiles.
+- Recorrido 3572→6304 unidades (+76,5 %), mundo 1400×896→1800×1152. El tamaño del coche, asfalto de ancho 84, cámara cercana, prestaciones, dirección, CPU, superficies y reglas no cambian. La vista completa/minimapa muestran el mundo nuevo sin achicar el coche de la cámara cercana.
+- Nueve checkpoints secuenciales y meta sobre geometría nueva. Nuevo récord `SUNSET CIRCUIT@3`; la referencia @2 queda guardada sin competir con el recorrido nuevo.
+- Se descartan una variante demasiado similar a Champion, otra con ramales casi juntos y otra con solape de asfalto. No se rebaja el validador ni se eliminan las regresiones de contacto para aceptar el trazado.
+- La forma final tiene distancia normalizada mínima 0,387 frente a las otras 13, independiente de escala/giro/reflejo. Margen asfalto/borde del mundo 41,3 y separación libre entre ramales 42,5; sin cruces ni segmentos degenerados en la validación.
+
+### Comprobaciones y límites
+
+- Nueva referencia congelada `tests/fixtures/sunset-0.38.json` y `validate-sunset.mjs`: longitud/silueta, mundo, anchura/prestaciones originales, nueve gates, vuelta rechazada sin checkpoints, récord anterior conservado y hashes idénticos de los otros 13 trazados: superados.
+- Sunset libre: Fácil 41,82 s, Normal 34,86 s y Difícil 33,89 s de media por vuelta; antes Normal 22,39 s. Parrilla Normal: cuatro finalistas y 12 vueltas válidas, medias 35,49/35,09/33,77/34,23 s, cero frames con contacto en esa referencia.
+- Chromium: menú/mapa nuevo, render real completo, cámaras, minimapa/HUD, fullscreen/resize, pausa/reinicio, cambio de pista, llegada/resultados/puntos, dos humanos, móvil, calidades y movimiento reducido: superados. Capturas de menú y vista completa revisadas.
+- Entrega sin instrumentación bajo `/f1/` y audio real de Chromium: superados. Se versionan juntos HTML/CSS/JS a 0.39.
+- Sintaxis, geometría/identidad de 14 pistas, diez originales, HTML/archivos/70 perfiles, conducción/inercia, colisiones/recuperación, ciclo de carrera, llegada, menú/resultados, coches y audio: superados. Barreras: 37 contornos y 11733 puntos. Escenarios: 987 colocaciones en tres calidades, huellas fuera del asfalto y caché reproducible.
+- Se repite la batería completa: 42 carreras clásicas (126 vueltas), 20 de parrilla (240 vueltas) y 14 de tráfico (84 vueltas), total 76/450. Las 13 pistas sin cambios conservan sus resultados de referencia. Sunset Fácil/Difícil de parrilla termina con cuatro coches; Fácil registra tres frames de contacto nuevos y Difícil cero. Normal cero y tráfico de dos coches cero. Persisten Coastline Normal (4), Dusty Difícil (2) y Meadow dos coches (7); no se ocultan ni se afirma ausencia universal de contactos.
+- Pendiente: conducción humana y cronometraje real para confirmar el objetivo 25–45 s, dispositivos físicos, rendimiento medido y el reporte de videos que no pudieron transferirse. Los tiempos de CPU no certifican diversión ni balance humano. Contactos residuales anteriores siguen abiertos; no se toca la IA para compensar el cambio de geometría.
+
+### Hito de base principal y continuación con «siguiente»
+
+El usuario preguntó cuánto falta para una base importante y decente. Estimación comunicada: **dos entregas contando esta** (Sunset y revisión final), con posibilidad de una adicional si aparecen fallos importantes. Después de publicar 0.39 queda **una revisión principal de jugabilidad/correcciones**, sujeta a lo que revelen las pruebas humanas. No es un compromiso de terminar todos los errores ni las 24 fases; editor/desbloqueos/desafíos no forman parte de ese hito.
+
+Partir de 0.39 y verificar main. Próxima prioridad: **fase 23, revisión final del hito**, conservando Sunset y comprobando cortes/salidas de pista, reinicios/pausa, campeonato y contactos pendientes. Evitar añadir modos o agrandar más pistas antes de cerrar esta evaluación; si llega video accesible, priorizar sus fallos reproducibles. No marcar las funciones futuras de las 24 fases como completas.
