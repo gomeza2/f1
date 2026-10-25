@@ -1,4 +1,6 @@
-# PIXEL GRAND PRIX — Hoja de ruta de 24 fases
+# PIXEL GRAND PRIX — Hoja de ruta histórica y registro de avances
+
+La planificación abierta vigente continúa en [`ROADMAP_EVOLUCION.md`](ROADMAP_EVOLUCION.md), sin límite artificial de fases. Las 24 originales y sus decisiones se conservan aquí como contexto y registro.
 
 ## Objetivo de diseño
 
@@ -6,11 +8,13 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.41**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.42**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
-## Prioridad vigente de la base — feedback posterior a 0.39
+## Prioridad histórica 0.39–0.41 — reemplazada por el plan abierto
+
+El siguiente cuadro registra el alcance anterior; el nuevo prompt reabre conducción, contacto y variedad, e incorpora evolución online sin techo de fases. Plan activo: `ROADMAP_EVOLUCION.md`.
 
 El usuario reporta que se acelera demasiado rápido, puede completar curvas sin frenar, falta grava antes del pasto, el motor no resulta convincente y el modo local necesita 3–4 humanos. Este reporte reemplaza la estimación anterior de una entrega restante. **Cinco bloques principales contando la conducción en curso**, con posibilidad de varias iteraciones por bloque:
 
@@ -971,3 +975,36 @@ Partir de 0.40 y verificar main. Revisar primero el feedback humano de la nueva 
 ### Continuación vigente con «siguiente»
 
 Partir de 0.41 y verificar main. Próximo bloque: **fase 15, sustituir el sonido de motor**, con timbre/régimen/carga más convincentes y escucha humana; conservar señales útiles y silencio en pausa/OFF/menú. Después **17/2/16, mejorar dos jugadores y ampliar a 3/4**, y **23/24, revisión final**. La conducción y la grava están implementadas/comprobadas pero siguen abiertas a la prueba humana. No reiniciar el proyecto ni repetirlas como ausentes; el plan de base conserva esos cinco bloques y tres de ellos todavía esperan desarrollo/cierre.
+
+
+## Avance — build 0.42 (25 de octubre de 2026)
+
+### Auditoría y fase 25 abierta — fluidez, roces y progreso justo
+
+- Nuevo prompt maestro: se verifica main real 0.41 (`1df936d`), árbol limpio, rama e historial. Trabajo recuperable en `work/arcade-drive-042`. Se leen HTML/CSS/JS, documentación, pruebas y referencias de publicación; no hay workflows ni backend en el árbol actual.
+- Chromium local antes de editar: 14 escenarios capturados/revisados en conjunto, menú, conducción/CPU, dos humanos, HUD/mapa, cámaras, fullscreen, pausa/reinicio/resultados y resoluciones. La página pública sigue sin verificarse por 403 del proxy, sin inferir caída ni despliegue.
+- Cinco oportunidades priorizadas y planificación sin techo en `ROADMAP_EVOLUCION.md`. Se retira el objetivo obligatorio de todas las vueltas entre 25–45 s: se acepta variedad aproximada 20/40/60 s y otras duraciones útiles. Anchos variables, motor nuevo, 3–4 humanos y online siguen pendientes, no se crean opciones vacías.
+
+### Cambios implementados
+
+- Configuración de conducción agrupada: aceleración menos restrictiva, penalización de agarre por velocidad menos acumulativa, capacidad lateral más permisiva y respuesta de dirección/yaw más rápida sin giro instantáneo. Entrada humana con suavizado exponencial consistente a 30/120 Hz. Máximas, trazados, coche y materiales de grava conservados.
+- Dos alternativas comparadas frente a 0.41; la más permisiva se descarta al hacer más rápida la referencia de Sunset con acelerador permanente. Medidas y comando reproducible: `tests/experiments/DRIVING_042.md` y `compare-driving.mjs`.
+- Elegida: Balanced 0–100 1,59→1,28 s, 95 % de máxima 4,40→3,32 s. Giro de entrada en la prueba de 0,3 s a máxima: 0,140→0,241 rad (+72 %); no son medidas de radio estabilizado ni aprobación humana.
+- CPU permite roce lateral leve de baja energía sin frenado preventivo; mantiene frenado ante trayectoria bloqueada, alcance fuerte y cierre peligroso. Los contactos físicos siguen activos, incluidos roces, empujones y golpes. No se alteran sus prestaciones ni se elimina la colisión para evitar errores.
+- Recuperación de CPU consulta material real: un piano pavimentado no dispara el antiguo límite de salida a 65 por distancia fija. Grava y pasto mantienen recuperación y resistencia.
+- Fallo confirmado: en Dusty, CP3 rechazaba el coche al rozar a 46,37 unidades pese a seguir tocando la franja. La vuelta de TRAZO tardaba 44,33 s por otra vuelta física. Gates/meta ahora usan el punto exacto de intersección y la huella lateral de diez unidades compartida con el contacto de barrera. Anchura legal de asfalto/piano/terreno también compartida con la consulta de superficie y el dibujo de las franjas. Nueva prueba rechaza el coche entero por fuera, el sentido incorrecto y el doble paso. Caso corregido: 23,17 s; media de carrera 28,73→21,79 s, sin ventajas de motor.
+- Cuenta regresiva desacoplada del delta limitado de simulación: tres segundos visibles no requieren cien frames de dibujo en una máquina lenta. No se cambia aquí toda la arquitectura de actualización física; la evolución a paso fijo/eventos queda planificada.
+- Física 4 y récords `:p4`; se conservan todos los anteriores. Recursos versionados juntos a 0.42. El audio de motor aún no se ha sustituido.
+
+### Comprobaciones y límites
+
+- Nuevas regresiones: referencia congelada `driving-0.41.json`, respuesta/progresión/frenado/30–120 Hz en `validate-arcade-flow.mjs`, contacto de gate/meta en `validate-gate-contact.mjs`, roce leve frente a impacto y piano frente a salida real en pruebas de tráfico/rivales. Cuenta atrás a un frame por segundo en ciclo de carrera: superados.
+- Experimento reproducible: primera vuelta Sunset 40,72→37,42 s con frenado; acelerador permanente 38,45 s con 4,27 s fuera de pista para la opción elegida. Dusty con frenado 23,93→21,57 s; sin freno no completa una vuelta válida en 90 s en esa política. No es una vuelta humana.
+- Chromium completo posterior: conducción, giro/contravolante, superficies/grava/barreras, foco/teclado, pausa/reinicio, cámaras/fullscreen/resize, 14 pistas, CPU/adelantamiento/parrilla, llegada/resultados/puntos, dos humanos y móvil: superados. La prueba de entrega detectó el riesgo de cuenta atrás lenta y se repitió tras corregirlo; bajo `/f1/` y sin instrumentar el juego pasó.
+- Batería final repetida: 42 carreras clásicas (126 vueltas), 20 de parrilla (240 vueltas) y 14 de tráfico (84 vueltas), total **76 carreras/450 vueltas válidas**. Dificultades ordenadas, límites de prestaciones compartidos y checkpoints completos en las 14 pistas. Dos coches: cero frames de contacto en esa referencia; parrilla mantiene roces (Normal: Dusty 3, Jungle 3, Coastline 7, Industrial 5; Fácil Dusty 5; Difícil Sunset 2 y Dusty 1). Los roces se registran, no se eliminan para lograr un contador artificialmente cero.
+- Sintaxis, IDs/recursos/versiones, diez originales/14 registros/70 perfiles, materiales (37.082 puntos/149.324 celdas), barreras (37 contornos/11733 puntos), geometría/identidad, conducción/inercia, colisiones, gates/meta, ciclo de carrera, menú/resultados, coches y escenarios (987 colocaciones): superados. La entrega bajo `/f1/` pasó después del arreglo de cuenta regresiva. No se han medido FPS ni se confirma Pages público.
+- La conducción sigue necesitando prueba humana. Se conservan contactos en grupo; no se persigue cero contacto como sustituto de una carrera disputada. Rendimiento real, audio de motor, anchos variables, más humanos, modos y online siguen en el plan abierto.
+
+### Continuación vigente con «siguiente»
+
+Consultar `ROADMAP_EVOLUCION.md`; este archivo conserva historial y evidencia. Cerrar/revisar el feedback de manejo sin convertir parámetros en intocables. Próxima mejora propuesta: **fase 26, sustituir el motor sonoro** y separar su responsabilidad, conservando señales y ciclo de vida. Después se prioriza por impacto, sin obligación de agotar las fases antiguas ni un número fijo de entregas.

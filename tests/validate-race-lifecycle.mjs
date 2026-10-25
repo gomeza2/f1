@@ -4,6 +4,10 @@ let serial=0,now=0;const pending=new Map();
 const frameScheduler={request(callback){const id=++serial;pending.set(id,callback);return id},cancel(id){pending.delete(id)}};
 const {game,element,document,documentEvents}=loadGame({frameScheduler});
 function frame(){const callbacks=[...pending.values()];pending.clear();now+=16;callbacks.forEach(callback=>callback(now));}
+// A low rendering rate must not turn the 3-second countdown into 100 rendered frames.
+game.start('solo',0);
+for(const remaining of [2,1,0]){const callbacks=[...pending.values()];pending.clear();now+=1000;callbacks.forEach(callback=>callback(now));assert.equal(game.countdown,remaining,'Countdown was tied to the capped simulation delta');}
+now=0;
 game.start('solo',0);game.setCountdown(0);assert.equal(pending.size,1);
 for(let i=0;i<100;i++){game.togglePause();assert.equal(pending.size,0,'Paused race kept a scheduled frame');assert.equal(element('pauseBtn')['aria-pressed'],'true');game.togglePause();assert.equal(pending.size,1,'Rapid resume created duplicate animation loops');}
 frame();assert.equal(pending.size,1,'One frame created multiple successor frames');

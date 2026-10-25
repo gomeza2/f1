@@ -35,7 +35,7 @@ El registro conserva los 14 circuitos y los diez nombres originales. La ampliaci
 
 En **0.39 Sunset Circuit** gana un recorrido propio: recta principal larga, curva exterior amplia, sector interior enlazado y regreso técnico. Pasa de 3572 a 6304 unidades de recorrido (**+76,5 %**) y su mundo de 1400×896 a 1800×1152. El coche, el ancho de pista (84), la velocidad y el perfil abierto se mantienen. El minimapa/vista previa y nueve checkpoints utilizan la geometría nueva.
 
-El objetivo humano sigue siendo una vuelta aproximada de **25–45 segundos**, pendiente de calibración con jugadores. En 0.39 Sunset midió **34,86 s** por vuelta de CPU Normal libre, frente a 22,39 s anteriores; con la física de 0.40 la referencia Normal pasa a **39,78 s**. No se ralentizó la CPU ni el coche para lograrlo. Los otros 13 trazados no cambian; no se promete que todos ya cumplan el objetivo humano. Los récords de Sunset se separan como versión 3 y se conservan los de la versión 2.
+La dirección actual busca **duraciones variadas**: pistas cortas de unos 20 s, medias de unos 40 s y largas de unos 60 s, sin una ventana obligatoria para todas. En 0.39 Sunset midió **34,86 s** por vuelta de CPU Normal libre, frente a 22,39 s anteriores; con la física de 0.40 la referencia Normal pasa a **39,78 s**. No se ralentizó la CPU ni el coche para lograrlo. Los otros 13 trazados no cambian; no se promete que todos ya cumplan el objetivo humano. Los récords de Sunset se separan como versión 3 y se conservan los de la versión 2.
 
 El perfil automático deja **siete pistas abiertas, cuatro con protección en curvas cerradas y tres con vallas parciales**. Sunset Circuit arranca sin muros. Podés seguir eligiendo vallas completas o cualquier otro perfil en el menú.
 
@@ -79,6 +79,8 @@ node tests/validate-rival-awareness.mjs
 node tests/validate-race-lifecycle.mjs
 node tests/validate-driving.mjs
 node tests/validate-driving-demand.mjs
+node tests/validate-arcade-flow.mjs
+node tests/validate-gate-contact.mjs
 node tests/validate-runoff.mjs
 node tests/validate-steering-inertia.mjs
 node tests/validate-barriers.mjs
@@ -90,17 +92,17 @@ La prueba de CPU comprueba límites físicos, desplazamiento y coste del freno d
 
 Pruebas opcionales de navegador: `node tests/browser-smoke.cjs`, `node tests/browser-audio.cjs` y `node tests/browser-release.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
-## Conducción — build 0.41
+## Conducción — build 0.42
 
-La revisión de 0.40 responde a la conducción demasiado fácil reportada por el usuario. La aceleración cae progresivamente con la velocidad: Balanced alcanza 100 en unos 1,59 s y el 95 % de su máxima en 4,40 s en la prueba de aceleración. Los otros modelos conservan su identidad y velocidad máxima. La escala de movimiento sigue en 0,84.
+La primera revisión 0.40 quedó demasiado pesada según la prueba humana. En 0.42 se comparan dos variantes y se conserva una respuesta más fluida: Balanced alcanza 100 en unos 1,28 s y el 95 % de su máxima en 3,32 s, frente a 1,59/4,40 anteriores. Los otros modelos conservan su identidad y velocidad máxima. La escala de movimiento sigue en 0,84.
 
 El giro está limitado por una fuerza lateral finita compartida: a alta velocidad crece el radio mínimo y una curva cerrada exige bajar la velocidad. Frenar devuelve una trayectoria más cerrada. Se conserva dirección recuperable, inercia de giro y freno de mano con coste de velocidad; la sensación final del derrape sigue pendiente de validación humana. La CPU construye su plan de frenado usando el mismo modelo; no recibe potencia, agarre ni dirección extra.
 
-La física de 0.40 usa sufijo `:p2`; desde 0.41 se usa `:p3` (por ejemplo, `SUNSET CIRCUIT@3:p3`) por el nuevo agarre/resistencia de las escapatorias. Se conservan ambas referencias anteriores. No se comparan como récord vigente tiempos logrados con la física que permitía pasar curvas mucho más rápido.
+La física de 0.40 usa sufijo `:p2`; 0.41 usa `:p3` por el nuevo agarre/resistencia de las escapatorias. La revisión 0.42 usa `:p4`, conservando las tres referencias anteriores. No se comparan como récord vigente tiempos logrados con la física que permitía pasar curvas mucho más rápido.
 
 ### Trabajo pendiente para la base
 
-El plan vigente tiene cinco bloques contando esta revisión: conducción; grava/pasto/barreras; motor y sonido; modo local de 2–4 jugadores; revisión final. El feedback reemplaza la estimación anterior de una sola entrega restante. Cada bloque puede necesitar varias iteraciones.
+El plan vigente es abierto: [ROADMAP_EVOLUCION.md](ROADMAP_EVOLUCION.md) recoge auditoría, conducción/contactos, motor, anchuras/duraciones variadas, CPU, local 2–4, arquitectura, fantasmas/progresión y online. Las 24 fases anteriores se conservan como historial. Las estimaciones anteriores de una entrega o cinco bloques no limitan esta evolución.
 
 Las escapatorias de grava se implementan en 0.41, con validación humana pendiente. **Lo próximo es rehacer el motor**, después ampliar el modo local y cerrar la revisión final. Hoy siguen funcionando **dos humanos**, y **tres/cuatro todavía no están implementados**. El editor y desbloqueos quedan fuera de este hito.
 
@@ -211,10 +213,13 @@ En una convergencia cercana en paralelo, la CPU establece antes su objetivo de c
 - `index.html`: menú, opciones, interfaz de carrera y telemetría.
 - `style.css`: diseño adaptable, modo de pantalla completa y estilos de la interfaz.
 - `script.js`: circuitos, conducción, CPU, superficies, colisiones, checkpoints, renderizado y audio.
-- `ROADMAP_24_FASES.md`: estado y prioridades del desarrollo.
+- `ROADMAP_EVOLUCION.md`: plan abierto, auditoría, prioridades y ruta online.
+- `ROADMAP_24_FASES.md`: historial de sistemas y entregas.
 - `tests/`: validación de geometría, ancho completo, integración, conducción, récords, barreras y CPU; prueba opcional de Chromium.
 
 ## Validación conocida
+
+En 0.42 se mide una respuesta de giro inicial un 72 % mayor frente a 0.41 en la misma prueba de 0,3 s, sin subir la velocidad máxima. Se conserva el beneficio de frenar y la rampa de aceleración. La CPU permite roces laterales leves, anticipa alcances fuertes y consulta el terreno real para recuperarse. Checkpoints/meta usan el cruce exacto y la huella física del coche: se corrige el caso de Dusty donde un roce causaba una vuelta extra. `validate-arcade-flow.mjs` compara la referencia congelada, `validate-gate-contact.mjs` reproduce el fallo y `tests/experiments/compare-driving.mjs` permite repetir las variantes con una política de dirección automática. Ninguna de esas pruebas sustituye la sensación humana.
 
 En 0.41, `validate-runoff.mjs` recorre 14 pistas y 70 perfiles, compara 37.082 puntos independientes del mundo y verifica 149.324 celdas de grava en perfiles abiertos. Comprueba dibujo/material, exclusión del asfalto y barreras activas, caché, secuencia pavimento/grava/pasto, frenado distinto, recuperación de cuatro modelos desde reposo sin generar velocidad, dos humanos con la misma física y CPU que sale de una trampa sin teletransporte. Chromium comprueba frenado sobre grava visible y ausencia con vallas completas; capturas revisadas. Se repiten 76 carreras/450 vueltas con tiempos sobre pavimento conservados y los contactos en grupo ya registrados. Récords de física anterior conservados. El motor convincente sigue pendiente y dos jugadores sigue siendo el límite local actual.
 
@@ -258,7 +263,7 @@ La fase 5 continúa: Champion Road, Dusty Mesa y Sunset ya tienen rediseños pro
 
 ## Hoja de ruta
 
-La planificación vigente está en [`ROADMAP_24_FASES.md`](ROADMAP_24_FASES.md). Las hojas anteriores se mantienen como referencias históricas; no describen necesariamente el estado actual.
+La planificación vigente está en [`ROADMAP_EVOLUCION.md`](ROADMAP_EVOLUCION.md); el registro de entregas sigue en [`ROADMAP_24_FASES.md`](ROADMAP_24_FASES.md). Las hojas anteriores se mantienen como referencias históricas; no describen necesariamente el estado actual.
 
 
 ## Publicación

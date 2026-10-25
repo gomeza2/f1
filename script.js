@@ -22,8 +22,9 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const wrapAngle=a=>Math.atan2(Math.sin(a),Math.cos(a));
 const pointDistance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const LAPS_TO_WIN=3;
-const ROAD_EDGE=42, WALL_EDGE=66;
-const PHYSICS_VERSION=3;
+const ROAD_EDGE=42, WALL_EDGE=66,CAR_HALF_WIDTH=10;
+const PHYSICS_VERSION=4;
+const DRIVING_TUNING={accelerationScale:.82,accelerationTaper:.45,lateralAcceleration:280,maxSpeedGripLoss:.24,speedGripLoss:.0014,inputResponse:14,handInputResponse:16,yawResponse:18,yawSpeedWeight:4};
 const CAR_MODELS={
  balanced:{name:'BALANCED',maxSpeed:232,acceleration:110,braking:230,steering:1,grip:1,grass:1,description:'Equilibrado para aprender y competir.'},
  corner:{name:'CORNER KING',maxSpeed:218,acceleration:105,braking:255,steering:1.19,grip:1.15,grass:.86,description:'Más agarre y frenado; velocidad punta menor.'},
@@ -191,16 +192,17 @@ function renderResults(classification){
  $('seasonCaption').textContent='CAMPEONATO · '+roundsCompleted+' '+(roundsCompleted===1?'CARRERA DISPUTADA':'CARRERAS DISPUTADAS');
 }
 const wrapDistance=d=>((d%track.length)+track.length)%track.length;
-function surfaceAtProgress(distance){
- const d=wrapDistance(distance);
- if(track.surface==='mixed')return (track.dirtRanges||[]).some(([start,end])=>d>=start&&d<=end)?'dirt':'asphalt';
- if(track.surface==='coastal'&&d>=track.length*.31&&d<=track.length*.37)return 'dirt';
- return track.surface||'asphalt';
+function surfaceAtProgress(distance,item=track){
+ const d=((distance%item.length)+item.length)%item.length;
+ if(item.surface==='mixed')return (item.dirtRanges||[]).some(([start,end])=>d>=start&&d<=end)?'dirt':'asphalt';
+ if(item.surface==='coastal'&&d>=item.length*.31&&d<=item.length*.37)return 'dirt';
+ return item.surface||'asphalt';
 }
+function roadHalfWidthAt(progress,item=track){const surface=surfaceAtProgress(progress,item);return surface==='asphalt'||surface==='coastal'?ROAD_SHOULDER:ROAD_EDGE;}
 // One world-material query drives handling, resistance, particles, audio and the gravel raster.
 function terrainAt(x,y,loc=nearestOnTrack(x,y)){
  const road=surfaceAtProgress(loc.progress),paved=road==='asphalt'||road==='coastal';
- const shoulder=paved?ROAD_SHOULDER:ROAD_EDGE,depth=Math.max(0,loc.distance-shoulder);
+ const shoulder=roadHalfWidthAt(loc.progress),depth=Math.max(0,loc.distance-shoulder);
  if(depth===0)return {material:road,offroad:false,depth:0};
  const native=track.surface==='dirt'?'dirt':track.surface==='ice'?'ice':track.surface==='volcanic'?'volcanic':track.surface==='coastal'?'coastal':'grass';
  if(paved&&x>=0&&y>=0&&x<track.worldWidth&&y<track.worldHeight&&!guardrailActive(loc.progress)){
@@ -488,7 +490,7 @@ function resolveBarrierContact(car,previousX,previousY){
   const hx=Math.cos(car.heading)*5,hy=Math.sin(car.heading)*5;
   for(const barrier of barrierBuckets.get(Math.floor(car.x/32)+','+Math.floor(car.y/32))||[]){
    const contact=closestSegments({x:car.x-hx,y:car.y-hy},{x:car.x+hx,y:car.y+hy},barrier.a,barrier.b);
-   const distance=Math.sqrt(contact.distanceSq),depth=10+barrier.radius-distance;
+   const distance=Math.sqrt(contact.distanceSq),depth=CAR_HALF_WIDTH+barrier.radius-distance;
    if(depth>1e-4&&(!deepest||depth>deepest.depth))deepest={...contact,depth,distance};
   }
   if(!deepest)break;
@@ -511,18 +513,18 @@ function resolveBarrierContact(car,previousX,previousY){
 function checkpointsForTrack(item=track){
  const result=[];
  const count=clamp(Math.ceil(item.length/650)-1,3,9);
- for(let i=1;i<=count;i++){const progress=item.length*i/(count+1),p=sampleAt(progress,item);result.push({id:i,progress,x:p.x,y:p.y,angle:p.angle});}
+ for(let i=1;i<=count;i++){const progress=item.length*i/(count+1),p=sampleAt(progress,item);result.push({id:i,progress,x:p.x,y:p.y,angle:p.angle,halfWidth:roadHalfWidthAt(progress,item)});}
  return result;
 }
 function drawCheckpoints(context){
  for(const gate of checkpoints){
-  const p=sampleAt(gate.progress);
+  const p=sampleAt(gate.progress),halfWidth=gate.halfWidth;
   context.save();context.translate(p.x,p.y);context.rotate(p.angle);
-  context.fillStyle='#0b1226d9';context.fillRect(-4,-ROAD_EDGE,8,ROAD_EDGE*2);
-  for(let j=0;j<10;j++){context.fillStyle=j%2?'#d7ff38':'#f6f7ff';context.fillRect(-4,j*(ROAD_EDGE*2/10)-ROAD_EDGE,8,ROAD_EDGE*2/10);}
+  context.fillStyle='#0b1226d9';context.fillRect(-4,-halfWidth,8,halfWidth*2);
+  for(let j=0;j<10;j++){context.fillStyle=j%2?'#d7ff38':'#f6f7ff';context.fillRect(-4,j*(halfWidth*2/10)-halfWidth,8,halfWidth*2/10);}
   context.restore();
-  context.fillStyle='#111725e8';context.fillRect(p.x-13,p.y-ROAD_EDGE-19,26,15);
-  context.fillStyle='#d7ff38';context.font='bold 10px monospace';context.textAlign='center';context.fillText('CP'+gate.id,p.x,p.y-ROAD_EDGE-8);
+  context.fillStyle='#111725e8';context.fillRect(p.x-13,p.y-halfWidth-19,26,15);
+  context.fillStyle='#d7ff38';context.font='bold 10px monospace';context.textAlign='center';context.fillText('CP'+gate.id,p.x,p.y-halfWidth-8);
  }
 }
 function updateGaragePreview(){
@@ -547,7 +549,8 @@ function updateMenuPreview(){
  context.strokeStyle=item.accent;context.lineWidth=3;context.setLineDash([14,20]);context.stroke();context.setLineDash([]);
  const gates=checkpointsForTrack(item);for(const gate of gates){context.fillStyle='#d7ff38';context.beginPath();context.arc(gate.x,gate.y,7/scale,0,Math.PI*2);context.fill();}
  const start=sampleAt(0,item);context.save();context.translate(start.x,start.y);context.rotate(start.angle);
- for(let i=0;i<8;i++){context.fillStyle=i%2?'#f3f6ed':'#111c2c';context.fillRect(-6,-ROAD_EDGE+i*ROAD_EDGE/4,12,ROAD_EDGE/4);}
+ const previewHalfWidth=roadHalfWidthAt(0,item);
+ for(let i=0;i<8;i++){context.fillStyle=i%2?'#f3f6ed':'#111c2c';context.fillRect(-6,-previewHalfWidth+i*previewHalfWidth/4,12,previewHalfWidth/4);}
  context.fillStyle='#39e8e8';context.beginPath();context.moveTo(40,0);context.lineTo(20,-10);context.lineTo(20,10);context.closePath();context.fill();context.restore();context.restore();
  const requested=$('barrierMode').value||'auto',profile=requested==='auto'?item.defaultBarriers:requested;
  const barrierNames={open:'ABIERTO · ESCAPATORIAS',full:'VALLAS COMPLETAS',half:'VALLAS PARCIALES',corners:'PROTECCIÓN EN CURVAS'};
@@ -755,14 +758,16 @@ function gateCrossed(gate,fromX,fromY,toX,toY,heading){
  const tx=Math.cos(gate.angle),ty=Math.sin(gate.angle),nx=-ty,ny=tx;
  const before=(fromX-gate.x)*tx+(fromY-gate.y)*ty;
  const after=(toX-gate.x)*tx+(toY-gate.y)*ty;
- const lateral=(toX-gate.x)*nx+(toY-gate.y)*ny;
+ const crosses=before<0&&after>=0,t=crosses?-before/(after-before):0;
+ const crossX=fromX+(toX-fromX)*t,crossY=fromY+(toY-fromY)*t;
+ const lateral=(crossX-gate.x)*nx+(crossY-gate.y)*ny;
  const forward=Math.cos(wrapAngle(heading-gate.angle))>.12;
- return before<0&&after>=0&&Math.abs(lateral)<=ROAD_EDGE&&forward;
+ return crosses&&Math.abs(lateral)<=(gate.halfWidth??ROAD_EDGE)+CAR_HALF_WIDTH&&forward;
 }
 function updateProgress(car,loc,fromX,fromY){
  const old=car.progress,newP=loc.progress,delta=newP-old;
  const finishGate=sampleAt(0);
- const finish={x:finishGate.x,y:finishGate.y,angle:finishGate.angle};
+ const finish={x:finishGate.x,y:finishGate.y,angle:finishGate.angle,halfWidth:roadHalfWidthAt(0)};
  for(let tries=0;tries<checkpoints.length;tries++){
   const gate=checkpoints[car.nextCheckpoint];
   if(gate&&gateCrossed(gate,fromX,fromY,car.x,car.y,car.heading)){
@@ -797,14 +802,14 @@ function driverFor(car){
  return {...base,pace:Math.min(1,base.pace+style.pace),brakingMargin:Math.min(1,base.brakingMargin+style.braking),response:base.response+style.response,laneSpeed:base.laneSpeed+style.lane,attackGap:style.attackGap,closing:style.closing};
 }
 const WORLD_SPEED_SCALE=.84;
-function accelerationAtSpeed(speed,model){return model.acceleration*.68*(1-.55*clamp(speed/model.maxSpeed,0,1));}
+function accelerationAtSpeed(speed,model){return model.acceleration*DRIVING_TUNING.accelerationScale*(1-DRIVING_TUNING.accelerationTaper*clamp(speed/model.maxSpeed,0,1));}
 function vehicleHandling(speed,model,surface,safeSpeed,drift=0,hand=false){
  const excess=Math.max(0,speed-safeSpeed);
- const speedLoss=Math.min(.5,excess*.0032);
+ const speedLoss=Math.min(DRIVING_TUNING.maxSpeedGripLoss,excess*DRIVING_TUNING.speedGripLoss);
  const grip=clamp((1-speedLoss-drift*(hand?.05:.12))*model.grip*(SURFACE_GRIP[surface]||1),.38,1.15);
  const mechanicalTurn=(.95+speed/235*2.9)*model.steering*grip*(hand?1.18:1);
  // Finite tire force: at high speed the minimum corner radius grows with speed squared.
- const lateralAcceleration=200*model.grip*(SURFACE_GRIP[surface]||1)*(hand?1.12:1);
+ const lateralAcceleration=DRIVING_TUNING.lateralAcceleration*model.grip*(SURFACE_GRIP[surface]||1)*(hand?1.12:1);
  const turnRate=Math.min(mechanicalTurn,lateralAcceleration/Math.max(30,speed*WORLD_SPEED_SCALE));
  return {grip,turnRate,lateralAcceleration};
 }
@@ -913,15 +918,18 @@ function aiTrafficAgainst(car,before,driver,dt,other,maneuver){
  if(maneuver.type==='defend')lane=maneuver.side*Math.min(18,laneRoom);
  let speedLimit=Infinity;
  const approach=trafficApproach(car,other);
- const converging=approach.time>0&&approach.clearance<30;
- if(ahead&&(Math.abs(before.offset-otherLoc.offset)<27||converging)){
+ const converging=approach.time>0&&approach.clearance<(difficulty==='easy'?28:24);
+ const otherForwardSpeed=Math.max(0,other.speed*Math.cos(other.heading-car.heading));
+ const closing=Math.max(0,car.speed-otherForwardSpeed);
+ // Door-to-door brushes are playable contacts. Brake for a blocked path or a strong cut-in.
+ const gentleOverlap=alongside&&Math.abs(before.offset-otherLoc.offset)>=20&&closing<18&&Math.cos(other.heading-car.heading)>.99;
+ if(ahead&&!gentleOverlap&&(Math.abs(before.offset-otherLoc.offset)<27||converging)){
   // Shared braking distance gives time to open a lane before reaching the rear bumper.
-  const otherForwardSpeed=Math.max(0,other.speed*Math.cos(other.heading-car.heading));
-  const closing=Math.max(0,car.speed-otherForwardSpeed),buffer=32+closing*.2;
+  const buffer=32+closing*.2;
   const available=Math.max(0,gap-buffer);
   speedLimit=Math.sqrt(otherForwardSpeed*otherForwardSpeed+2*CAR_MODELS[car.model].braking*driver.brakingMargin*available/WORLD_SPEED_SCALE);
   // Yield longitudinal room if the other car cuts into the reserved lane.
-  if(converging&&approach.time<.55)speedLimit=Math.min(speedLimit,otherForwardSpeed*.9);
+  if(converging&&approach.time<.55&&closing>18)speedLimit=Math.min(speedLimit,otherForwardSpeed*.9);
   // A stopped obstacle must not deadlock steering: creep only along a clear ray.
   const dx=other.x-car.x,dy=other.y-car.y;
   const forward=dx*Math.cos(car.heading)+dy*Math.sin(car.heading);
@@ -968,6 +976,7 @@ function driveAI(car,before,model,dt){
  const traffic=aiTraffic(car,before,driver,dt);
  const lookAhead=aiLookAhead(car);
  const laneOffset=traffic.lane;
+ const ground=terrainAt(car.x,car.y,before);
  const allowHandbrake=driver.handbrake&&car.aiManeuver.type==='clear'&&Math.abs(before.offset)<ROAD_EDGE-8;
  let targetSpeed=Math.min(aiTargetSpeed(before.progress,model,driver,allowHandbrake),traffic.speedLimit);
  // Establish the reserved target lane sooner; actual turning still uses shared vehicle physics.
@@ -976,14 +985,14 @@ function driveAI(car,before,model,dt){
  const targetBase=sampleAt(before.progress+lookAhead);
  const target={x:targetBase.x-Math.sin(targetBase.angle)*car.aiLane,y:targetBase.y+Math.cos(targetBase.angle)*car.aiLane};
  const error=wrapAngle(Math.atan2(target.y-car.y,target.x-car.x)-car.heading);
- const handling=vehicleHandling(car.speed,model,terrainAt(car.x,car.y,before).material,curvatureAt(before.progress).safeSpeed,car.drift);
+ const handling=vehicleHandling(car.speed,model,ground.material,curvatureAt(before.progress).safeSpeed,car.drift);
  const targetDistance=Math.max(10,Math.hypot(target.x-car.x,target.y-car.y));
  const requiredYaw=2*car.speed*WORLD_SPEED_SCALE*Math.sin(error)/targetDistance;
  const hand=allowHandbrake&&car.speed>90&&Math.abs(car.steer)>.3&&Math.abs(requiredYaw)>handling.turnRate*(car.handbrake?.72:.9);
- const turnRate=hand?vehicleHandling(car.speed,model,terrainAt(car.x,car.y,before).material,curvatureAt(before.progress).safeSpeed,clamp(Math.abs(car.steer)*car.speed/200,0,1),true).turnRate:handling.turnRate;
+ const turnRate=hand?vehicleHandling(car.speed,model,ground.material,curvatureAt(before.progress).safeSpeed,clamp(Math.abs(car.steer)*car.speed/200,0,1),true).turnRate:handling.turnRate;
  const steerTarget=car.speed<60?error*2.6:requiredYaw/turnRate+error*.2;
  car.steer+=(clamp(steerTarget,-1,1)-car.steer)*Math.min(1,dt*driver.response);
- if(Math.abs(before.offset)>ROAD_EDGE)targetSpeed=Math.min(targetSpeed,65);
+ if(ground.offroad)targetSpeed=Math.min(targetSpeed,65);
  if(Math.abs(error)>1.1)targetSpeed=Math.min(targetSpeed,45);
  car.aiTargetSpeed=targetSpeed;
  return {throttle:car.speed<targetSpeed-2?1:0,brake:car.speed>targetSpeed+2?1:0,hand};
@@ -991,7 +1000,7 @@ function driveAI(car,before,model,dt){
 // Rotational inertia: build and release yaw smoothly, retaining full steady turn rate.
 // Integrate the first-order response exactly for this step, independent of FPS.
 function updateSteeringInertia(car,turnRate,maxSpeed,dt){
- const target=car.steer*turnRate,response=car.handbrake?18:16-5*clamp(car.speed/maxSpeed,0,1);
+ const target=car.steer*turnRate,response=car.handbrake?20:DRIVING_TUNING.yawResponse-DRIVING_TUNING.yawSpeedWeight*clamp(car.speed/maxSpeed,0,1);
  const previous=car.yawRate||0,decay=Math.exp(-response*dt);
  car.yawRate=target+(previous-target)*decay;
  car.heading=wrapAngle(car.heading+target*dt+(previous-target)*(1-decay)/response);
@@ -1004,7 +1013,7 @@ function physics(car,i,dt){
   controls=driveAI(car,before,model,dt);
  }else{
   const hand=!!keys[k.hand],steering=(keys[k.right]?1:0)-(keys[k.left]?1:0);
-  car.steer+=(steering-car.steer)*Math.min(1,dt*(hand?13:10));
+  car.steer+=(steering-car.steer)*(1-Math.exp(-dt*(hand?DRIVING_TUNING.handInputResponse:DRIVING_TUNING.inputResponse)));
   controls={throttle:keys[k.up]?1:0,brake:keys[k.down]?1:0,hand};
  }
  const {throttle,brake,hand}=controls;car.handbrake=hand;car.braking=brake>0||hand;
@@ -1154,7 +1163,8 @@ function renderStaticBackground(context){
   context.restore();
  }
  const start=sampleAt(0);context.save();context.translate(start.x,start.y);context.rotate(start.angle);
- for(let j=0;j<10;j++){context.fillStyle=j%2?'#f5f5e9':'#181b22';context.fillRect(-5,-43+j*8.6,10,8.6);}
+ const finishHalfWidth=roadHalfWidthAt(0);
+ for(let j=0;j<10;j++){context.fillStyle=j%2?'#f5f5e9':'#181b22';context.fillRect(-5,-finishHalfWidth+j*finishHalfWidth/5,10,finishHalfWidth/5);}
  context.restore();
  drawCheckpoints(context);drawTrackFeatures(context);
  const sign=sampleAt(135),nx=-Math.sin(sign.angle),ny=Math.cos(sign.angle);
@@ -1321,9 +1331,9 @@ function drawFrame(){
 }
 function loop(now){
  if(!running||paused)return;
- const dt=Math.min((now-last)/1000,.03);last=now;
+ const frameTime=Math.max(0,(now-last)/1000),dt=Math.min(frameTime,.03);last=now;
  if(countdownRemaining>0){
-  countdownRemaining=Math.max(0,countdownRemaining-dt);
+  countdownRemaining=Math.max(0,countdownRemaining-frameTime);
   const label=countdownRemaining>0?String(Math.ceil(countdownRemaining)):'GO!';
   if(label!==countdownShown){countdownShown=label;if(label==='GO!'){goFlashRemaining=.55;$('status').textContent='¡A FONDO!';playRaceCue('go');}else playRaceCue('countdown');}
  }else{

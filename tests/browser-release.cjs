@@ -30,7 +30,8 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.locator('#stageSelect option').count(),14);assert.ok(await page.locator('#trackPreview').isVisible());
   assert.ok((await page.locator('#stageSelect').boundingBox()).height>=44,'Release CSS did not load');
   await page.selectOption('#stageSelect','2');await page.selectOption('#opponentCount','2');await page.click('#soloStart');
-  await page.waitForFunction(()=>document.getElementById('status').textContent==='¡A FONDO!',{},{timeout:10000});
+  try{await page.waitForFunction(()=>document.getElementById('status').textContent==='¡A FONDO!',{},{timeout:10000});}
+  catch(error){const state=await page.evaluate(()=>({status:document.getElementById('status').textContent,paused:document.getElementById('pauseBtn').getAttribute('aria-pressed'),hidden:document.hidden}));throw new Error('Release countdown did not finish: '+JSON.stringify(state));}
   await page.keyboard.down('w');await page.waitForTimeout(600);await page.keyboard.up('w');
   assert.ok(parseInt(await page.locator('#speedValue').textContent())>0,'Actual release did not drive');
   await page.keyboard.press('Escape');assert.equal(await page.getAttribute('#pauseBtn','aria-pressed'),'true');

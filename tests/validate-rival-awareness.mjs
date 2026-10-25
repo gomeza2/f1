@@ -24,4 +24,8 @@ const speed=follower.speed;game.physics(follower,1,1/30);
 assert.equal(follower.aiManeuver.type,'alongside');
 assert.ok(Math.abs(Math.abs(follower.aiLane)-game.driverFor(follower).laneSpeed*1.5/30)<1e-6,'Close conflict did not establish the reserved lane sooner');
 assert.ok(follower.speed-speed<=game.CAR_MODELS.balanced.acceleration/30,'Close conflict added power');
+// Kerbs are paved: CPU must not apply an invisible off-road speed cap there.
+game.start('solo',0);game.cars[0].done=true;const kerbDriver=game.cars[1];game.placeCar(kerbDriver,600,45);kerbDriver.speed=100;
+assert.equal(game.terrainAt(kerbDriver.x,kerbDriver.y).offroad,false);game.physics(kerbDriver,1,1/60);assert.ok(kerbDriver.aiTargetSpeed>100,'Paved kerb triggered the runoff recovery cap');
+game.placeCar(kerbDriver,600,78);kerbDriver.speed=100;assert.equal(game.terrainAt(kerbDriver.x,kerbDriver.y).offroad,true);game.physics(kerbDriver,1,1/60);assert.ok(kerbDriver.aiTargetSpeed<=65,'True runoff lost recovery control');
 console.log('PASS: nearby converging overlap shortens target; safe parallel, distant and finished rivals do not; all opponents considered, low-speed recovery preserved, named roster matches selected count and difficulty has no added physical power.');

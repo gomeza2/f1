@@ -35,5 +35,5 @@ element('carModel').value='balanced';game.start('duo',0);const [human,other]=gam
 game.start('solo',0);game.cars[0].done=true;const ai=game.cars[1];game.placeCar(ai,zone.center,zone.side*66);ai.speed=25;let recovered=false;
 for(let i=0;i<1800;i++){const x=ai.x,y=ai.y;game.physics(ai,1,1/60);assert.ok(Math.hypot(ai.x-x,ai.y-y)<=232*game.WORLD_SPEED_SCALE/60+1e-6,'CPU recovery teleported');if(!game.terrainAt(ai.x,ai.y).offroad){recovered=true;break}}
 assert.ok(recovered,'CPU could not recover from the gravel trap');
-game.bestLapRecords['SUNSET CIRCUIT@3:p2']=39;assert.equal(game.lapRecordKey(),'SUNSET CIRCUIT@3:p3');assert.ok(game.saveBestLap(game.lapRecordKey(),42));assert.equal(game.bestLapRecords['SUNSET CIRCUIT@3:p2'],39);
+game.bestLapRecords['SUNSET CIRCUIT@3:p2']=39;assert.equal(game.lapRecordKey(),'SUNSET CIRCUIT@3:p4');assert.ok(game.saveBestLap(game.lapRecordKey(),42));assert.equal(game.bestLapRecords['SUNSET CIRCUIT@3:p2'],39);
 console.log(`PASS: ${profileCases} profiles, ${gridProbes} independent world probes, ${paintedCells} open cells, renderer/material agreement, paved/curb/gravel/grass transition, distinct braking (${paved.toFixed(1)}/${gravel.toFixed(1)}/${grass.toFixed(1)}), recovery without generated speed, equal local physics and preserved records. Browser edge raster tolerance is one 2-unit cell; human feel remains unverified.`);

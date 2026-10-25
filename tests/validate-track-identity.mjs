@@ -16,7 +16,7 @@ for(const other of game.tracks){
 }
 // Records for the preceding route must survive without limiting new records.
 game.bestLapRecords['DUSTY MESA@2']=17;game.start('solo',2);
-assert.equal(game.lapRecordKey(),'DUSTY MESA@3:p3');assert.ok(game.saveBestLap(game.lapRecordKey(),29));
+assert.equal(game.lapRecordKey(),'DUSTY MESA@3:p4');assert.ok(game.saveBestLap(game.lapRecordKey(),29));
 assert.equal(game.bestLapRecords['DUSTY MESA@2'],17);
-assert.equal(game.bestLapRecords['DUSTY MESA@3:p3'],29);
+assert.equal(game.bestLapRecords['DUSTY MESA@3:p4'],29);
 console.log(`PASS: Dusty Mesa differs from all 13 other routes (nearest ${neighbor}, distance ${closest.toFixed(3)}); transformed copies detected; preceding records preserved.`);

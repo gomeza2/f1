@@ -50,6 +50,10 @@ assert.ok(decision(ai).speedLimit<100);assert.notEqual(ai.aiManeuver.type,'defen
 decision(ai);assert.equal(ai.aiManeuver.type,'follow');
 [other,ai]=setup();at(ai,230,0);at(other,160,0);ai.speed=100;other.speed=100;
 decision(ai);assert.equal(ai.aiManeuver.type,'clear');
+// Mild door-to-door rubs keep racing flow; a genuine closing impact still requires braking.
+[other,ai]=setup();at(ai,150,0);at(other,157,22);ai.speed=108;other.speed=100;
+assert.equal(decision(ai).speedLimit,Infinity,'Gentle side overlap applied unnecessary braking');
+ai.speed=155;assert.ok(decision(ai).speedLimit<ai.speed,'High-energy side approach lost collision anticipation');
 // Starting stationary on the grid must not trigger an unnecessary attack.
 [other,ai]=setup();decision(other);assert.equal(other.aiManeuver.type,'follow');
 // Clear stale intent on a restart or position reset.

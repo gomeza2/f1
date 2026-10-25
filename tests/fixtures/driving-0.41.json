@@ -1,0 +1,38 @@
+{
+  "physics": 3,
+  "models": {
+    "balanced": {
+      "to100": 1.5916666666666666,
+      "to95": 4.4
+    },
+    "corner": {
+      "to100": 1.6916666666666667,
+      "to95": 4.341666666666667
+    },
+    "speed": {
+      "to100": 1.4,
+      "to95": 4.208333333333333
+    },
+    "rally": {
+      "to100": 1.575,
+      "to95": 4.125
+    }
+  },
+  "slow": {
+    "turn": 0.32409839681297614,
+    "speed": 115.92460251818574,
+    "radius": 83.72326966299248
+  },
+  "fast": {
+    "turn": 0.13989372544754972,
+    "speed": 232,
+    "radius": 417.5142103907166
+  },
+  "braked": {
+    "turn": 0.1734974765187316,
+    "speed": 157.00000000000068,
+    "radius": 280.6122084492627
+  },
+  "commit": "1df936dcaacd5b406a4966eba1a84399fc7bf7d6",
+  "conditions": "0\u2013100/95% integrated at 120 Hz. Turn probe: real player physics, start at progress 600 on Sunset, steering+throttle for 0.3s at 120 Hz; braking probe substitutes S for W. These short-probe radii include turn-in, not steady-state radii."
+}

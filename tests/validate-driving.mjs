@@ -17,7 +17,7 @@ for(const name of Object.keys(game.CAR_MODELS)){
  element('carModel').value=name;game.start('solo',0);game.cars[1].done=true;
  const car=game.cars[0];game.placeCar(car,100,0);game.setKeys({w:true});
  for(let frame=0;frame<60;frame++)game.physics(car,0,1/60);
- assert.ok(car.speed>=50&&car.speed<85,`${name}: initial acceleration is too abrupt or unresponsive`);
+ assert.ok(car.speed>=65&&car.speed<100,`${name}: initial acceleration is too abrupt or unresponsive`);
  assert.ok(car.speed<=game.CAR_MODELS[name].maxSpeed);
  console.log(`PASS: ${name}, speed after 1s ${car.speed.toFixed(1)}.`);
 }
