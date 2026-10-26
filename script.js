@@ -1066,7 +1066,9 @@ function aiTrafficAgainst(car,before,driver,dt,other,maneuver){
  if(ahead&&maneuver.type==='alongside'&&Math.abs(lane-otherLoc.offset)<25){
   speedLimit=Math.min(speedLimit,Math.max(0,other.speed-25));
  }
- return {lane,speedLimit};
+ // Side-by-side targets aim for 32; group constraints retain at least 28 (contact radius 23 + buffer).
+ return {lane,speedLimit,laneMin:maneuver.type==='alongside'&&maneuver.side>0?otherLoc.offset+28:-Infinity,
+  laneMax:maneuver.type==='alongside'&&maneuver.side<0?otherLoc.offset-28:Infinity,yieldSpeed:ahead?Math.max(0,otherForwardSpeed-25):Infinity};
 }
 function aiTraffic(car,before,driver,dt){
  const fresh=()=>({type:'clear',side:0,age:0,cooldown:0});
@@ -1079,14 +1081,26 @@ function aiTraffic(car,before,driver,dt){
  const neighbours=cars.filter(other=>other!==car&&!other.done&&Math.hypot(other.x-car.x,other.y-car.y)<180)
   .sort((a,b)=>Math.hypot(a.x-car.x,a.y-car.y)-Math.hypot(b.x-car.x,b.y-car.y));
  for(const key of Object.keys(states))if(!neighbours.some(other=>String(other.player)===key))delete states[key];
- let traffic=null,speedLimit=Infinity;
+ let traffic=null,speedLimit=Infinity,minLane=-Infinity,maxLane=Infinity,yieldSpeed=Infinity;
  for(const other of neighbours){
   const state=states[other.player]||(states[other.player]=fresh());
   const decision=aiTrafficAgainst(car,before,driver,dt,other,state);
   speedLimit=Math.min(speedLimit,decision.speedLimit);
-  if(!traffic&&state.type!=='clear'){traffic=decision;car.aiManeuver=state;}
+  if(state.type==='alongside'){minLane=Math.max(minLane,decision.laneMin);maxLane=Math.min(maxLane,decision.laneMax);yieldSpeed=Math.min(yieldSpeed,decision.yieldSpeed);}
+  // A nearby lead car must not cancel a reservation beside an overlapping rival.
+  if(state.type!=='clear'&&(!traffic||(state.type==='alongside'&&car.aiManeuver.type!=='alongside'))){traffic=decision;car.aiManeuver=state;}
  }
  if(!traffic){car.aiManeuver=fresh();traffic={lane:clamp(curvatureAt(before.progress+35).turn*8,-10,10)};}
+ // Opposing flanks need a common corridor; a same-side train keeps its nearest reservation.
+ if(Number.isFinite(minLane)&&Number.isFinite(maxLane)){
+  const room=Math.max(8,Math.min(roadHalfWidthAt(before.progress),roadHalfWidthAt(before.progress+aiLookAhead(car)))-CAR_HALF_WIDTH-4);
+  minLane=Math.max(minLane,-room);maxLane=Math.min(maxLane,room);
+  if(minLane<=maxLane)traffic.lane=clamp(traffic.lane,minLane,maxLane);
+  else{
+   // Stay in the occupied lane and let an ahead rival clear it, using normal braking.
+   traffic.lane=clamp(before.offset,-room,room);speedLimit=Math.min(speedLimit,yieldSpeed);
+  }
+ }
  return {lane:traffic.lane,speedLimit};
 }
 function aiLookAhead(car){

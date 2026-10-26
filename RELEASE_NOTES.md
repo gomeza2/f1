@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.53
+# PIXEL GRAND PRIX — entrega 0.54
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Disputas en grupos en 0.54
+
+La trazada prioriza un coche solapado lateralmente frente a otro más cercano por delante, conservando el frenado frente a todos. Con rivales en ambos flancos se intersectan sus reservas y la anchura disponible; sin espacio común se mantiene la línea ocupada y se cede espacio longitudinal mediante frenado compartido. No cambia la física humana, potencia, pistas, récords, audio ni local.
+
+Sunset Normal pasa de 13 a un paso de simulación con contacto, sin salir del corredor legal, en la referencia de cuatro controladores/tres vueltas a 30 Hz. La referencia a 60 Hz conserva seis pasos con contacto y sus tiempos. Se comparan retenciones del rival por distancia, prioridad sola, reservas generales y reservas entre flancos opuestos; se descartan las que introducen una regresión Night o dejan un cierre de línea reproducible. Es una mejora acotada de grupos, no garantía de contacto cero ni equilibrio humano. Evidencia en `tests/experiments/GROUPS_054.md`.
 
 ## Pixel City en 0.53
 

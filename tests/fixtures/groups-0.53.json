@@ -1,0 +1,426 @@
+{
+  "commit": "9bcf8cadc94f412c7a0be357beb314cf524a0c4e",
+  "dt": 0.03333333333333333,
+  "laps": 3,
+  "opponents": 3,
+  "allAI": true,
+  "physics": 5,
+  "worldSpeed": 0.84,
+  "models": {
+    "balanced": {
+      "name": "BALANCED",
+      "maxSpeed": 232,
+      "acceleration": 110,
+      "braking": 230,
+      "steering": 1,
+      "grip": 1,
+      "grass": 1,
+      "description": "Equilibrado para aprender y competir."
+    },
+    "corner": {
+      "name": "CORNER KING",
+      "maxSpeed": 218,
+      "acceleration": 105,
+      "braking": 255,
+      "steering": 1.19,
+      "grip": 1.15,
+      "grass": 0.86,
+      "description": "M\u00e1s agarre y frenado; velocidad punta menor."
+    },
+    "speed": {
+      "name": "SPEED DEMON",
+      "maxSpeed": 250,
+      "acceleration": 123,
+      "braking": 215,
+      "steering": 0.84,
+      "grip": 0.87,
+      "grass": 1.12,
+      "description": "R\u00e1pido en rectas, dif\u00edcil en curvas cerradas."
+    },
+    "rally": {
+      "name": "RALLY FOX",
+      "maxSpeed": 222,
+      "acceleration": 112,
+      "braking": 245,
+      "steering": 1.08,
+      "grip": 1.04,
+      "grass": 0.57,
+      "description": "Pierde menos velocidad si toca el pasto."
+    }
+  },
+  "drivers": {
+    "easy": {
+      "pace": 0.82,
+      "brakingMargin": 0.62,
+      "response": 5.8,
+      "laneSpeed": 15,
+      "handbrake": false
+    },
+    "normal": {
+      "pace": 0.97,
+      "brakingMargin": 0.9,
+      "response": 7.5,
+      "laneSpeed": 22,
+      "handbrake": true
+    },
+    "hard": {
+      "pace": 1,
+      "brakingMargin": 0.98,
+      "response": 9.2,
+      "laneSpeed": 28,
+      "handbrake": true
+    }
+  },
+  "personalities": {
+    "racer": {
+      "name": "TRAZO",
+      "description": "equilibrado",
+      "color": "#ffc857",
+      "pace": 0,
+      "braking": 0,
+      "response": 0,
+      "lane": 0,
+      "attackGap": 135,
+      "closing": 4
+    },
+    "attacker": {
+      "name": "FURIA",
+      "description": "ataca antes",
+      "color": "#ff794f",
+      "pace": 0.03,
+      "braking": 0.05,
+      "response": 1,
+      "lane": 4,
+      "attackGap": 150,
+      "closing": 2
+    },
+    "precise": {
+      "name": "\u00c1PICE",
+      "description": "respuesta precisa",
+      "color": "#ae97ff",
+      "pace": 0.02,
+      "braking": 0.06,
+      "response": 1.4,
+      "lane": 2,
+      "attackGap": 120,
+      "closing": 6
+    }
+  },
+  "materials": {
+    "asphalt": {
+      "road": {
+        "edge": "#141b22",
+        "kerb": "#f5f0dc",
+        "border": "#3c414c",
+        "body": "#646c78",
+        "lite": "#59616c",
+        "center": "#303640"
+      },
+      "grip": 1,
+      "drag": 0,
+      "edgeDrag": 0,
+      "particle": "#aeb6c5",
+      "life": 0.46,
+      "size": 2
+    },
+    "dirt": {
+      "road": {
+        "edge": "#49372b",
+        "kerb": "#b18c64",
+        "border": "#a27d55",
+        "body": "#b8996d",
+        "center": "#987449"
+      },
+      "grip": 0.84,
+      "drag": 54,
+      "edgeDrag": 2.8,
+      "particle": "#ad8053",
+      "life": 0.62,
+      "size": 3
+    },
+    "grass": {
+      "grip": 0.79,
+      "drag": 34,
+      "edgeDrag": 2.2,
+      "particle": "#6e9958",
+      "life": 0.46,
+      "size": 2
+    },
+    "ice": {
+      "road": {
+        "edge": "#5b8194",
+        "kerb": "#e9f8fc",
+        "border": "#94bed2",
+        "body": "#c7e6ef",
+        "lite": "#b5dbe8",
+        "center": "#b1d3e3",
+        "grain": [
+          "#f5feff",
+          "#d9f0fa",
+          "#8cbacf"
+        ],
+        "grainKind": "ice"
+      },
+      "mark": "#6e9caf",
+      "grip": 0.68,
+      "drag": 58,
+      "edgeDrag": 4.6,
+      "particle": "#d9f1f6",
+      "life": 0.46,
+      "size": 2
+    },
+    "volcanic": {
+      "road": {
+        "edge": "#211d25",
+        "kerb": "#ad704d",
+        "border": "#986447",
+        "body": "#715047",
+        "center": "#42343b",
+        "grain": [
+          "#5b4745",
+          "#b37751",
+          "#cf8b57"
+        ]
+      },
+      "grip": 0.87,
+      "drag": 54,
+      "edgeDrag": 2.8,
+      "particle": "#cf603c",
+      "life": 0.58,
+      "size": 3
+    },
+    "coastal": {
+      "grip": 1,
+      "drag": 54,
+      "edgeDrag": 2.8,
+      "particle": "#c9ad7a",
+      "life": 0.58,
+      "size": 3
+    },
+    "gravel": {
+      "mark": "#816c50",
+      "grip": 0.6,
+      "drag": 130,
+      "edgeDrag": 0,
+      "speedDrag": 0.35,
+      "particle": "#c4a47b",
+      "life": 0.62,
+      "size": 3,
+      "palette": [
+        "#a48c6d",
+        "#b59b77",
+        "#c3ab86",
+        "#d1bb96"
+      ]
+    }
+  },
+  "tracks": {
+    "SUNSET CIRCUIT": "ff7c702ee0f8682e1631acd19a349873e17309bfbee1b6ca1eed69d0bc752966",
+    "NEON HARBOR": "a61118ffff087f07936e007a69a4adf503fde4fa7041e522a8f5335ad2e9d754",
+    "DUSTY MESA": "5da574281d68b259864335651e43c1252a43f3fee1fde37037a58c560d816dcc",
+    "NIGHT RUN": "7f5a62d2ec15461ccd8dee803d734dc3e5fed06f451f0fc93bb27d47a02eb93d",
+    "FROSTBITE GP": "0867d60d10853c937dc77d98754f083e922c4648bc58c88cfc10d0e76393a6f0",
+    "JUNGLE SPRINT": "4d144db483b5844cf9b37254f32eddedf13f5e715b90d0228340e027261a0c52",
+    "VOLCANO RING": "96e023ac900e87ed19e3784aa2f78ea0ac590ef346168d1caace708f207ce5f4",
+    "PIXEL CITY": "f3cd6343d860c162f812333f5b6d7645d6d00291f1d4da7c1425e0c58c536290",
+    "THUNDER VALLEY": "4046a0239c869aaa863e8fb5fc1c0a8772bc3ff08323fb20fedbc21a275a61df",
+    "CHAMPION ROAD": "7155c3ad2dea9442c2f574ab79bda10e44e402bb90fc9b9243c5c744acfd2328",
+    "COASTLINE RUN": "c98aefa1f7419ef0a65a9e56fb24f4a138ce5798b00c6745512e4d84ebe80f42",
+    "RALLY CANYON": "3d1c2ced1623b653c2d3f8d5f17a52297679238da4973653ce57df53e7099a46",
+    "MEADOW RUN": "2f0e9637154aa99e79905269499391a2c2334cbeecb851e71053203452fef496",
+    "INDUSTRIAL MIX": "9dc12e38a1efc78e361d6eb07c36cb6c767a34c1faf927dec0f59db5771dfee8"
+  },
+  "cases": [
+    {
+      "stage": 0,
+      "level": "normal",
+      "name": "SUNSET CIRCUIT",
+      "contacts": 13,
+      "off": 0,
+      "laps": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "times": [
+        36.56666666666545,
+        36.933333333332094,
+        35.566666666665505,
+        35.17777777777663
+      ]
+    },
+    {
+      "stage": 3,
+      "level": "normal",
+      "name": "NIGHT RUN",
+      "contacts": 0,
+      "off": 0,
+      "laps": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "times": [
+        59.28888888888638,
+        59.666666666664135,
+        57.85555555555313,
+        57.55555555555315
+      ]
+    },
+    {
+      "stage": 12,
+      "level": "normal",
+      "name": "MEADOW RUN",
+      "contacts": 0,
+      "off": 0,
+      "laps": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "times": [
+        30.69999999999911,
+        30.18888888888803,
+        29.188888888888087,
+        28.79999999999922
+      ]
+    },
+    {
+      "stage": 13,
+      "level": "normal",
+      "name": "INDUSTRIAL MIX",
+      "contacts": 0,
+      "off": 0,
+      "laps": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "times": [
+        27.366666666665967,
+        27.85555555555483,
+        26.555555555554903,
+        26.099999999999373
+      ]
+    },
+    {
+      "stage": 2,
+      "level": "easy",
+      "name": "DUSTY MESA",
+      "contacts": 1,
+      "off": 0,
+      "laps": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "times": [
+        24.58888888888835,
+        25.04444444444388,
+        23.833333333332835,
+        23.399999999999526
+      ]
+    },
+    {
+      "stage": 6,
+      "level": "normal",
+      "name": "VOLCANO RING",
+      "contacts": 0,
+      "off": 0,
+      "laps": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "times": [
+        28.877777777776995,
+        28.52222222222146,
+        27.15555555555487,
+        27.57777777777707
+      ]
+    },
+    {
+      "stage": 11,
+      "level": "normal",
+      "name": "RALLY CANYON",
+      "contacts": 4,
+      "off": 0,
+      "laps": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "times": [
+        28.97777777777699,
+        28.488888888888127,
+        27.66666666666595,
+        27.19999999999931
+      ]
+    },
+    {
+      "stage": 4,
+      "level": "hard",
+      "name": "FROSTBITE GP",
+      "contacts": 4,
+      "off": 0,
+      "laps": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "times": [
+        36.64444444444322,
+        36.33333333333213,
+        35.81111111110993,
+        35.46666666666551
+      ]
+    },
+    {
+      "stage": 7,
+      "level": "normal",
+      "name": "PIXEL CITY",
+      "contacts": 0,
+      "off": 0,
+      "laps": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "times": [
+        25.455555555554966,
+        25.08888888888832,
+        24.42222222222169,
+        24.066666666666155
+      ]
+    },
+    {
+      "stage": 0,
+      "level": "normal",
+      "name": "SUNSET CIRCUIT",
+      "contacts": 6,
+      "off": 0,
+      "laps": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "times": [
+        35.95555555555394,
+        36.3833333333317,
+        35.02222222222066,
+        34.67222222222068
+      ],
+      "dt": 0.016666666666666666
+    }
+  ]
+}

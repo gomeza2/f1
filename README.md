@@ -40,6 +40,14 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## CPU en grupos — 0.54
+
+Al disputar posiciones, la CPU da prioridad de trazada al rival que circula a su lado. Un coche algo más cercano por delante ya no borra esa reserva. Sigue calculando el frenado frente a **todos** los rivales, aunque haya elegido otro como referencia lateral.
+
+Con rivales en ambos flancos, busca una franja común que respete a los dos y el ancho de carretera. Si no cabe, conserva la línea ocupada y deja espacio longitudinal mediante acelerador/freno normales. No desplaza coches, aumenta adherencia ni desactiva roces. Los trenes de coches por un solo lado conservan la reserva del más próximo; todavía no es un planificador conjunto de trayectorias.
+
+Referencia Sunset Normal, cuatro coches/tres vueltas a 30 Hz: **13 → 1 pasos con contacto**, sin pasos de centro fuera de pista. No son trece choques distintos ni una promesa de cero contactos. La referencia a 60 Hz conserva seis pasos con contacto y los mismos tiempos; no se extrapola la reducción a todas las frecuencias. La media de parrilla mejora ligeramente; las otras referencias de seguridad y el ritmo libre se comprueban por separado. Se conservan física 5, modelos, los catorce trazados, récords, audio y local 2–4. Detalle y límites en [experimento de grupos](tests/experiments/GROUPS_054.md).
+
 ## Pixel City — 0.53
 
 Pixel City deja el trazado parecido a Thunder y estrena un recorrido de **4.368 unidades** (+28,7 %): avenidas rápidas, desvío interior y retorno con curvas enlazadas. Su anchura útil varía entre **76 y 112**, con sectores con/sin pianos y **seis checkpoints**. Mundo 1600×1024, sin reducir el coche. Referencia CPU Normal libre **25,47/24,42 s**: una pista corta distinta de Frostbite (~36 s) y Night (~58 s), no un tiempo obligatorio para el jugador.
@@ -110,6 +118,7 @@ node tests/validate-ai-pace.mjs
 node tests/validate-ai-plan-query.mjs
 node tests/validate-traffic.mjs
 node tests/validate-grid.mjs
+node tests/validate-group-traffic.mjs
 node tests/validate-collisions.mjs
 node tests/validate-scenery.mjs
 node tests/validate-finish.mjs
