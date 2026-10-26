@@ -41,9 +41,13 @@ En **0.44**, Sunset, Neon y Dusty tienen anchos graduales por sector: Sunset **7
 
 Una misma sección alimenta dibujo, material del suelo, vallas/neumáticos, gates/meta, carteles, espacio de CPU, recuperación, vista previa y minimapa. La superficie se guarda en caché y el minimapa la reutiliza. Los récords de esas tres pistas suman `:r1` a la clave `:p4`; los registros anteriores se conservan. Los otros once perfiles de ancho siguen como antes. No se cambiaron longitudes, potencia ni controles en esta entrega: todavía falta desarrollar recorridos largos de unos 60 s y extender las variantes a más pistas.
 
+En **0.46 Night Run** estrena un trazado largo propio, con recta de salida, chicana, gancho hacia el puerto y regreso técnico. Longitud **10.681** unidades frente a 3.813 anteriores; mundo **2650×1696**, sin reducir el coche ni modificar potencia/física. Anchura útil variable **68–108**, pianos por sector y protección automática en curvas, con el resto de perfiles seleccionables. La referencia Normal libre queda cerca del minuto (primeras vueltas medidas a 60 Hz: 59,80 y 58,67 s); no es una promesa de tiempo humano ni una velocidad impuesta.
+
+Los checkpoints dejan de limitarse a nueve: Night tiene **16** en orden, con unos **628** de recorrido entre marcas. Los otros trece circuitos conservan sus puntos, ancho y longitudes; mantienen sus referencias cortas/medias. Night usa `NIGHT RUN@3:p5:r1`, conservando los récords de la versión 2. Ya hay cuatro pistas de ancho variable; diez mantienen ancho histórico.
+
 El perfil automático deja **siete pistas abiertas, cuatro con protección en curvas cerradas y tres con vallas parciales**. Sunset Circuit arranca sin muros. Podés seguir eligiendo vallas completas o cualquier otro perfil en el menú.
 
-Las superficies incluyen asfalto, tierra, pasto, hielo, volcánico y secciones mixtas. En las pistas mixtas, el agarre, las partículas y el minimapa cambian según el sector. Cada pista tiene entre cinco y nueve checkpoints secuenciales según su longitud, para evitar recortes grandes entre sectores. Los récords se separan por versión del recorrido: se conservan los anteriores, pero no compiten con los tiempos de los trazados nuevos.
+Las superficies incluyen asfalto, tierra, pasto, hielo, volcánico y secciones mixtas. En las pistas mixtas, el agarre, las partículas y el minimapa cambian según el sector. Cada pista tiene entre cinco y dieciséis checkpoints secuenciales según su longitud, para evitar recortes grandes entre sectores. Los récords se separan por versión del recorrido: se conservan los anteriores, pero no compiten con los tiempos de los trazados nuevos.
 
 ## Funcionalidades actuales
 
@@ -90,6 +94,7 @@ node tests/validate-runoff.mjs
 node tests/validate-steering-inertia.mjs
 node tests/validate-barriers.mjs
 node tests/validate-road-sectors.mjs
+node tests/validate-night-long.mjs
 node tests/validate-sector-races.mjs
 ```
 
@@ -302,3 +307,8 @@ Comparadas reducciones del 16 y 24 %, se elige la moderada. En una política aut
 Motor de crucero menos agudo: armónicos limitados, tono del escape más grave y menos brillo al llegar a máxima, sin alternar marchas/cortes repetitivos. No se activa el siseo de derrape en recta por el mero valor de drift: requiere giro real o freno de mano. Se comprueba audio sostenido de los cuatro modelos mediante Web Audio real; la energía filtrada y ausencia de recorte no sustituyen escuchar el timbre.
 
 Esta revisión responde al reporte del usuario. No modifica trazados ni añade el recorrido largo pendiente. Siguiente tramo: continuar fase 27, variedad de siluetas/ritmos y pistas largas, sujeto a la prueba humana del manejo/audio revisados.
+
+
+### Entrega 0.46 — fase 27, recorrido largo
+
+Night Run aporta una silueta y duración distintas; no es solo una ampliación del trazado anterior. La primera variante se rechazó por semejanza con Champion y se rediseñó. Geometría con ancho completo, conservación de los otros trece circuitos, checkpoints secuenciales, récords y pruebas de carrera forman parte de `validate-night-long.mjs` y de las baterías de CPU/perfiles. Chromium comprueba píxeles de la carretera y cámaras del mundo largo. Queda conducción humana, rendimiento en teléfonos y seguir diferenciando los otros trazados. Física/audio de 0.45 conservados. La expansión detectó exceso de decoración: el fondo conserva como máximo 150/110/80 objetos en alta/retro/ligera, distribuidos por todo el mundo y reutilizados desde caché.

@@ -5,7 +5,7 @@ const runningTrack=game.track,simulation=JSON.stringify(game.cars);
 for(let stage=0;stage<14;stage++){
  const item=game.tracks[stage];element('stageSelect').value=String(stage);game.saveBestLap(game.lapRecordKey(item),30+stage);game.updateMenuPreview();
  assert.ok(element('previewTrackName').textContent.includes(item.name));
- const gates=game.checkpointsForTrack(item);assert.equal(gates.length,Math.min(9,Math.max(3,Math.ceil(item.length/650)-1)));
+ const gates=game.checkpointsForTrack(item);assert.equal(gates.length,Math.max(3,Math.ceil(item.length/650)-1));
  assert.ok(element('previewRouteInfo').textContent.includes(gates.length+' CHECKPOINTS'));
  assert.match(element('previewRecord').textContent,/00:/);
  assert.equal(game.track,runningTrack,'Menu preview changed the active race track');assert.equal(JSON.stringify(game.cars),simulation,'Menu preview changed the active cars');

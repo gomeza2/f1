@@ -8,7 +8,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.45**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.46**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -1034,3 +1034,13 @@ Consultar `ROADMAP_EVOLUCION.md`; este archivo conserva historial y evidencia. C
 - Sonido sostenido más grave/filtrado, menos armónicos y brillo a máxima; derrape audible requiere giro/freno de mano. Prueba nueva de crucero sostenido en cuatro modelos. La escucha humana sigue abierta.
 - Los 14 recorridos y las tres secciones variables se conservan; no se añade aún un trazado largo. Se retoma fase 27 de siluetas/ritmos después de esta corrección prioritaria.
 - Cierre retomado tras desconexión: cambios intactos, main aún en 0.44; prueba de frenado actualizada de retención 20 a 30 y repetida. Registros completos de 91 carreras/480 vueltas; máximo de parrilla Sunset Normal 19 pasos de contacto a 30 Hz, todos terminan. Pruebas focalizadas de física, audio sostenido y entrega local repetidas antes de publicar.
+
+
+## Avance 0.46 — Night Run largo, fase 27
+
+- Base real `85bd29a` / 0.45, árbol limpio y main remoto verificado; rama `work/night-endurance-046`.
+- Rediseñado Night Run, sin borrar nombres originales ni alterar las otras trece pistas: 10.681 unidades, secciones 68–108, chicana inicial, gancho y regreso técnico, pianos presentes/ausentes y barreras automáticas en curvas. Mundo 2650×1696 y coche de tamaño conservado.
+- Se descartó la primera variante por semejanza con Champion; la nueva compara a distancia 0,353 con la pista más próxima. Snapshot 0.45 verifica forma anterior, prestaciones y preservación de las otras trece. Geometría por ancho real: margen 62,0 y separación de ramales 35,5 unidades.
+- Dieciséis checkpoints ordenados, intervalos de unos 628 unidades; se elimina el máximo global de nueve manteniendo las posiciones de las otras trece. Clave `NIGHT RUN@3:p5:r1` conserva tiempos @2. Física y audio 0.45 intactos. Primeras vueltas Normal a 60 Hz 59,80/58,67 s; queda evaluación humana.
+- Plan activo en `ROADMAP_EVOLUCION.md`: seguir diferenciando trazados y comprobar la experiencia del recorrido largo. No se declara concluida toda la fase 27 ni el balance de las catorce pistas.
+- Cierre: 96 carreras/490 vueltas válidas; Night Normal libre media 58,93 s y parrilla sin contactos en esta referencia. Chromium completa tres vueltas y prueba dos cámaras, píxeles y entrega local. Se detectó exceso de decoración al ampliar el mundo: presupuesto 150/110/80 según calidad con distribución por todo el escenario y caché, comprobado contra huellas/espaciado. Evaluación humana y móvil físico pendientes.

@@ -55,6 +55,8 @@ Revisión 0.45 tras reporte humano de sonido desagradable a máxima estable: mot
 - Comprobación: geometría con anchura variable y continuidad, pruebas de terreno/barrera/gate y píxeles reales de Canvas en tres pistas/cinco perfiles. Capturas revisadas; conducción humana pendiente. Se mantiene la física 4. No se añadieron longitudes: las referencias libres siguen aproximadamente 21/23/37 s. Ningún trazado de 60 s se declara terminado.
 - Siguiente tramo: nuevas siluetas/ritmos y más perfiles, escogidos con espacio real entre ramales y límites. Quedan once pistas sin ancho variable; pianos de un solo lado y barreras personalizadas por sector aún pendientes.
 
+Avance 0.46: Night Run rediseñado, 10.681 unidades, ancho útil 68–108, chicana/gancho/regreso técnico, mundo 2650×1696 y 16 checkpoints sin separaciones mayores a 650. Primeras dos vueltas Normal libres a 60 Hz: 59,80/58,67 s; referencia, no objetivo forzado para cada jugador. Se conserva física/audio 0.45, perfil automático en curvas y los otros trece recorridos. Silueta próxima más cercana a 0,353 (Champion) frente a 0,188 de la primera variante descartada; nueva forma comparada contra las catorce y contra la anterior, sin sustituir conducirla. Pianos/anchos variables ya presentes en cuatro pistas; diez pendientes. Récord Night @3 conserva @2. Evaluación humana, más rediseños y prestaciones en dispositivos reales siguen abiertos.
+
 ### 28. CPU y estrategia de carrera
 
 - Ampliar trazadas y elección de líneas según anchura real/material; anticipar frenadas por la línea elegida y reaccionar a grupos.
@@ -116,4 +118,4 @@ Revisión 0.45 tras reporte humano de sonido desagradable a máxima estable: mot
 
 ## Continuación
 
-Verificar main y el último registro de `ROADMAP_24_FASES.md`. 0.43 sustituye el motor y conserva la revisión de manejo 0.42. 0.44 comienza la fase 27 con tres pistas de ancho variable. 0.45 atiende el nuevo reporte de gas continuo demasiado fácil y motor agudo a máxima. Próxima implementación: **continuar fase 27 con trazados/ritmos distintos, incluyendo recorridos largos y más perfiles**. La evaluación humana de motor y conducción permanece abierta; puede reordenar la prioridad. Local 3–4 y online siguen pendientes.
+Verificar main y el último registro de `ROADMAP_24_FASES.md`. 0.43 sustituye el motor y conserva la revisión de manejo 0.42. 0.44 comienza la fase 27 con tres pistas de ancho variable. 0.45 atiende el reporte de gas continuo demasiado fácil y motor agudo a máxima. 0.46 añade Night largo con anchos variables y 16 gates. Próxima implementación: **continuar fase 27 diferenciando otros trazados y sus perfiles, después de evaluar Night largo**. La evaluación humana de motor y conducción permanece abierta; puede reordenar la prioridad. Local 3–4 y online siguen pendientes.

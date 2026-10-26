@@ -6,7 +6,7 @@ const trackDefs=[
 {name:'SUNSET CIRCUIT',roadVersion:1,roadProfile:[[0,46,0],[0.07,56,0],[0.16,56,6],[0.24,42,6],[0.32,38,0],[0.4,44,6],[0.5,50,6],[0.6,40,0],[0.7,36,0],[0.8,42,6],[0.9,50,6],[1,46,0]],worldScale:1.8,layoutVersion:3,sky:'#f4a66c',grass:'#36784d',accent:'#f6d27c',points:[[140,100],[350,90],[620,90],[850,120],[920,220],[900,370],[820,450],[700,470],[620,420],[650,340],[600,270],[500,260],[430,320],[450,410],[530,490],[520,560],[400,580],[250,540],[130,480],[80,380],[110,280],[210,280],[300,290],[350,235],[300,170],[220,165],[150,205],[90,180]]},
 {name:'NEON HARBOR',roadVersion:1,roadProfile:[[0,44,6],[0.1,50,6],[0.2,38,0],[0.3,38,0],[0.4,46,6],[0.52,48,6],[0.62,36,0],[0.72,40,6],[0.82,46,6],[0.92,44,0],[1,44,6]],worldScale:1.4,layoutVersion:2,sky:'#5dbfc8',grass:'#25766b',accent:'#84fff0',points:[[150,95],[330,100],[385,145],[470,120],[535,95],[730,100],[820,148],[855,230],[810,275],[700,270],[650,340],[700,430],[640,490],[510,495],[455,435],[340,450],[295,520],[180,510],[120,445],[95,350],[145,285],[110,200]]},
 {name:'DUSTY MESA',roadVersion:1,roadProfile:[[0,46,0],[0.14,54,0],[0.28,48,0],[0.4,36,0],[0.52,36,0],[0.64,44,0],[0.76,50,0],[0.88,40,0],[1,46,0]],worldScale:1.4,layoutVersion:3,sky:'#dfb878',grass:'#b99c61',accent:'#f5dd91',points:[[140,120],[360,90],[600,90],[820,110],[900,170],[910,240],[850,290],[760,280],[690,240],[620,250],[570,310],[580,380],[650,420],[680,480],[640,540],[560,550],[450,500],[340,430],[230,360],[130,300],[90,230],[110,160]]},
-{name:'NIGHT RUN',worldScale:1.4,layoutVersion:2,sky:'#5a5b9e',grass:'#263a54',accent:'#ff5fae',points:[[155,100],[315,92],[365,140],[470,135],[495,195],[615,200],[645,135],[770,120],[865,175],[838,248],[760,280],[700,255],[660,325],[740,380],[800,455],[740,520],[610,525],[550,465],[455,475],[420,550],[300,540],[220,480],[140,460],[100,375],[140,310],[95,230]]},
+{name:'NIGHT RUN',worldScale:2.65,layoutVersion:3,roadVersion:1,roadProfile:[[0,50,0],[0.1,54,0],[0.16,38,6],[0.24,48,6],[0.34,42,0],[0.42,34,0],[0.5,46,6],[0.6,52,0],[0.7,48,6],[0.8,38,6],[0.9,40,0],[1,50,0]],sky:'#5a5b9e',grass:'#263a54',accent:'#ff5fae',points:[[130,85],[340,85],[390,85],[420,110],[450,110],[480,85],[650,85],[880,100],[930,170],[900,240],[800,265],[700,240],[670,290],[720,335],[835,320],[900,365],[925,440],[880,520],[780,565],[600,575],[460,530],[320,560],[155,550],[90,490],[85,420],[145,375],[240,390],[330,450],[460,450],[540,400],[540,330],[470,280],[350,250],[240,285],[155,280],[95,220],[95,150]]},
 {name:'FROSTBITE GP',worldScale:1.4,layoutVersion:2,sky:'#d9eff4',grass:'#83b3a3',accent:'#ffffff',points:[[155,115],[320,85],[445,120],[490,180],[600,150],[745,120],[830,180],[850,255],[780,305],[670,285],[620,350],[680,410],[650,500],[525,530],[450,470],[355,480],[305,545],[205,510],[150,430],[95,400],[105,300],[150,255],[115,185]]},
 {name:'JUNGLE SPRINT',worldScale:1.4,layoutVersion:2,sky:'#72b987',grass:'#205a3d',accent:'#a8e77e',points:[[135,125],[285,90],[385,120],[435,195],[530,210],[575,135],[735,115],[825,180],[800,255],[720,285],[690,360],[750,415],[700,515],[570,525],[500,455],[400,465],[335,540],[220,525],[175,445],[100,420],[80,330],[145,260],[100,190]]},
 {name:'VOLCANO RING',worldScale:1.4,layoutVersion:2,sky:'#9e645d',grass:'#4c4349',accent:'#ff704e',points:[[125,130],[280,90],[395,125],[440,200],[510,165],[650,110],[790,135],[860,215],[810,280],[710,270],[665,335],[720,420],[680,500],[550,540],[465,475],[385,495],[320,555],[210,520],[170,435],[100,390],[85,295],[140,250],[105,190]]},
@@ -522,7 +522,7 @@ function resolveBarrierContact(car,previousX,previousY){
 
 function checkpointsForTrack(item=track){
  const result=[];
- const count=clamp(Math.ceil(item.length/650)-1,3,9);
+ const count=Math.max(3,Math.ceil(item.length/650)-1);
  for(let i=1;i<=count;i++){const progress=item.length*i/(count+1),p=sampleAt(progress,item);result.push({id:i,progress,x:p.x,y:p.y,angle:p.angle,halfWidth:roadHalfWidthAt(progress,item)});}
  return result;
 }
@@ -614,6 +614,9 @@ function decorationsForTrack(){
  // Give larger landmarks room before filling gaps with vegetation.
  candidates.sort((a,b)=>Number(b.large)-Number(a.large));
  for(const item of candidates)if(!list.some(other=>Math.hypot(other.x-item.x,other.y-item.y)<other.radius+item.radius+5))list.push(item);
+ // Keep the cached scene bounded even when a circuit has a much larger world.
+ const budget=graphics==='high'?150:graphics==='retro'?110:80;
+ if(list.length>budget){const spread=Array.from({length:budget},(_,i)=>list[Math.floor((i+.5)*list.length/budget)]);list.length=0;list.push(...spread);}
  list.sort((a,b)=>a.y-b.y);cached.set(graphics,list);return list;
 }
 function drawSceneryObject(context,d){

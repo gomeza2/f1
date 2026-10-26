@@ -13,11 +13,12 @@ assert.equal(game.ROAD_EDGE,42);assert.equal(game.WORLD_SPEED_SCALE,.84);assert.
 assert.ok(normalizedShapeDistance(shape,baseline.shape)>.2,'Sunset was only enlarged, not redesigned');
 let nearest=Infinity;
 for(const other of game.tracks.slice(1)){const distance=normalizedShapeDistance(shape,sampleTrackShape(other));assert.ok(distance>.2,`Sunset resembles ${other.name}`);nearest=Math.min(nearest,distance);
- const signature=createHash('sha256').update(JSON.stringify({points:other.points,samples:other.samples,worldScale:other.worldScale,layoutVersion:other.layoutVersion})).digest('hex');assert.equal(signature,baseline.otherTracks[other.name],`${other.name} changed during the Sunset-only update`);
+ // Night is covered by its own 0.45 snapshot and thirteen-track preservation test.
+ const signature=createHash('sha256').update(JSON.stringify({points:other.points,samples:other.samples,worldScale:other.worldScale,layoutVersion:other.layoutVersion})).digest('hex');if(other.name!=='NIGHT RUN')assert.equal(signature,baseline.otherTracks[other.name],`${other.name} changed during the Sunset-only update`);
 }
 assert.ok(geometry.roadMargin>=32&&geometry.clearance>=32,'Sunset lost usable runoff or branch clearance');
 game.bestLapRecords['SUNSET CIRCUIT@2']=18;game.start('solo',0);assert.equal(game.lapRecordKey(),'SUNSET CIRCUIT@3:p5:r1');assert.ok(game.saveBestLap(game.lapRecordKey(),35));assert.equal(game.bestLapRecords['SUNSET CIRCUIT@2'],18);
 assert.equal(game.checkpoints.length,9);assert.ok(game.checkpoints.every((gate,index,all)=>index===0||gate.progress>all[index-1].progress));
 const human=game.cars[0];game.placeCar(human,sunset.length-4,0);human.speed=100;game.setKeys({w:true});game.physics(human,0,.1);assert.ok(human.progress<20,'Shortcut probe did not cross the finish');assert.equal(human.lap,0,'Finish accepted a lap without all nine checkpoints');
 element('stageSelect').value='0';game.updateMenuPreview();assert.match(element('previewRouteInfo').textContent,/9 CHECKPOINTS/);assert.match(element('previewBarriers').textContent,/ABIERTO/);
-console.log(`PASS: Sunset gains ${((sunset.length/baseline.length-1)*100).toFixed(1)}% route length, distinct silhouette (nearest ${nearest.toFixed(3)}), nine ordered gates, open asphalt, >=32 runoff/branch clearance, original model definitions/road size, preserved records and unchanged 13 other tracks. Duration is measured separately by the CPU race tests, not inferred from geometry.`);
+console.log(`PASS: Sunset gains ${((sunset.length/baseline.length-1)*100).toFixed(1)}% route length, distinct silhouette (nearest ${nearest.toFixed(3)}), nine ordered gates, open asphalt, >=32 runoff/branch clearance, original model definitions/road size, preserved records and 12 other original route signatures (Night is separately versioned/tested in 0.46). Duration is measured separately by the CPU race tests, not inferred from geometry.`);

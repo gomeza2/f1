@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.45
+# PIXEL GRAND PRIX — entrega 0.46
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, dos jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Night Run largo en 0.46
+
+Night Run pasa de 3.813 a 10.681 unidades con una silueta propia, chicana, gancho y regreso técnico. Ancho útil 68–108, pianos por sector, mundo 2650×1696 y perfil automático de barreras en curvas. Los otros trece trazados, modelos, física 5 y audio permanecen iguales. Referencia Normal libre a 60 Hz: primeras vueltas 59,80/58,67 s. No se ralentiza el coche para conseguir duración.
+
+Dieciséis checkpoints ordenados (intervalos ~628), sin el límite global anterior de nueve. Posiciones de las otras trece pistas conservadas. Récord nuevo `NIGHT RUN@3:p5:r1`, versiones anteriores preservadas. Snapshot 0.45 y test específico verifican geometría con anchura real/forma diferenciada y conservación de las otras trece pistas. La evaluación humana del ritmo y el rendimiento en móviles siguen pendientes.
 
 ## Soltar/frenar y motor de crucero en 0.45
 
@@ -48,6 +54,10 @@ Nuevo recorrido con recta larga, curva exterior, sector interior y regreso técn
 
 ## Evidencia
 
+- 0.46: 96 carreras simuladas/490 vueltas válidas: 42 clásicas, 20 parrilla, 14 tráfico y 20 pruebas de dos vueltas por perfil. Night Normal libre promedia 58,93 s; su parrilla completa sin contactos en esta referencia. Los otros trece tiempos/trazados permanecen como en 0.45.
+- Geometría con ancho real, 18.313 sondas físicas y 18.090 comprobaciones de píxeles en cuatro pistas/cinco perfiles; 37 contornos cerrados/13.183 sondas de vallas y 70 configuraciones de grava, con 43.896 puntos independientes del mundo. Chromium completa tres vueltas Night (59,60/58,60/58,60), prueba cámaras separadas de dos jugadores, recorrido general y entrega local bajo `/f1/`. Capturas de Night abierta/vallada/cercana y duo revisadas. No confirma diversión humana ni despliegue de Pages.
+- La ampliación excedía el límite de decoración: corregida con presupuesto 150/110/80 por calidad, selección distribuida y caché, con 1.213 colocaciones comprobadas entre las tres calidades y manteniendo huella/espaciado. Rendimiento en teléfonos físicos sigue pendiente.
+
 - 0.45: 91 carreras/480 vueltas válidas conservadas en los registros de esta revisión: 42 clásicas, 20 parrilla, 14 tráfico y 15 pruebas de dos vueltas por perfil. El test final de frenado esperaba aún retención 20; corregida a 30 y repetida la comprobación focalizada. Audio sostenido de cuatro modelos, grafo/ciclo de vida, gas/retención/freno, colisiones, pausa, gates, integración y Chromium/entrega local comprobados. La prueba humana de sensación/timbre permanece abierta.
 
 - 0.44: 91 carreras simuladas y 480 vueltas válidas: 42 clásicas (14 pistas × 3 dificultades), 20 de parrilla, 14 de tráfico y 15 de dos vueltas con los cinco perfiles en las tres pistas revisadas. CPU libre Normal: Sunset 36,66 s, Neon 22,67 s y Dusty 21,11 s. El tamaño del recorrido no cambia en esta entrega.
@@ -69,6 +79,6 @@ La carga pública de Pages no se pudo verificar desde esta sesión: el proxy blo
 
 - Física 5: tráfico de dos coches sin contactos en las 14 referencias. Esto no garantiza carreras sin contactos contra personas.
 - Parrilla 0.45: todos terminan, con contactos en varias referencias. El máximo es Sunset Normal, 19 pasos a 30 Hz (0,63 s acumulados en tres vueltas); no son 19 golpes separados. En 0.44 el máximo era Dusty Difícil con 24 pasos. Queda revisar el contacto y equilibrio contra personas; una comparación agregada no prueba mejora en todas las situaciones.
-- Duración y trazados: se busca variedad aproximada de 20/40/60 s, sin ventana obligatoria. Anchos variables presentes en tres pistas; once restantes y más rediseños pendientes.
+- Duración y trazados: se busca variedad aproximada de 20/40/60 s, sin ventana obligatoria. Anchos variables presentes en cuatro pistas; diez restantes y más rediseños pendientes. Night aporta una referencia cercana a 60 s.
 - Faltan calibración humana, pruebas en dispositivos físicos, controles táctiles y medición de rendimiento. Los videos adjuntos superaban el límite de transferencia y no pudieron verse.
 - Contrarreloj, desafíos, editor y progresión ampliada siguen pendientes. Esta entrega no equivale a terminar las 24 fases ni a declarar una versión estable definitiva.
