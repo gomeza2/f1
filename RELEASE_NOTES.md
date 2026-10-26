@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.43
+# PIXEL GRAND PRIX — entrega 0.44
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, dos jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Secciones de pista en 0.44
+
+Sunset, Neon y Dusty estrenan anchos graduales (72–124/72–112/72–108 unidades totales), con sectores de pianos y sin pianos en las dos asfaltadas. Dusty conserva tierra. La sección común conecta render, física de terreno, barreras/neumáticos, CPU, checkpoints/meta, carteles, recuperación, exclusión de decoraciones, menú y minimapa. Superficie precalculada en caché; no se reconstruye por frame.
+
+Récords de esas tres pistas separados con `:r1`; anteriores preservados. Sin cambios a longitudes, potencia o física 4. Primera parte de fase 27: quedan once pistas sin perfiles variables, más rediseños y recorridos largos de unos 60 s. Pianos asimétricos y barreras personalizadas por sector siguen pendientes. No se declara terminada la variedad completa ni aprobado el balance humano.
 
 ## Motor sustituido en 0.43
 
@@ -36,6 +42,9 @@ Nuevo recorrido con recta larga, curva exterior, sector interior y regreso técn
 
 ## Evidencia
 
+- 0.44: 91 carreras simuladas y 480 vueltas válidas: 42 clásicas (14 pistas × 3 dificultades), 20 de parrilla, 14 de tráfico y 15 de dos vueltas con los cinco perfiles en las tres pistas revisadas. CPU libre Normal: Sunset 36,66 s, Neon 22,67 s y Dusty 21,11 s. El tamaño del recorrido no cambia en esta entrega.
+- 0.44: 10.004 sondas físicas de bordes variables, 9.845 sondas de píxeles reales de Canvas, 70 configuraciones de material/escapatorias y 947 decoraciones comprobadas. Geometría, gates, manejo, colisiones, pausa/reinicio y audio: pruebas automatizadas. Chromium completo, audio real y entrega sin instrumentación bajo `/f1/`: superados. Capturas abiertas/valladas y vistas cercanas revisadas. No sustituye jugar ni escuchar humanamente.
+
 - 0.43: sintaxis/integración, audio (régimen, marchas, carga y ciclo de vida), manejo, checkpoints, pausa/reinicio, Chromium completo, audio real y entrega bajo `/f1/` superados. RMS muestreado 0 en pausa/OFF/menú; pico de motor 0,114 en la muestra observada, sin recorte en esa muestra. No es un análisis de todos los estados ni escucha humana.
 
 - 0.42: se repiten 42 carreras clásicas, 20 de parrilla y 14 de tráfico; 450 vueltas válidas con física 4 y gates por contacto. La conducción humana no se sustituye por estas simulaciones.
@@ -51,7 +60,7 @@ La carga pública de Pages no se pudo verificar desde esta sesión: el proxy blo
 ## Pendientes conocidos
 
 - Física 4: tráfico de dos coches sin contactos en las 14 referencias. Esto no garantiza carreras sin contactos contra personas.
-- Física 4: parrilla registra roces en Dusty/Jungle/Coastline/Industrial Normal, Dusty Fácil y Sunset/Dusty Difícil. Se conserva contacto físico; siguen pendientes incidentes prolongados y evaluación humana.
-- Duración y trazados: se busca variedad aproximada de 20/40/60 s, sin ventana obligatoria. Anchos variables y más rediseños siguen pendientes.
+- Parrilla 0.44: contactos en Sunset/Jungle/Coastline/Industrial Normal, Dusty Fácil y Dusty Difícil. La referencia más alta es Dusty Difícil con 24 pasos a 30 Hz (0,8 s acumulados en tres vueltas), frente a menos contacto en 0.43; todos terminan. Son pasos con solapamiento, no 24 choques separados. Se conserva contacto físico; queda revisar equilibrio humano y contactos prolongados al estrechar sectores.
+- Duración y trazados: se busca variedad aproximada de 20/40/60 s, sin ventana obligatoria. Anchos variables presentes en tres pistas; once restantes y más rediseños pendientes.
 - Faltan calibración humana, pruebas en dispositivos físicos, controles táctiles y medición de rendimiento. Los videos adjuntos superaban el límite de transferencia y no pudieron verse.
 - Contrarreloj, desafíos, editor y progresión ampliada siguen pendientes. Esta entrega no equivale a terminar las 24 fases ni a declarar una versión estable definitiva.

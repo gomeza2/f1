@@ -40,14 +40,16 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 
 Estado 0.43: motor reemplazado y separado en `engine-audio.js`; pulsos/armónicos, carga, régimen continuo y seis marchas con histéresis, cuatro perfiles. Integración de recursos y mezcla existente comprobadas. Grafo, marchas/carga, Web Audio real y navegador comprobados; escucha humana pendiente. Controles separados de volumen, ambientes temáticos y una revisión específica del sonido de roce quedan pendientes, sin opciones vacías. Física/ritmo de CPU sin cambios en esta entrega.
 
-### 27. Anchura, curvas y duración variadas
+### 27. Anchura, curvas y duración variadas — primera revisión 0.44
 
 - Datos por sector con anchura y materiales; extender una consulta común como `roadHalfWidthAt` para render, línea de carrera, barreras, gates, minimapa y editor.
 - Renderizar un corredor de anchura variable; validar la huella completa y las transiciones, no solo la línea central. Adecuar marchado de barreras, escapatorias y exclusión de decoraciones.
 - Pianos utilizables, entrada más amplia/salida estrecha donde tenga sentido; rectas, chicanas, horquillas y zonas de adelantamiento con riesgo visible.
 - Circuitos cortos, medios y largos: referencias aproximadas 20/40/60 s, sin forzar todas las pistas a una ventana ni alterar artificialmente el coche.
 - Pruebas de geometría/anchura, 5 perfiles, superficie, cámaras y varias vueltas por coche/dificultad. Récords por versión; preservar los anteriores.
-- Estado: pendiente; 0.42 no añade anchos variables ni rediseña los 14 trazados.
+- Estado 0.44: primera migración en Sunset, Neon y Dusty, con secciones interpoladas/ancho útil 72–124/72–112/72–108 respectivamente. Pianos presentes/ausentes en Sunset/Neon y tierra ancha/estrecha sin pianos en Dusty. Consulta compartida con material físico, CPU, geometría de vallas/neumáticos, gates/meta, carteles, recuperación y exclusión de decoraciones; render/vista previa/mapa coherentes. Récords `:r1` conservan anteriores `:p4`.
+- Comprobación: geometría con anchura variable y continuidad, pruebas de terreno/barrera/gate y píxeles reales de Canvas en tres pistas/cinco perfiles. Capturas revisadas; conducción humana pendiente. Se mantiene la física 4. No se añadieron longitudes: las referencias libres siguen aproximadamente 21/23/37 s. Ningún trazado de 60 s se declara terminado.
+- Siguiente tramo: nuevas siluetas/ritmos y más perfiles, escogidos con espacio real entre ramales y límites. Quedan once pistas sin ancho variable; pianos de un solo lado y barreras personalizadas por sector aún pendientes.
 
 ### 28. CPU y estrategia de carrera
 
@@ -110,4 +112,4 @@ Estado 0.43: motor reemplazado y separado en `engine-audio.js`; pulsos/armónico
 
 ## Continuación
 
-Verificar main y el último registro de `ROADMAP_24_FASES.md`. 0.43 sustituye el motor y conserva la revisión de manejo 0.42. Próxima implementación: **fase 27, anchuras/pianos/barreras por sector y trazados con ritmos distintos**. La evaluación humana de motor y conducción permanece abierta; puede reordenar la prioridad. Local 3–4 y online siguen pendientes.
+Verificar main y el último registro de `ROADMAP_24_FASES.md`. 0.43 sustituye el motor y conserva la revisión de manejo 0.42. 0.44 comienza la fase 27 con tres pistas de ancho variable. Próxima implementación: **continuar fase 27 con trazados/ritmos distintos, incluyendo recorridos largos y más perfiles**. La evaluación humana de motor y conducción permanece abierta; puede reordenar la prioridad. Local 3–4 y online siguen pendientes.

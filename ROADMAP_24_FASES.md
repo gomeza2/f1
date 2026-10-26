@@ -8,7 +8,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.42**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.44**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -1016,3 +1016,12 @@ Consultar `ROADMAP_EVOLUCION.md`; este archivo conserva historial y evidencia. C
 - Reemplazado motor de osciladores crudos/bandas por pulsos propios de combustión filtrados, régimen/carga continuos y seis marchas con histéresis. Perfiles por modelo, mezcla de dos humanos y efectos de carrera conservados. Extraído `engine-audio.js`, rutas versionadas actualizadas.
 - Validación automática de régimen/cambios/carga/reset, grafo/ciclo de vida y regresiones de manejo/progreso; Web Audio real, flujo Chromium y entrega sin instrumentación bajo `/f1/`. No hay aprobación humana del timbre ni del manejo.
 - No se añadieron anchos variables, nuevos trazados ni 3/4 humanos. Fase 27 es la siguiente: anchos, pianos y barreras por sector, luego ritmos/duraciones variados; referencias 20/40/60 segundos sin imponer una ventana universal. Hoja vigente: `ROADMAP_EVOLUCION.md`.
+
+
+## Avance 0.44 — sectores de anchura variable, primera revisión de fase 27
+
+- Base verificada: main `0a2fa8a` / 0.43, árbol limpio; rama recuperable `work/variable-width-044`.
+- Sunset, Neon y Dusty incorporan perfiles de sección gradual, con amplitudes y sectores estrechos distintos. Pianos opcionales por sector en asfalto; Dusty conserva tierra sin pianos artificiales. Render, suelo, gates/meta, barreras, CPU y recuperación consultan la sección real. Minimap reutiliza superficie en caché; vista previa muestra el ancho.
+- Versionado de carretera `:r1` en esas tres pistas; conserva récords `:p4` y anteriores. Once trazados mantienen anchura histórica y todos conservan sus puntos/longitudes, velocidad y controles.
+- Validación de geometría con ancho variable, materiales, colisiones, checkpoints y píxeles reales en Chromium. Capturas de tres escenarios abiertas/valladas y vistas cercanas revisadas. Queda evaluación humana de diversión/equilibrio, más perfiles y nuevos trazados/ritmos; todavía no hay una pista larga de 60 s confirmada. Hoja activa: `ROADMAP_EVOLUCION.md`.
+- Evidencia de cierre: 91 carreras/480 vueltas válidas, 10.004 sondas físicas y 9.845 de píxeles; CPU libre mantiene Normal Sunset 36,66 s / Neon 22,67 s / Dusty 21,11 s. Parrilla Dusty Difícil registra 24 pasos de contacto a 30 Hz, todos terminan: revisar ese roce competitivo con personas; no se declara contacto cero ni equilibrio definitivo.

@@ -1,10 +1,11 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const menu=$('menu'),game=$('game'),result=$('result'),canvas=$('canvas1'),ctx=canvas.getContext('2d');
+// roadProfile knots: [lap fraction, road half-width, usable kerb width], in world units.
 const trackDefs=[
-{name:'SUNSET CIRCUIT',worldScale:1.8,layoutVersion:3,sky:'#f4a66c',grass:'#36784d',accent:'#f6d27c',points:[[140,100],[350,90],[620,90],[850,120],[920,220],[900,370],[820,450],[700,470],[620,420],[650,340],[600,270],[500,260],[430,320],[450,410],[530,490],[520,560],[400,580],[250,540],[130,480],[80,380],[110,280],[210,280],[300,290],[350,235],[300,170],[220,165],[150,205],[90,180]]},
-{name:'NEON HARBOR',worldScale:1.4,layoutVersion:2,sky:'#5dbfc8',grass:'#25766b',accent:'#84fff0',points:[[150,95],[330,100],[385,145],[470,120],[535,95],[730,100],[820,148],[855,230],[810,275],[700,270],[650,340],[700,430],[640,490],[510,495],[455,435],[340,450],[295,520],[180,510],[120,445],[95,350],[145,285],[110,200]]},
-{name:'DUSTY MESA',worldScale:1.4,layoutVersion:3,sky:'#dfb878',grass:'#b99c61',accent:'#f5dd91',points:[[140,120],[360,90],[600,90],[820,110],[900,170],[910,240],[850,290],[760,280],[690,240],[620,250],[570,310],[580,380],[650,420],[680,480],[640,540],[560,550],[450,500],[340,430],[230,360],[130,300],[90,230],[110,160]]},
+{name:'SUNSET CIRCUIT',roadVersion:1,roadProfile:[[0,46,0],[0.07,56,0],[0.16,56,6],[0.24,42,6],[0.32,38,0],[0.4,44,6],[0.5,50,6],[0.6,40,0],[0.7,36,0],[0.8,42,6],[0.9,50,6],[1,46,0]],worldScale:1.8,layoutVersion:3,sky:'#f4a66c',grass:'#36784d',accent:'#f6d27c',points:[[140,100],[350,90],[620,90],[850,120],[920,220],[900,370],[820,450],[700,470],[620,420],[650,340],[600,270],[500,260],[430,320],[450,410],[530,490],[520,560],[400,580],[250,540],[130,480],[80,380],[110,280],[210,280],[300,290],[350,235],[300,170],[220,165],[150,205],[90,180]]},
+{name:'NEON HARBOR',roadVersion:1,roadProfile:[[0,44,6],[0.1,50,6],[0.2,38,0],[0.3,38,0],[0.4,46,6],[0.52,48,6],[0.62,36,0],[0.72,40,6],[0.82,46,6],[0.92,44,0],[1,44,6]],worldScale:1.4,layoutVersion:2,sky:'#5dbfc8',grass:'#25766b',accent:'#84fff0',points:[[150,95],[330,100],[385,145],[470,120],[535,95],[730,100],[820,148],[855,230],[810,275],[700,270],[650,340],[700,430],[640,490],[510,495],[455,435],[340,450],[295,520],[180,510],[120,445],[95,350],[145,285],[110,200]]},
+{name:'DUSTY MESA',roadVersion:1,roadProfile:[[0,46,0],[0.14,54,0],[0.28,48,0],[0.4,36,0],[0.52,36,0],[0.64,44,0],[0.76,50,0],[0.88,40,0],[1,46,0]],worldScale:1.4,layoutVersion:3,sky:'#dfb878',grass:'#b99c61',accent:'#f5dd91',points:[[140,120],[360,90],[600,90],[820,110],[900,170],[910,240],[850,290],[760,280],[690,240],[620,250],[570,310],[580,380],[650,420],[680,480],[640,540],[560,550],[450,500],[340,430],[230,360],[130,300],[90,230],[110,160]]},
 {name:'NIGHT RUN',worldScale:1.4,layoutVersion:2,sky:'#5a5b9e',grass:'#263a54',accent:'#ff5fae',points:[[155,100],[315,92],[365,140],[470,135],[495,195],[615,200],[645,135],[770,120],[865,175],[838,248],[760,280],[700,255],[660,325],[740,380],[800,455],[740,520],[610,525],[550,465],[455,475],[420,550],[300,540],[220,480],[140,460],[100,375],[140,310],[95,230]]},
 {name:'FROSTBITE GP',worldScale:1.4,layoutVersion:2,sky:'#d9eff4',grass:'#83b3a3',accent:'#ffffff',points:[[155,115],[320,85],[445,120],[490,180],[600,150],[745,120],[830,180],[850,255],[780,305],[670,285],[620,350],[680,410],[650,500],[525,530],[450,470],[355,480],[305,545],[205,510],[150,430],[95,400],[105,300],[150,255],[115,185]]},
 {name:'JUNGLE SPRINT',worldScale:1.4,layoutVersion:2,sky:'#72b987',grass:'#205a3d',accent:'#a8e77e',points:[[135,125],[285,90],[385,120],[435,195],[530,210],[575,135],[735,115],[825,180],[800,255],[720,285],[690,360],[750,415],[700,515],[570,525],[500,455],[400,465],[335,540],[220,525],[175,445],[100,420],[80,330],[145,260],[100,190]]},
@@ -37,7 +38,7 @@ const CAR_PAINTS={
  violet:{name:'PURPLE HAZE',hex:'#b77cff'},white:{name:'ICE WHITE',hex:'#f0f3ff'}
 };
 function makeTrack(def){
- // World size is independent of the driving viewport; road and car widths stay fixed.
+ // World size is independent of the viewport; road sectors are expressed in world units.
  const worldScale=def.worldScale||1;
  const p=def.points.map(([x,y])=>[(500+(x-500)*1.06)*worldScale,(320+(y-320)*1.05)*worldScale]),n=p.length,samples=[];
  for(let i=0;i<n;i++){
@@ -76,7 +77,7 @@ let countdownRemaining=0,goFlashRemaining=0,countdownShown='',finishNoticeKey=''
 const BEST_LAPS_KEY='pixelGP.bestLaps.v1';
 function readBestLapRecords(){try{const value=JSON.parse(localStorage.getItem(BEST_LAPS_KEY)||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value:{};}catch(error){return {};}}
 let bestLapRecords=readBestLapRecords();
-function lapRecordKey(item=track){return (item.layoutVersion?item.name+'@'+item.layoutVersion:item.name)+':p'+PHYSICS_VERSION;}
+function lapRecordKey(item=track){return (item.layoutVersion?item.name+'@'+item.layoutVersion:item.name)+':p'+PHYSICS_VERSION+(item.roadVersion?':r'+item.roadVersion:'');}
 function saveBestLap(trackName,time){if(!Number.isFinite(time)||time<=0)return false;const previous=bestLapRecords[trackName];if(Number.isFinite(previous)&&previous<=time)return false;bestLapRecords[trackName]=time;try{localStorage.setItem(BEST_LAPS_KEY,JSON.stringify(bestLapRecords));}catch(error){}return true;}
 let keys=Object.create(null),cars=[],graphics='high',difficulty='normal',decorations=[],tireBarriers=[],checkpoints=[];
 let guardrailPaths=[],physicalBarriers=[],barrierBuckets=new Map();
@@ -191,7 +192,22 @@ function surfaceAtProgress(distance,item=track){
  if(item.surface==='coastal'&&d>=item.length*.31&&d<=item.length*.37)return 'dirt';
  return item.surface||'asphalt';
 }
-function roadHalfWidthAt(progress,item=track){const surface=surfaceAtProgress(progress,item);return surface==='asphalt'||surface==='coastal'?ROAD_SHOULDER:ROAD_EDGE;}
+// One cross-section query drives road drawing, ground, fences, gates and CPU room.
+function roadSectionAt(progress,item=track){
+ const surface=surfaceAtProgress(progress,item),paved=surface==='asphalt'||surface==='coastal';
+ if(!item.roadProfile)return {halfWidth:ROAD_EDGE,kerb:paved?ROAD_SHOULDER-ROAD_EDGE:0};
+ const phase=((progress%item.length)+item.length)%item.length/item.length,profile=item.roadProfile;
+ let i=0;while(i<profile.length-2&&phase>profile[i+1][0])i++;
+ const a=profile[i],b=profile[i+1],t=clamp((phase-a[0])/(b[0]-a[0]),0,1),blend=t*t*(3-2*t);
+ return {halfWidth:a[1]+(b[1]-a[1])*blend,kerb:paved?a[2]+(b[2]-a[2])*blend:0};
+}
+function roadHalfWidthAt(progress,item=track){const section=roadSectionAt(progress,item);return section.halfWidth+section.kerb;}
+function roadMaxHalfWidth(item=track){return item.roadProfile?Math.max(...item.roadProfile.map(p=>p[1]+p[2])):ROAD_SHOULDER;}
+function barrierRadiusAt(progress,item=track){
+ if(!item.roadProfile)return 55;
+ const surface=surfaceAtProgress(progress,item),legacy=surface==='asphalt'||surface==='coastal'?ROAD_SHOULDER:ROAD_EDGE;
+ return 55+roadHalfWidthAt(progress,item)-legacy;
+}
 // One world-material query drives handling, resistance, particles, audio and the gravel raster.
 function terrainAt(x,y,loc=nearestOnTrack(x,y)){
  const road=surfaceAtProgress(loc.progress),paved=road==='asphalt'||road==='coastal';
@@ -214,7 +230,7 @@ function buildRunoffZones(){
 }
 function runoffBuckets(){
  if(runoffBucketsCache.has(track))return runoffBucketsCache.get(track);
- const buckets=new Map(),pad=ROAD_SHOULDER+GRAVEL_WIDTH+12,s=track.samples;
+ const buckets=new Map(),pad=roadMaxHalfWidth()+GRAVEL_WIDTH+12,s=track.samples;
  for(let i=0;i<s.length;i++){
   const a=s[i],b=s[(i+1)%s.length];
   for(let row=Math.floor((Math.min(a.y,b.y)-pad)/128);row<=Math.floor((Math.max(a.y,b.y)+pad)/128);row++)for(let column=Math.floor((Math.min(a.x,b.x)-pad)/128);column<=Math.floor((Math.max(a.x,b.x)+pad)/128);column++){
@@ -229,7 +245,7 @@ function runoffRaster(){
  const cells=[];profiles.set(barrierMode,cells);
  if(!runoffZones.length||barrierMode==='full')return cells;
  const columns=Math.ceil(track.worldWidth/RUNOFF_CELL),rows=Math.ceil(track.worldHeight/RUNOFF_CELL),seen=new Uint8Array(columns*rows);
- const pad=ROAD_SHOULDER+GRAVEL_WIDTH+12,buckets=runoffBuckets();
+ const pad=roadMaxHalfWidth()+GRAVEL_WIDTH+12,buckets=runoffBuckets();
  for(const zone of runoffZones)for(let d=zone.center-zone.halfLength;d<=zone.center+zone.halfLength;d+=12){
   const p=sampleAt(d),left=Math.max(0,Math.floor((p.x-pad)/RUNOFF_CELL)),right=Math.min(columns-1,Math.ceil((p.x+pad)/RUNOFF_CELL));
   const top=Math.max(0,Math.floor((p.y-pad)/RUNOFF_CELL)),bottom=Math.min(rows-1,Math.ceil((p.y+pad)/RUNOFF_CELL));
@@ -238,7 +254,7 @@ function runoffRaster(){
    const x=column*RUNOFF_CELL,y=row*RUNOFF_CELL;
    const cx=x+RUNOFF_CELL/2,cy=y+RUNOFF_CELL/2,indices=buckets.get(Math.floor(cx/128)+','+Math.floor(cy/128))||[];
    const loc=nearestOnTrack(cx,cy,indices);
-   if(!loc||loc.distance>ROAD_SHOULDER+GRAVEL_WIDTH||terrainAt(cx,cy,loc).material!=='gravel')continue;
+   if(!loc||loc.distance>roadMaxHalfWidth()+GRAVEL_WIDTH||terrainAt(cx,cy,loc).material!=='gravel')continue;
    let seed=Math.imul(column,374761393)+Math.imul(row,668265263);seed=Math.imul(seed^(seed>>>13),1274126177);
    const tone=((seed^(seed>>>16))>>>0)%4;
    cells.push({x,y,tone});
@@ -325,7 +341,7 @@ function drawTrackFeatures(context){
  // Carteles de frenado en el exterior de las curvas: 100 y 50 antes del vértice.
  for(const sign of trackFeatures.braking){
   const p=sampleAt(sign.progress),nx=-Math.sin(p.angle),ny=Math.cos(p.angle),side=sign.turn>0?-1:1;
-  const x=p.x+nx*side*77,y=p.y+ny*side*77;
+  const x=p.x+nx*side*(roadHalfWidthAt(sign.progress)+29),y=p.y+ny*side*(roadHalfWidthAt(sign.progress)+29);
   context.save();context.translate(x,y);context.rotate(p.angle);
   context.fillStyle='#141821';context.fillRect(-13,-12,26,24);
   context.fillStyle=track.accent;context.fillRect(-11,-10,22,20);
@@ -341,7 +357,7 @@ function drawTrackFeatures(context){
    const along=lateral*9,cx=p.x+tx*along,cy=p.y+ty*along;
    context.beginPath();context.moveTo(cx-nx*32,cy-ny*32);context.lineTo(cx+nx*32,cy+ny*32);context.stroke();
   }
-  const side=-1,x=p.x+nx*side*77,y=p.y+ny*side*77;
+  const side=-1,x=p.x+nx*side*(roadHalfWidthAt(zone.progress)+29),y=p.y+ny*side*(roadHalfWidthAt(zone.progress)+29);
   context.translate(x,y);context.rotate(p.angle);context.fillStyle='#10291e';context.fillRect(-17,-11,34,22);context.strokeStyle='#c8ff54';context.lineWidth=2;context.strokeRect(-17,-11,34,22);context.fillStyle='#d7ff38';context.font='bold 7px monospace';context.textAlign='center';context.textBaseline='middle';context.fillText('PASS',0,0);context.restore();
  }
 }
@@ -365,11 +381,11 @@ function barriersForTrack(){
  // En el perfil mixto, los neumáticos protegen algunas curvas del tramo abierto.
  for(let d=track.length*.5;d<track.length;d+=10){const bend=curvatureAt(d);if(bend.severity<.2)continue;
   const p=sampleAt(d),nx=-Math.sin(p.angle),ny=Math.cos(p.angle),outside=bend.turn>0?-1:1;
-  const tire={x:p.x+nx*outside*57,y:p.y+ny*outside*57,angle:p.angle,progress:d,side:outside};
-  if(nearestOnTrack(tire.x,tire.y).distance>=52)list.push(tire);
+  const tire={x:p.x+nx*outside*(barrierRadiusAt(d)+2),y:p.y+ny*outside*(barrierRadiusAt(d)+2),angle:p.angle,progress:d,side:outside};
+  if(nearestOnTrack(tire.x,tire.y).distance>=barrierRadiusAt(d)-3)list.push(tire);
  }return list;
 }
-// Trace the boundary of the road's 55-unit buffer. Offset normals alone fold
+// Trace the boundary of the shared variable-width buffer. Offset normals alone fold
 // back on themselves when a corner radius is smaller than the fence offset.
 const barrierContourCache=new WeakMap();
 function projectToSegment(x,y,a,b){
@@ -380,27 +396,27 @@ function projectToSegment(x,y,a,b){
 }
 function barrierContoursForTrack(){
  if(barrierContourCache.has(track))return barrierContourCache.get(track);
- const buckets=new Map(),cell=32,radius=55,step=4;
+ const buckets=new Map(),cell=32,pad=track.roadProfile?roadMaxHalfWidth()+22:64,step=4;
  for(let i=0;i<track.samples.length;i++){
   const a=track.samples[i],b=track.samples[(i+1)%track.samples.length],segment={a,b};
-  for(let y=Math.floor((Math.min(a.y,b.y)-64)/cell);y<=Math.floor((Math.max(a.y,b.y)+64)/cell);y++){
-   for(let x=Math.floor((Math.min(a.x,b.x)-64)/cell);x<=Math.floor((Math.max(a.x,b.x)+64)/cell);x++){
+  for(let y=Math.floor((Math.min(a.y,b.y)-pad)/cell);y<=Math.floor((Math.max(a.y,b.y)+pad)/cell);y++){
+   for(let x=Math.floor((Math.min(a.x,b.x)-pad)/cell);x<=Math.floor((Math.max(a.x,b.x)+pad)/cell);x++){
     const key=x+','+y;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(segment);
    }
   }
  }
  function nearest(x,y){
-  let distanceSq=64*64,progress=0;
+  let distanceSq=pad*pad,progress=0;
   for(const {a,b} of buckets.get(Math.floor(x/cell)+','+Math.floor(y/cell))||[]){
    const p=projectToSegment(x,y,a,b);
    if(p.distanceSq<distanceSq){distanceSq=p.distanceSq;progress=a.d+p.t*pointDistance(a,b);}
   }
   return {distanceSq,progress};
  }
- const width=Math.ceil((track.worldWidth+128)/step)+1,height=Math.ceil((track.worldHeight+128)/step)+1,values=new Float64Array(width*height);
- const vertex=index=>({x:-64+(index%width)*step,y:-64+Math.floor(index/width)*step});
+ const width=Math.ceil((track.worldWidth+pad*2)/step)+1,height=Math.ceil((track.worldHeight+pad*2)/step)+1,values=new Float64Array(width*height);
+ const vertex=index=>({x:-pad+(index%width)*step,y:-pad+Math.floor(index/width)*step});
  for(let i=0;i<values.length;i++){
-  const p=vertex(i),value=nearest(p.x,p.y).distanceSq-radius*radius;
+  const p=vertex(i),loc=nearest(p.x,p.y),radius=barrierRadiusAt(loc.progress),value=loc.distanceSq-radius*radius;
   values[i]=Math.abs(value)<1e-7?1e-7:value;
  }
  const crossings=new Map(),links=new Map();
@@ -538,7 +554,8 @@ function updateMenuPreview(){
  context.setTransform(1,0,0,1,0,0);context.clearRect(0,0,width,height);context.fillStyle='#0c1727';context.fillRect(0,0,width,height);
  context.save();context.translate((width-item.worldWidth*scale)/2,(height-item.worldHeight*scale)/2);context.scale(scale,scale);context.lineJoin='round';context.lineCap='round';
  context.beginPath();context.moveTo(item.samples[0].x,item.samples[0].y);for(const point of item.samples.slice(1))context.lineTo(point.x,point.y);context.closePath();
- context.strokeStyle='#1d3447';context.lineWidth=ROAD_EDGE*2+10;context.stroke();context.strokeStyle='#667f8e';context.lineWidth=ROAD_EDGE*2-10;context.stroke();
+ if(item.roadProfile){fillRoadRibbon(context,'#1d3447',d=>roadHalfWidthAt(d,item)+2,item);fillRoadRibbon(context,'#667f8e',d=>roadSectionAt(d,item).halfWidth,item);}else{context.strokeStyle='#1d3447';context.lineWidth=ROAD_EDGE*2+10;context.stroke();context.strokeStyle='#667f8e';context.lineWidth=ROAD_EDGE*2-10;context.stroke();}
+ context.beginPath();context.moveTo(item.samples[0].x,item.samples[0].y);for(const point of item.samples.slice(1))context.lineTo(point.x,point.y);context.closePath();
  context.strokeStyle=item.accent;context.lineWidth=3;context.setLineDash([14,20]);context.stroke();context.setLineDash([]);
  const gates=checkpointsForTrack(item);for(const gate of gates){context.fillStyle='#d7ff38';context.beginPath();context.arc(gate.x,gate.y,7/scale,0,Math.PI*2);context.fill();}
  const start=sampleAt(0,item);context.save();context.translate(start.x,start.y);context.rotate(start.angle);
@@ -549,7 +566,7 @@ function updateMenuPreview(){
  const barrierNames={open:'ABIERTO · ESCAPATORIAS',full:'VALLAS COMPLETAS',half:'VALLAS PARCIALES',corners:'PROTECCIÓN EN CURVAS'};
  const count=clamp(Number($('opponentCount').value)||3,1,3),difficultyName={easy:'FÁCIL',normal:'NORMAL',hard:'DIFÍCIL'}[$('difficulty').value]||'NORMAL';
  $('menuTrackCount').textContent=tracks.length;$('previewTrackName').textContent=String(index+1).padStart(2,'0')+' · '+item.name;
- $('previewRouteInfo').textContent=LAPS_TO_WIN+' VUELTAS · '+gates.length+' CHECKPOINTS';$('previewBarriers').textContent=barrierNames[profile];
+ $('previewRouteInfo').textContent=LAPS_TO_WIN+' VUELTAS · '+gates.length+' CHECKPOINTS'+(item.roadProfile?' · ANCHO VARIABLE':'');$('previewBarriers').textContent=barrierNames[profile];
  const record=bestLapRecords[lapRecordKey(item)];$('previewRecord').textContent=record?format(record):'--:--.-';
  $('raceSummary').textContent=LAPS_TO_WIN+' VUELTAS · '+count+' '+(count===1?'RIVAL CPU':'RIVALES CPU')+' · '+difficultyName;
  $('opponentSummary').textContent=['racer','attacker','precise'].slice(0,count).map(id=>AI_PERSONALITIES[id].name+' · '+AI_PERSONALITIES[id].description).join(' / ');
@@ -590,7 +607,7 @@ function decorationsForTrack(){
   const size=(large?14:8)+sceneryRandom(col,row,4)*6,radius=size*2.2+4;
   if(px-radius<0||py-radius<0||px+radius>track.worldWidth||py+radius>track.worldHeight)continue;
   // Exact segment distance, including the full object/shadow footprint and recovery lane.
-  if(nearestOnTrack(px,py).distance<SCENERY_CLEARANCE+radius)continue;
+  if(nearestOnTrack(px,py).distance<SCENERY_CLEARANCE+Math.max(0,roadMaxHalfWidth()-ROAD_SHOULDER)+radius)continue;
   candidates.push({x:px,y:py,kind,size,radius,large,variant:sceneryRandom(col,row,5),theme:TRACK_SCENERY[stage]});
  }
  // Give larger landmarks room before filling gaps with vegetation.
@@ -676,12 +693,49 @@ function strokeTrackRange(context,startDistance,endDistance,color,width,dash=[])
  for(let d=startDistance;d<=endDistance;d+=5){const p=sampleAt(d);if(first){context.moveTo(p.x,p.y);first=false;}else context.lineTo(p.x,p.y);}
  const tail=sampleAt(endDistance);context.lineTo(tail.x,tail.y);context.strokeStyle=color;context.lineWidth=width;context.lineCap='round';context.lineJoin='round';context.setLineDash(dash);context.stroke();context.setLineDash([]);context.restore();
 }
+// Filled union of small round-ended ribbons avoids inverted offset polygons at hairpins.
+function fillRoadRibbon(context,color,widthAt,item=track){
+ context.beginPath();context.fillStyle=color;
+ let previous=sampleAt(0,item),previousWidth=widthAt(0);
+ for(let d=4;d<=item.length+4;d+=4){
+  const progress=Math.min(d,item.length),p=sampleAt(progress,item),width=widthAt(progress);
+  const angle=Math.atan2(p.y-previous.y,p.x-previous.x),nx=-Math.sin(angle),ny=Math.cos(angle);
+  context.moveTo(previous.x+nx*previousWidth,previous.y+ny*previousWidth);context.lineTo(previous.x-nx*previousWidth,previous.y-ny*previousWidth);
+  context.lineTo(p.x-nx*width,p.y-ny*width);context.lineTo(p.x+nx*width,p.y+ny*width);context.closePath();
+  context.moveTo(p.x+width,p.y);context.arc(p.x,p.y,width,0,Math.PI*2);
+  previous=p;previousWidth=width;if(progress===item.length)break;
+ }
+ context.fill();
+}
+function drawVariableRoad(context){
+ const dirt=track.surface==='dirt';
+ fillRoadRibbon(context,dirt?'#49372b':'#141b22',d=>roadHalfWidthAt(d)+1);
+ fillRoadRibbon(context,dirt?'#b18c64':'#f5f0dc',d=>roadHalfWidthAt(d));
+ if(!dirt){
+  // Kerbs are optional by sector. Draw both bands before filling the asphalt.
+  context.fillStyle='#d84b59';context.beginPath();
+  for(let d=0;d<track.length;d+=18){
+   if(Math.floor(d/18)%2)continue;
+   const a=sampleAt(d),b=sampleAt(Math.min(d+18,track.length)),sa=roadSectionAt(d),sb=roadSectionAt(Math.min(d+18,track.length));
+   if(Math.max(sa.kerb,sb.kerb)<.1)continue;
+   for(const side of [-1,1]){
+    const edge=(p,width)=>({x:p.x-Math.sin(p.angle)*side*width,y:p.y+Math.cos(p.angle)*side*width});
+    const points=[edge(a,sa.halfWidth),edge(a,sa.halfWidth+sa.kerb),edge(b,sb.halfWidth+sb.kerb),edge(b,sb.halfWidth)];
+    context.moveTo(points[0].x,points[0].y);for(const p of points.slice(1))context.lineTo(p.x,p.y);context.closePath();
+   }
+  }
+  context.fill();
+ }
+ fillRoadRibbon(context,dirt?'#a27d55':'#3c414c',d=>roadSectionAt(d).halfWidth);
+ fillRoadRibbon(context,dirt?'#b8996d':graphics==='high'?'#646c78':'#59616c',d=>Math.max(8,roadSectionAt(d).halfWidth-3));
+ fillRoadRibbon(context,dirt?'#987449':'#303640',d=>Math.max(8,roadSectionAt(d).halfWidth-8));
+}
 function drawTrackSurface(context){
  const key=stage+'|'+graphics+'|'+barrierMode+'|'+track.surface;
  if(!trackSurfaceCache||trackSurfaceKey!==key){
   const surface=document.createElement('canvas');surface.width=track.worldWidth;surface.height=track.worldHeight;
   const sc=surface.getContext('2d');
-  if(track.surface==='dirt'){
+  if(track.roadProfile){drawVariableRoad(sc);}else if(track.surface==='dirt'){
    strokeTrack(sc,'#49372b',122);strokeTrack(sc,'#76543b',112);strokeTrack(sc,'#9a7653',99);strokeTrack(sc,'#b18c64',88,[17,22],0);strokeTrack(sc,'#a27d55',82,[6,20],10);strokeTrack(sc,'#876548',73);strokeTrack(sc,'#c0a078',68);strokeTrack(sc,'#876548',61);
   }else if(track.surface==='grass'){
    strokeTrack(sc,'#1f4b2d',122);strokeTrack(sc,'#397c43',112);strokeTrack(sc,'#74a94e',99,[18,18],0);strokeTrack(sc,'#427e43',88);strokeTrack(sc,'#8fba62',82,[5,15],0);strokeTrack(sc,'#2d6639',73);strokeTrack(sc,'#4d8b47',68);strokeTrack(sc,'#285c34',61);
@@ -905,7 +959,8 @@ function aiTrafficAgainst(car,before,driver,dt,other,maneuver){
   }
  }else return clear();
  let lane=idealLane;
- const laneRoom=28/(1+bend.severity*.25);
+ const roomAt=d=>roadHalfWidthAt(d)-CAR_HALF_WIDTH-4;
+ const laneRoom=Math.min(track.roadProfile?38:28,roomAt(before.progress),roomAt(before.progress+aiLookAhead(car)))/(1+bend.severity*.25);
  if(maneuver.type==='pass'||maneuver.type==='yield')lane=maneuver.side*laneRoom;
  if(maneuver.type==='alongside')lane=clamp(otherLoc.offset+maneuver.side*32,-laneRoom,laneRoom);
  if(maneuver.type==='defend')lane=maneuver.side*Math.min(18,laneRoom);
@@ -968,13 +1023,15 @@ function driveAI(car,before,model,dt){
  const driver=driverFor(car);
  const traffic=aiTraffic(car,before,driver,dt);
  const lookAhead=aiLookAhead(car);
- const laneOffset=traffic.lane;
+ const room=Math.max(8,Math.min(roadHalfWidthAt(before.progress),roadHalfWidthAt(before.progress+lookAhead))-CAR_HALF_WIDTH-4);
+ const laneOffset=clamp(traffic.lane,-room,room);
  const ground=terrainAt(car.x,car.y,before);
- const allowHandbrake=driver.handbrake&&car.aiManeuver.type==='clear'&&Math.abs(before.offset)<ROAD_EDGE-8;
+ const allowHandbrake=driver.handbrake&&car.aiManeuver.type==='clear'&&Math.abs(before.offset)<roadSectionAt(before.progress).halfWidth-8;
  let targetSpeed=Math.min(aiTargetSpeed(before.progress,model,driver,allowHandbrake),traffic.speedLimit);
  // Establish the reserved target lane sooner; actual turning still uses shared vehicle physics.
  const laneStep=driver.laneSpeed*dt*(car.aiManeuver.type==='alongside'&&lookAhead<clamp(28+car.speed*.27,32,94)?1.5:1);
  car.aiLane=(car.aiLane||0)+clamp(laneOffset-(car.aiLane||0),-laneStep,laneStep);
+ car.aiLane=clamp(car.aiLane,-room,room);
  const targetBase=sampleAt(before.progress+lookAhead);
  const target={x:targetBase.x-Math.sin(targetBase.angle)*car.aiLane,y:targetBase.y+Math.cos(targetBase.angle)*car.aiLane};
  const error=wrapAngle(Math.atan2(target.y-car.y,target.x-car.x)-car.heading);
@@ -1038,9 +1095,10 @@ function physics(car,i,dt){
  const hitBarrier=resolveBarrierContact(car,previousX,previousY);
  if(hitBarrier)after=nearestOnTrack(car.x,car.y);
  const side=Math.sign(after.offset)||1,nx=-Math.sin(after.angle),ny=Math.cos(after.angle);
- if(!hitBarrier&&Math.abs(after.offset)>92){
-  car.speed=Math.max(Math.min(12,car.speed),car.speed-(100+(Math.abs(after.offset)-92)*2.2)*dt);
-  if(Math.abs(after.offset)>112){car.x=after.x+nx*side*108;car.y=after.y+ny*side*108;car.speed*=.76;after=nearestOnTrack(car.x,car.y);}
+ const recoveryExtra=track.roadProfile?roadHalfWidthAt(after.progress)-ROAD_SHOULDER:0;
+ if(!hitBarrier&&Math.abs(after.offset)>92+recoveryExtra){
+  car.speed=Math.max(Math.min(12,car.speed),car.speed-(100+(Math.abs(after.offset)-92-recoveryExtra)*2.2)*dt);
+  if(Math.abs(after.offset)>112+recoveryExtra){car.x=after.x+nx*side*(108+recoveryExtra);car.y=after.y+ny*side*(108+recoveryExtra);car.speed*=.76;after=nearestOnTrack(car.x,car.y);}
  }
  ground=terrainAt(car.x,car.y,after);roadEdge=ground.offroad?ground.depth:0;
  updateProgress(car,after,previousX,previousY);
@@ -1250,7 +1308,8 @@ function drawMiniMap(){
  m.clearRect(0,0,w,h);m.fillStyle='#0c1322';m.fillRect(0,0,w,h);
  const scale=Math.min((w-12)/track.worldWidth,(h-12)/track.worldHeight),ox=(w-track.worldWidth*scale)/2,oy=(h-track.worldHeight*scale)/2;
  m.save();m.setTransform(scale,0,0,scale,ox,oy);
- strokeTrack(m,'#02060c',116);strokeTrack(m,track.surface==='dirt'?'#b28b61':track.surface==='grass'?'#74a94e':track.surface==='ice'?'#dffaff':'#5e6875',82);
+ if(track.roadProfile&&trackSurfaceCache){m.drawImage(trackSurfaceCache,0,0);}
+ else{strokeTrack(m,'#02060c',116);strokeTrack(m,track.surface==='dirt'?'#b28b61':track.surface==='grass'?'#74a94e':track.surface==='ice'?'#dffaff':'#5e6875',82);}
  if(track.surface==='mixed')for(const [start,end] of track.dirtRanges)strokeTrackRange(m,start,end,'#ad8258',68);
  if(track.surface==='coastal')strokeTrackRange(m,track.length*.31,track.length*.37,'#c2a06b',68);
  for(let player=0;player<(usesSplitScreen()?2:1);player++){const width=usesSplitScreen()?500:1000,view=raceCamera(player,width);if(view.zoom>overviewZoom()){m.strokeStyle=cars[player]?.color||'#39e8e8';m.lineWidth=1.2/scale;m.strokeRect(view.x-width/2/view.zoom,view.y-320/view.zoom,width/view.zoom,640/view.zoom);}}

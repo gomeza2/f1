@@ -10,7 +10,7 @@ for(let stage=0;stage<game.tracks.length;stage++){
   contours++;assert.equal(outline.closed,true,`${game.track.name}: open contour in full profile`);
   for(let i=0;i<outline.points.length;i+=5){
    const point=outline.points[i],loc=game.nearestOnTrack(point.x,point.y);
-   assert.ok(Math.abs(loc.distance-55)<2,`${game.track.name}: boundary folds into the road (${loc.distance})`);
+   assert.ok(Math.abs(loc.distance-game.barrierRadiusAt(loc.progress))<2,`${game.track.name}: boundary folds into the road (${loc.distance})`);
    checked++;
   }
  }
@@ -39,7 +39,7 @@ for(let stage=0;stage<game.tracks.length;stage++){
     const middle=game.nearestOnTrack((barrier.a.x+barrier.b.x)/2,(barrier.a.y+barrier.b.y)/2);
     assert.ok(game.guardrailActive(middle.progress),'Physical rail outside selected profile');
    }else{
-    assert.ok(game.nearestOnTrack(barrier.a.x,barrier.a.y).distance>46,'Tire pile lies across the road');
+    assert.ok(game.nearestOnTrack(barrier.a.x,barrier.a.y).distance>game.roadHalfWidthAt(game.nearestOnTrack(barrier.a.x,barrier.a.y).progress),'Tire pile lies across the road');
    }
   }
  }

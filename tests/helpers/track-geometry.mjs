@@ -17,15 +17,17 @@ function closestCandidates(a,b,c,d){
 }
 export function analyzeTrackWidth(track,roadEdge=42,localArc=180){
  const samples=track.samples,lengths=samples.map((a,i)=>Math.hypot(a.x-samples[(i+1)%samples.length].x,a.y-samples[(i+1)%samples.length].y));
- let roadMargin=Infinity,distantSpacing=Infinity,segments=null;
- for(const p of samples)roadMargin=Math.min(roadMargin,p.x-roadEdge,p.y-roadEdge,track.worldWidth-p.x-roadEdge,track.worldHeight-p.y-roadEdge);
+ const widthAt=typeof roadEdge==='function'?roadEdge:()=>roadEdge;
+ let roadMargin=Infinity,distantSpacing=Infinity,clearance=Infinity,segments=null;
+ for(const p of samples){const width=widthAt(p.d);roadMargin=Math.min(roadMargin,p.x-width,p.y-width,track.worldWidth-p.x-width,track.worldHeight-p.y-width);}
  for(let i=0;i<samples.length;i++)for(let j=i+2;j<samples.length;j++){
   if(i===0&&j===samples.length-1)continue;
   for(const p of closestCandidates(samples[i],samples[(i+1)%samples.length],samples[j],samples[(j+1)%samples.length])){
   const a=samples[i].d+p.s*lengths[i],b=samples[j].d+p.t*lengths[j],gap=Math.abs(a-b);
   if(Math.min(gap,track.length-gap)<localArc)continue;
-  if(p.distanceSq<distantSpacing*distantSpacing){distantSpacing=Math.sqrt(p.distanceSq);segments=[i,j];}
+  distantSpacing=Math.min(distantSpacing,Math.sqrt(p.distanceSq));
+  const gapWidth=Math.sqrt(p.distanceSq)-widthAt(a)-widthAt(b);if(gapWidth<clearance){clearance=gapWidth;segments=[i,j];}
   }
  }
- return {roadMargin,distantSpacing,clearance:distantSpacing-roadEdge*2,segments};
+ return {roadMargin,distantSpacing,clearance,segments};
 }

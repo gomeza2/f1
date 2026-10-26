@@ -31,11 +31,15 @@ Antes de correr podés elegir gráficos, dificultad, circuito, coche, color y pe
 
 ## Circuitos y superficies
 
-El registro conserva los 14 circuitos y los diez nombres originales. La ampliación de 0.22 se conserva: Champion Road tiene una nueva recta larga y un sector técnico, y Coastline Run, Rally Canyon, Meadow Run e Industrial Mix tienen ramales separados para que sus caminos no se superpongan. El coche y el ancho de conducción conservan su tamaño. En 0.23, Dusty Mesa estrena un trazado triangular de tierra: recta rápida superior, “S” técnica al este y regreso diagonal. Sigue abierto y conserva su nombre y lugar en el campeonato.
+El registro conserva los 14 circuitos y los diez nombres originales. La ampliación de 0.22 se conserva: Champion Road tiene una nueva recta larga y un sector técnico, y Coastline Run, Rally Canyon, Meadow Run e Industrial Mix tienen ramales separados para que sus caminos no se superpongan. El coche conserva su tamaño; el ancho uniforme histórico empieza a reemplazarse por sectores en 0.44. En 0.23, Dusty Mesa estrena un trazado triangular de tierra: recta rápida superior, “S” técnica al este y regreso diagonal. Sigue abierto y conserva su nombre y lugar en el campeonato.
 
-En **0.39 Sunset Circuit** gana un recorrido propio: recta principal larga, curva exterior amplia, sector interior enlazado y regreso técnico. Pasa de 3572 a 6304 unidades de recorrido (**+76,5 %**) y su mundo de 1400×896 a 1800×1152. El coche, el ancho de pista (84), la velocidad y el perfil abierto se mantienen. El minimapa/vista previa y nueve checkpoints utilizan la geometría nueva.
+En **0.39 Sunset Circuit** gana un recorrido propio: recta principal larga, curva exterior amplia, sector interior enlazado y regreso técnico. Pasa de 3572 a 6304 unidades de recorrido (**+76,5 %**) y su mundo de 1400×896 a 1800×1152. En esa ampliación se mantuvieron coche, ancho de pista (84), velocidad y perfil abierto; el ancho se revisa por sectores en 0.44. El minimapa/vista previa y nueve checkpoints utilizan la geometría nueva.
 
 La dirección actual busca **duraciones variadas**: pistas cortas de unos 20 s, medias de unos 40 s y largas de unos 60 s, sin una ventana obligatoria para todas. En 0.39 Sunset midió **34,86 s** por vuelta de CPU Normal libre, frente a 22,39 s anteriores; con la física de 0.40 la referencia Normal pasa a **39,78 s**. No se ralentizó la CPU ni el coche para lograrlo. Los otros 13 trazados no cambian; no se promete que todos ya cumplan el objetivo humano. Los récords de Sunset se separan como versión 3 y se conservan los de la versión 2.
+
+En **0.44**, Sunset, Neon y Dusty tienen anchos graduales por sector: Sunset **72–124**, Neon **72–112** y Dusty **72–108** unidades de ancho útil total. Son unidades del mundo, no píxeles de pantalla. Sunset/Neon combinan sectores con y sin pianos; los pianos cuentan como franja transitable. Dusty mantiene tierra sin pianos de asfalto. Rectas amplias permiten buscar otra línea y sectores estrechos requieren más precisión.
+
+Una misma sección alimenta dibujo, material del suelo, vallas/neumáticos, gates/meta, carteles, espacio de CPU, recuperación, vista previa y minimapa. La superficie se guarda en caché y el minimapa la reutiliza. Los récords de esas tres pistas suman `:r1` a la clave `:p4`; los registros anteriores se conservan. Los otros once perfiles de ancho siguen como antes. No se cambiaron longitudes, potencia ni controles en esta entrega: todavía falta desarrollar recorridos largos de unos 60 s y extender las variantes a más pistas.
 
 El perfil automático deja **siete pistas abiertas, cuatro con protección en curvas cerradas y tres con vallas parciales**. Sunset Circuit arranca sin muros. Podés seguir eligiendo vallas completas o cualquier otro perfil en el menú.
 
@@ -84,13 +88,15 @@ node tests/validate-gate-contact.mjs
 node tests/validate-runoff.mjs
 node tests/validate-steering-inertia.mjs
 node tests/validate-barriers.mjs
+node tests/validate-road-sectors.mjs
+node tests/validate-sector-races.mjs
 ```
 
 La prueba de identidad detecta copias de un trazado aunque se escalen, giren o reflejen, y comprueba que Dusty Mesa se diferencia de las otras 13 pistas. Esto no evalúa la diversión ni sustituye jugar.
 
 La prueba de CPU comprueba límites físicos, desplazamiento y coste del freno de mano. La comparación de mejora de ritmo frente a 0.24 corresponde a la física anterior; con la versión 2 se mide una referencia nueva porque cambiaron las reglas para humanos y rivales. Usa el código real en un entorno DOM simulado: completa tres vueltas con checkpoints en las 14 pistas y las tres dificultades, verifica prestaciones compartidas y prueba frenado ante tráfico y recuperación. No sustituye una carrera humana.
 
-Pruebas opcionales de navegador: `node tests/browser-smoke.cjs`, `node tests/browser-audio.cjs` y `node tests/browser-release.cjs`. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
+Pruebas opcionales de navegador: `node tests/browser-smoke.cjs`, `node tests/browser-audio.cjs` y `node tests/browser-release.cjs`. Para bordes/pianos: `node tests/browser-road-sectors.cjs`; `ROAD_SCREENSHOTS` guarda capturas opcionales. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
 ## Conducción — build 0.42
 
@@ -279,3 +285,8 @@ Para servir el juego con GitHub Pages, usá la rama/carpeta configurada en Setti
 ### Entrega 0.43 — fase 26, primera revisión
 
 Motor sustituido e integrado; pruebas de régimen/cambios/carga, presupuesto de voces y ciclo de vida, salida Web Audio real, recorrido de Chromium y recursos versionados bajo `/f1/`. Física `:p4`, trazados y controles conservados. La evaluación humana del motor y manejo sigue abierta. Próxima implementación: fase 27, anchos/pianos/barreras por sector y variedad real de recorridos cortos, medios y largos; 20/40/60 s son referencias, no un límite universal.
+
+
+### Entrega 0.44 — fase 27, primera revisión
+
+Tres perfiles de anchura y pianos por sector integrados con física, CPU y barreras. Geometría independiente y pruebas de píxeles reales, además de carreras con checkpoints. Las capturas revisadas muestran sectores amplios/estrechos y vallas sobre sus bordes. La prueba automatizada no confirma diversión/equilibrio humano. Faltan más siluetas, ritmos largos y extensión de perfiles a las once pistas restantes; no se declara completada toda la fase 27.
