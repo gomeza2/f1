@@ -59,13 +59,17 @@ Avance 0.46: Night Run rediseñado, 10.681 unidades, ancho útil 68–108, chica
 
 Avance 0.47: Volcano Ring con silueta diagonal/horquilla/regreso enlazado, 4.961 unidades y sección 68–112, siete gates y dos primeras vueltas Normal 29,45/28,37 s a 60 Hz. Material volcánico conservado con paleta/ceniza nativas y sin pianos de asfalto; colores del corredor en la definición del material. Se descarta una primera variante por superposición de bordes cerca de meta; versión final tiene margen 49,3/separación 69,5. Los otros trece recorridos y prestaciones permanecen intactos, con doce imágenes de los cuatro corredores anteriores idénticas en Chromium tras la extracción del estilo. Récord @3:p5:r1 preserva @2. Cinco pistas con ancho variable, nueve pendientes. La fase sigue abierta; la siguiente prioridad se mueve a CPU para equilibrar variedad con competición.
 
-### 28. CPU y estrategia de carrera
+### 28. CPU y estrategia de carrera — primera revisión 0.48
 
 - Ampliar trazadas y elección de líneas según anchura real/material; anticipar frenadas por la línea elegida y reaccionar a grupos.
 - Personalidades reconocibles por respuesta/riesgo/ataque/defensa, no potencia oculta. Errores acotados y recuperaciones que no regalen checkpoints.
 - Medir ritmo libre y tráfico por separado; probar doblajes, coches detenidos, roces, golpes y última vuelta. Evitar que un contacto menor arruine una carrera por un fallo de progreso.
 - Comparar tiempos, consistencia, tiempo fuera de pista y energía de impactos; contacto cero no es el objetivo de una carrera arcade con disputa.
 - Estado: base y pruebas presentes, ampliación pendiente.
+
+Avance 0.48: curvatura geométrica sobre tres posiciones en un arco de 72 unidades, comparada con variantes de 48/96 y con las tangentes anteriores. Mejoras Normal de 3–10,2 % en seis comparaciones congeladas, mismas reglas/modelos/recorridos y corredor legal en las doce vueltas. Usa más freno de mano en varios casos y paga su coste: no se oculta ese cambio de táctica ni se afirma equilibrio humano.
+
+Consulta de velocidad con búsqueda por progreso y horizonte 240; 2.448 comparaciones de equivalencia y 31 lecturas frente a 891 entradas en Night. Pruebas generales de CPU/parrilla/tráfico mantienen límites y orden de dificultad. Los roces de Dusty Fácil (28 pasos/0,93 s en tres vueltas) dejan pendiente una revisión de tráfico, especialmente al estrechar y solapar líneas. Siguiente tramo: planificación de la línea elegida, ataque/defensa y salidas tras contacto; no se declara completada la fase 28. Física 5, audio, pistas y récords humanos intactos.
 
 ### 29. Local de 2–4 humanos y entradas
 
@@ -120,4 +124,4 @@ Avance 0.47: Volcano Ring con silueta diagonal/horquilla/regreso enlazado, 4.961
 
 ## Continuación
 
-Verificar main y el último registro de `ROADMAP_24_FASES.md`. 0.43 sustituye el motor y conserva la revisión de manejo 0.42. 0.44 comienza la fase 27 con tres pistas de ancho variable. 0.45 atiende el reporte de gas continuo demasiado fácil y motor agudo a máxima. 0.46 añade Night largo con anchos variables y 16 gates. 0.47 diferencia Volcano y conecta su material con el render del corredor. Próxima implementación: **fase 28: ritmo/trazada CPU en curvas rápidas y tráfico, manteniendo abierta la variedad de fase 27**. La evaluación humana de motor y conducción permanece abierta; puede reordenar la prioridad. Local 3–4 y online siguen pendientes.
+Verificar main y el último registro de `ROADMAP_24_FASES.md`. 0.43 sustituye el motor y conserva la revisión de manejo 0.42. 0.44 comienza la fase 27 con tres pistas de ancho variable. 0.45 atiende el reporte de gas continuo demasiado fácil y motor agudo a máxima. 0.46 añade Night largo con anchos variables y 16 gates. 0.47 diferencia Volcano y conecta su material con el render del corredor. 0.48 revisa lectura de curvas y consulta de frenado de CPU. Próxima implementación: **continuar fase 28 con líneas de ataque/defensa y tráfico, especialmente los roces en Dusty Fácil**. La evaluación humana de motor y conducción permanece abierta; puede reordenar la prioridad. Local 3–4 y online siguen pendientes.

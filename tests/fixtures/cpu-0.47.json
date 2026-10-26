@@ -1,0 +1,145 @@
+{
+  "commit": "1862342c6e34e40eb3b52e0ca7a96093c0e43b9e",
+  "dt": 0.016666666666666666,
+  "laps": 2,
+  "physics": 5,
+  "worldSpeed": 0.84,
+  "models": {
+    "balanced": {
+      "name": "BALANCED",
+      "maxSpeed": 232,
+      "acceleration": 110,
+      "braking": 230,
+      "steering": 1,
+      "grip": 1,
+      "grass": 1,
+      "description": "Equilibrado para aprender y competir."
+    },
+    "corner": {
+      "name": "CORNER KING",
+      "maxSpeed": 218,
+      "acceleration": 105,
+      "braking": 255,
+      "steering": 1.19,
+      "grip": 1.15,
+      "grass": 0.86,
+      "description": "Más agarre y frenado; velocidad punta menor."
+    },
+    "speed": {
+      "name": "SPEED DEMON",
+      "maxSpeed": 250,
+      "acceleration": 123,
+      "braking": 215,
+      "steering": 0.84,
+      "grip": 0.87,
+      "grass": 1.12,
+      "description": "Rápido en rectas, difícil en curvas cerradas."
+    },
+    "rally": {
+      "name": "RALLY FOX",
+      "maxSpeed": 222,
+      "acceleration": 112,
+      "braking": 245,
+      "steering": 1.08,
+      "grip": 1.04,
+      "grass": 0.57,
+      "description": "Pierde menos velocidad si toca el pasto."
+    }
+  },
+  "tracks": {
+    "SUNSET CIRCUIT": "c1144ed00687bd6ee3027961867fd2e6c4c19badca35ab2152c5d0bf10199fa7",
+    "NEON HARBOR": "a6f776b6c7bff6bb9cd84a4a76828b800623d6c624d0f1510367941350a5ff75",
+    "DUSTY MESA": "ef77f43819aff6466f194a560edd45dd39bd703ef2274b562b98f5f12f329ab2",
+    "NIGHT RUN": "1b78cfb172e737b89ca2daeec21b2bf3f7db811f1f43e63bde79abc21c860347",
+    "FROSTBITE GP": "68b66c03b61c24c31499df8fd0e506a83ae11031cf82f4d3bafb49faabcd3ed5",
+    "JUNGLE SPRINT": "dec4716acc7edc66acab3dbe2c12040bf162a29c8c26105f0359c14438bfa060",
+    "VOLCANO RING": "ee137f6e50de9eaa590c9e0589175e7846bfc9727dfb963454fcab36888623be",
+    "PIXEL CITY": "3dd2581f53a492e2350dce4707680dd5befd9db61248fcc16a005e0bf1362745",
+    "THUNDER VALLEY": "118a25159ef778a2b5cd9e08d1a51eba2d70b426b5345e41a5e0278c2874508d",
+    "CHAMPION ROAD": "62cf254346010c3b1622af73861315a85f9cd5b77285541fba1f578384460036",
+    "COASTLINE RUN": "0097a330a51f6a11a0df130466d1118919bc42541c7df6591ca7519dfb5ade91",
+    "RALLY CANYON": "85d7075152b7977577c96fad72adbc8998b5cc6a5dfbd05458eb7248c5cc198d",
+    "MEADOW RUN": "7cf1a83ac3fcf11d382e7b5aaab1a182c177159ab99dea2d312a2c0a82aee90f",
+    "INDUSTRIAL MIX": "44437419db225a43c137e02d0a8c5958e13281e7947eebcc865f632c3b7bde1e"
+  },
+  "runs": [
+    {
+      "window": 0,
+      "stage": 0,
+      "name": "SUNSET CIRCUIT",
+      "laps": 2,
+      "times": [
+        37.717,
+        36.7
+      ],
+      "offroad": 0,
+      "brake": 8.3,
+      "hand": 5.783333333333333
+    },
+    {
+      "window": 0,
+      "stage": 1,
+      "name": "NEON HARBOR",
+      "laps": 2,
+      "times": [
+        23.383,
+        22.567
+      ],
+      "offroad": 0,
+      "brake": 9.55,
+      "hand": 7.6
+    },
+    {
+      "window": 0,
+      "stage": 2,
+      "name": "DUSTY MESA",
+      "laps": 2,
+      "times": [
+        21.833,
+        21.283
+      ],
+      "offroad": 0,
+      "brake": 7.516666666666667,
+      "hand": 5.866666666666666
+    },
+    {
+      "window": 0,
+      "stage": 4,
+      "name": "FROSTBITE GP",
+      "laps": 2,
+      "times": [
+        30.217,
+        29.15
+      ],
+      "offroad": 0,
+      "brake": 14.85,
+      "hand": 10.583333333333334
+    },
+    {
+      "window": 0,
+      "stage": 6,
+      "name": "VOLCANO RING",
+      "laps": 2,
+      "times": [
+        29.45,
+        28.367
+      ],
+      "offroad": 0,
+      "brake": 7.483333333333333,
+      "hand": 5.333333333333333
+    },
+    {
+      "window": 0,
+      "stage": 13,
+      "name": "INDUSTRIAL MIX",
+      "laps": 2,
+      "times": [
+        29,
+        28.783
+      ],
+      "offroad": 0,
+      "brake": 15.466666666666667,
+      "hand": 12.066666666666666
+    }
+  ]
+}

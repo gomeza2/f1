@@ -78,6 +78,8 @@ node tests/validate-sunset.mjs
 node tests/validate-track-identity.mjs
 node tests/validate-integration.mjs
 node tests/validate-cpu.mjs
+node tests/validate-ai-pace.mjs
+node tests/validate-ai-plan-query.mjs
 node tests/validate-traffic.mjs
 node tests/validate-grid.mjs
 node tests/validate-collisions.mjs
@@ -326,3 +328,12 @@ Rediseño de nivel, paleta/grano de superficie volcánica y selección de prueba
 La comparación visual opcional requiere guardar el script anterior: `git show 301bb27:script.js > /tmp/script-046.js` y ejecutar `ROAD_SOURCE_BASELINE=/tmp/script-046.js node tests/browser-material-parity.cjs` con Playwright/Chromium disponibles. Comprueba imágenes completas de carretera, no solo llamadas de dibujo.
 
 Siguiente prioridad propuesta: fase 28, ritmo y trazada CPU en curvas rápidas/tráfico; la revisión de más siluetas y perfiles de fase 27 queda abierta. Física y audio siguen en la revisión 0.45, con aceptación humana pendiente.
+
+
+### Entrega 0.48 — fase 28, primera revisión de CPU
+
+La CPU lee la curvatura sobre un arco continuo de posiciones, reduciendo la influencia de las juntas de la línea muestreada. El plan sigue limitado por la física compartida y las superficies. En seis referencias Normal de dos vueltas, mejora 3–10,2 % frente a 0.47 sin salir del corredor; Neon pasa de 22,975 a 21,583 s de media y Frostbite de 29,683 a 26,667. No cambia la potencia ni la respuesta del coche del jugador. La CPU utiliza más freno de mano en varios casos y paga su coste normal.
+
+La consulta de velocidad recorre solo las próximas 240 unidades de recorrido, con búsqueda inicial por progreso; no todo el plan en cada frame. Se comprueba igualdad con el barrido anterior, incluida la meta. Night tiene 891 entradas de plan: 31 lecturas de progreso en la consulta medida. No es una medición de FPS.
+
+Referencia/variantes y limitaciones: `tests/experiments/AI_CURVATURE_048.md`. Física/recorridos/récords `:p5` y audio se conservan. Sigue pendiente competir contra personas y refinar adelantamientos/defensa por línea elegida; Dusty Fácil muestra más roces en esta parrilla de prueba. La fase 28 sigue abierta y es la siguiente prioridad. Las nueve pistas sin sección variable y la fase 27 también permanecen abiertas.

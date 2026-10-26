@@ -880,7 +880,10 @@ let aiSpeedPlan=[];
 function buildAiSpeedPlan(){
  const model=CAR_MODELS.balanced,plan=[];
  for(let d=0;d<track.length;d+=12){
-  const curvature=Math.abs(wrapAngle(sampleAt(d+12).angle-sampleAt(d-12).angle))/24;
+  // Geometric curvature over the turning arc avoids treating each polyline joint as a hairpin.
+  const a=sampleAt(d-36),b=sampleAt(d),c=sampleAt(d+36);
+  const ab=pointDistance(a,b),bc=pointDistance(b,c),ac=pointDistance(a,c);
+  const curvature=2*Math.abs((b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x))/Math.max(1,ab*bc*ac);
   const bend=curvatureAt(d),surface=surfaceAtProgress(d);
   // Find a speed the shared steering physics can actually hold at this radius.
   function limit(hand){
@@ -899,10 +902,14 @@ function buildAiSpeedPlan(){
 }
 function aiTargetSpeed(progress,model,driver,allowHandbrake=false){
  let target=model.maxSpeed*driver.pace;
- // Backward braking envelope: speed is in dashboard units, distance in world units.
- for(const point of aiSpeedPlan){
-  const distance=wrapDistance(point.progress-progress);
-  if(distance>240)continue;
+ // Search the sorted plan, then scan only the next braking horizon, including the lap seam.
+ const count=aiSpeedPlan.length;if(!count)return target;
+ const current=wrapDistance(progress);let low=0,high=count;
+ while(low<high){const mid=(low+high)>>>1;if(aiSpeedPlan[mid].progress<current)low=mid+1;else high=mid;}
+ // Speed is in dashboard units, distance in world units; this is the same braking envelope.
+ for(let step=0;step<count;step++){
+  const point=aiSpeedPlan[(low+step)%count],distance=wrapDistance(point.progress-current);
+  if(distance>240)break;
   const planned=allowHandbrake&&point.curvature>1/180?Math.max(point.speed,point.driftSpeed*.98):point.speed;
   const cornerSpeed=planned*driver.pace;
   const allowed=Math.sqrt(cornerSpeed*cornerSpeed+2*model.braking*driver.brakingMargin*distance/WORLD_SPEED_SCALE);

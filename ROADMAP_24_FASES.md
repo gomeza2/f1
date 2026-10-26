@@ -8,7 +8,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.47**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.48**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -1054,3 +1054,12 @@ Consultar `ROADMAP_EVOLUCION.md`; este archivo conserva historial y evidencia. C
 - Material volcánico con paleta/grano nativo ligado a la definición física, sin pianos de asfalto. Comparación real en Chromium de doce imágenes antes/después: cuatro corredores previos × tres calidades, píxeles idénticos.
 - Doce carreras focalizadas/54 vueltas válidas: cinco perfiles, cuatro modelos y parrillas en tres dificultades, con orden de dificultad correcto. Integración/geometría/menú de catorce circuitos, récords, checkpoints y conservación de las otras trece versiones comprobados. Queda evaluación humana y más combinaciones. Siguiente prioridad: CPU (fase 28); nueve pistas sin perfiles variables y más variedad de fase 27 siguen abiertas.
 - Evidencia: 22.265 sondas físicas de sección y 3.880 de píxeles Volcano; cinco perfiles de valla, dos contornos cerrados/1.128 sondas y 211 objetos de escenario en tres calidades. Chromium completo/entrega local superados, imágenes reales revisadas. Esta revisión ejecuta doce carreras focalizadas, no afirma repetir las 96 de 0.46.
+
+
+## Avance 0.48 — ritmo CPU y consulta de frenado
+
+- Base real `1862342` / 0.47, árbol limpio y main remoto confirmado; rama `work/cpu-line-048`.
+- Curvatura geométrica sobre tres posiciones en vez de picos de tangente cortos; comparadas semiventanas 24/36/48, elegida 36. Seis referencias congeladas Normal mejoran 3–10,2 %, sin salidas del corredor en doce vueltas. Más uso de freno de mano en varios casos con coste físico compartido; sin ventajas de potencia.
+- Consulta del sobre de frenado por búsqueda y horizonte 240: igualdad con barrido completo en 2.448 casos, incluida la meta; Night pasa de 891 entradas a 31 lecturas en la consulta medida. No es un benchmark de FPS.
+- Pistas, modelos, física 5, tiempos humanos y audio conservados. Prueba de reinicio en Chromium estabilizada capturando cuenta 3/tiempo 0/coche no terminado en la misma tarea de teclado real; no se altera el reloj del juego.
+- Referencias, condiciones y limitaciones en `tests/experiments/AI_CURVATURE_048.md`. Políticas de tráfico/defensa requieren más trabajo: Dusty Fácil tiene 28 pasos de contacto en la parrilla; todos terminan, pero el aumento se deja explícito. Fases 27 y 28 siguen abiertas; siguiente prioridad: líneas de ataque/defensa y tráfico.

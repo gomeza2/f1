@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.47
+# PIXEL GRAND PRIX — entrega 0.48
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, dos jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Ritmo CPU en 0.48
+
+Curvatura geométrica más continua para planificar velocidad, con los mismos límites físicos. En seis referencias Normal de dos vueltas mejora 3–10,2 % frente a 0.47 sin salidas del corredor. Neon 22,975 → 21,583 s y Frostbite 29,683 → 26,667. Usa más freno de mano en varios casos y paga su coste; no se añade potencia. Se conservan física 5, coche humano, pistas, audio y récords.
+
+La consulta de frenado deja de barrer todo el plan: búsqueda por progreso y próximos 240 de recorrido. 2.448 equivalencias, incluida la meta, y Night con 31 lecturas frente a 891 entradas. Condiciones en `tests/experiments/AI_CURVATURE_048.md`. Tráfico/adelantamientos y equilibrio humano siguen pendientes; fase 28 en revisión, no cerrada.
 
 ## Volcano Ring en 0.47
 
@@ -60,6 +66,9 @@ Nuevo recorrido con recta larga, curva exterior, sector interior y regreso técn
 
 ## Evidencia
 
+- 0.48: 76 carreras generales/450 vueltas (42 CPU, 20 parrilla, 14 tráfico), más seis comparaciones de ritmo/doce vueltas y doce carreras Volcano/54 vueltas: 94 ejecuciones, 516 vueltas válidas en total. Límites compartidos, tres dificultades y orden de ritmo conservados. Dos coches no registran contactos en sus catorce referencias; no garantiza contacto cero contra personas.
+- Integración de las 14 pistas/70 perfiles, pruebas de aceleración/giro/frenado del jugador, colisiones, pausa/reinicio y Chromium completo/entrega local superados. La primera comprobación de cuenta atrás llegó tarde bajo carga; ahora verifica el estado al procesar R y conserva teclado real. Equilibrio y audio percibido siguen pendientes de prueba humana.
+
 - 0.47: doce carreras focalizadas/54 vueltas válidas en Volcano (cinco perfiles, cuatro modelos, tres dificultades con parrilla de cuatro). Orden Fácil/Normal/Difícil comprobado; 0/0/7 pasos de contacto respectivamente, sin ventajas de potencia. No se repitió toda la matriz anterior de 96 carreras ni se presenta como prueba humana.
 - Integración/registro/menú/geometría de las 14 pistas; 22.265 sondas de bordes variables, 3.880 comprobaciones de píxeles en Volcano/cinco perfiles; dos contornos cerrados/1.128 sondas de barreras en la pista nueva y 211 colocaciones de decoración en tres calidades. Doce imágenes completas de los cuatro corredores previos idénticas antes/después de extraer el estilo. Chromium completa tres vueltas Volcano (29,43/28,40/28,37 s), además de Night/división de cámaras, recorrido general y entrega local bajo `/f1/` superados; capturas Volcano abierta/vallada/cercana revisadas.
 
@@ -87,7 +96,7 @@ La carga pública de Pages no se pudo verificar desde esta sesión: el proxy blo
 ## Pendientes conocidos
 
 - Referencia 0.45: tráfico de dos coches sin contactos en sus 14 trazados de entonces. Esto no garantiza carreras sin contactos contra personas.
-- Parrilla 0.45: todos terminan, con contactos en varias referencias. El máximo es Sunset Normal, 19 pasos a 30 Hz (0,63 s acumulados en tres vueltas); no son 19 golpes separados. En 0.44 el máximo era Dusty Difícil con 24 pasos. Queda revisar el contacto y equilibrio contra personas; una comparación agregada no prueba mejora en todas las situaciones.
+- Parrilla 0.48: todos terminan; máximo Dusty Fácil, 28 pasos a 30 Hz (0,93 s acumulados en tres vueltas), más que en 0.47. Son pasos con solapamiento, no 28 choques separados. Mantiene el presupuesto vigente, pero requiere revisar líneas/recuperación del tráfico; no se declara resuelto por pasar el test.
 - Duración y trazados: se busca variedad aproximada de 20/40/60 s, sin ventana obligatoria. Anchos variables presentes en cinco pistas; nueve restantes y más rediseños pendientes. Night aporta una referencia cercana a 60 s.
 - Faltan calibración humana, pruebas en dispositivos físicos, controles táctiles y medición de rendimiento. Los videos adjuntos superaban el límite de transferencia y no pudieron verse.
 - Contrarreloj, desafíos, editor y progresión ampliada siguen pendientes. Esta entrega no equivale a terminar las 24 fases ni a declarar una versión estable definitiva.
