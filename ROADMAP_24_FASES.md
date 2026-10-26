@@ -8,7 +8,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.44**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.45**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -1025,3 +1025,12 @@ Consultar `ROADMAP_EVOLUCION.md`; este archivo conserva historial y evidencia. C
 - Versionado de carretera `:r1` en esas tres pistas; conserva récords `:p4` y anteriores. Once trazados mantienen anchura histórica y todos conservan sus puntos/longitudes, velocidad y controles.
 - Validación de geometría con ancho variable, materiales, colisiones, checkpoints y píxeles reales en Chromium. Capturas de tres escenarios abiertas/valladas y vistas cercanas revisadas. Queda evaluación humana de diversión/equilibrio, más perfiles y nuevos trazados/ritmos; todavía no hay una pista larga de 60 s confirmada. Hoja activa: `ROADMAP_EVOLUCION.md`.
 - Evidencia de cierre: 91 carreras/480 vueltas válidas, 10.004 sondas físicas y 9.845 de píxeles; CPU libre mantiene Normal Sunset 36,66 s / Neon 22,67 s / Dusty 21,11 s. Parrilla Dusty Difícil registra 24 pasos de contacto a 30 Hz, todos terminan: revisar ese roce competitivo con personas; no se declara contacto cero ni equilibrio definitivo.
+
+
+## Avance 0.45 — revisión humana de conducción y motor sostenido
+
+- Base real revisada `2409e5c` / 0.44, árbol limpio y main remoto confirmado; rama `work/lift-and-engine-045`.
+- Se conserva respuesta de volante/aceleración y se exige más soltar/frenar a velocidad alta mediante fuerza lateral progresiva (máximo 16 % menos) y retención de 30. Se retira frenado automático según la curva próxima. CPU comparte física 5 y vuelve a planificar velocidad. Récords anteriores preservados. Comparación de alternativas y limitaciones en `tests/experiments/LIFT_045.md`.
+- Sonido sostenido más grave/filtrado, menos armónicos y brillo a máxima; derrape audible requiere giro/freno de mano. Prueba nueva de crucero sostenido en cuatro modelos. La escucha humana sigue abierta.
+- Los 14 recorridos y las tres secciones variables se conservan; no se añade aún un trazado largo. Se retoma fase 27 de siluetas/ritmos después de esta corrección prioritaria.
+- Cierre retomado tras desconexión: cambios intactos, main aún en 0.44; prueba de frenado actualizada de retención 20 a 30 y repetida. Registros completos de 91 carreras/480 vueltas; máximo de parrilla Sunset Normal 19 pasos de contacto a 30 Hz, todos terminan. Pruebas focalizadas de física, audio sostenido y entrega local repetidas antes de publicar.

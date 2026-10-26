@@ -24,8 +24,8 @@ const wrapAngle=a=>Math.atan2(Math.sin(a),Math.cos(a));
 const pointDistance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const LAPS_TO_WIN=3;
 const ROAD_EDGE=42, WALL_EDGE=66,CAR_HALF_WIDTH=10;
-const PHYSICS_VERSION=4;
-const DRIVING_TUNING={accelerationScale:.82,accelerationTaper:.45,lateralAcceleration:280,maxSpeedGripLoss:.24,speedGripLoss:.0014,inputResponse:14,handInputResponse:16,yawResponse:18,yawSpeedWeight:4};
+const PHYSICS_VERSION=5;
+const DRIVING_TUNING={accelerationScale:.82,accelerationTaper:.45,lateralAcceleration:280,maxSpeedGripLoss:.24,speedGripLoss:.0014,inputResponse:14,handInputResponse:16,yawResponse:18,yawSpeedWeight:4,topSpeedLateralLoss:.16,liftDrag:30};
 const CAR_MODELS={
  balanced:{name:'BALANCED',maxSpeed:232,acceleration:110,braking:230,steering:1,grip:1,grass:1,description:'Equilibrado para aprender y competir.'},
  corner:{name:'CORNER KING',maxSpeed:218,acceleration:105,braking:255,steering:1.19,grip:1.15,grass:.86,description:'Más agarre y frenado; velocidad punta menor.'},
@@ -118,7 +118,8 @@ function updateAudio(){
   const audible=active&&!!car;
   channel.update({speed,maxSpeed:model.maxSpeed,model:car?.model,throttle:keys[keyFor(player).up]?1:0,braking:!!car?.braking,audible,mix});
   const ground=car?terrainAt(car.x,car.y):{material:'asphalt',offroad:false},surface=ground.material,offroad=ground.offroad;
-  const sliding=car?Math.max(car.handbrake?1:0,car.drift>.4?car.drift:0,car.braking&&Math.abs(car.steer)>.3?.4:0):0;
+  const turning=car&&(Math.abs(car.steer)>.12||Math.abs(car.yawRate)>.25);
+  const sliding=car?Math.max(car.handbrake?1:0,turning&&car.drift>.4?car.drift:0,car.braking&&Math.abs(car.steer)>.3?.4:0):0;
   channel.skid.filter.frequency.setTargetAtTime(surface==='ice'?850:1450,now,.08);channel.skid.filter.Q.value=1.2;
   channel.skid.gain.gain.setTargetAtTime(audible&&speed>35?Math.min(.025,sliding*ratio*.035)*mix:0,now,.035);
   const roughness=surface==='gravel'?.025:offroad ? .018:surface==='dirt'||surface==='volcanic'?.009:surface==='grass'?.007:surface==='ice'?.002:0;
@@ -856,7 +857,7 @@ function vehicleHandling(speed,model,surface,safeSpeed,drift=0,hand=false){
  const grip=clamp((1-speedLoss-drift*(hand?.05:.12))*model.grip*(SURFACE_GRIP[surface]||1),.38,1.15);
  const mechanicalTurn=(.95+speed/235*2.9)*model.steering*grip*(hand?1.18:1);
  // Finite tire force: at high speed the minimum corner radius grows with speed squared.
- const lateralAcceleration=DRIVING_TUNING.lateralAcceleration*model.grip*(SURFACE_GRIP[surface]||1)*(hand?1.12:1);
+ const lateralAcceleration=DRIVING_TUNING.lateralAcceleration*(1-DRIVING_TUNING.topSpeedLateralLoss*clamp((speed/model.maxSpeed-.58)/.42,0,1))*model.grip*(SURFACE_GRIP[surface]||1)*(hand?1.12:1);
  const turnRate=Math.min(mechanicalTurn,lateralAcceleration/Math.max(30,speed*WORLD_SPEED_SCALE));
  return {grip,turnRate,lateralAcceleration};
 }
@@ -1056,7 +1057,7 @@ function updateSteeringInertia(car,turnRate,maxSpeed,dt){
  car.heading=wrapAngle(car.heading+target*dt+(previous-target)*(1-decay)/response);
 }
 function physics(car,i,dt){
- const before=nearestOnTrack(car.x,car.y),k=keyFor(i),localBend=curvatureAt(before.progress),upcoming=upcomingCorner(before.progress);
+ const before=nearestOnTrack(car.x,car.y),k=keyFor(i),localBend=curvatureAt(before.progress);
  const model=CAR_MODELS[car.model]||CAR_MODELS.balanced;
  let controls;
  if(car.isAI){
@@ -1069,7 +1070,7 @@ function physics(car,i,dt){
  const {throttle,brake,hand}=controls;car.handbrake=hand;car.braking=brake>0||hand;
  car.speed+=throttle*accelerationAtSpeed(car.speed,model)*dt;
  car.speed-=brake*(hand?model.braking*1.27:model.braking)*dt;
- car.speed-=(throttle?2.6:20)*dt;
+ car.speed-=(throttle?2.6:DRIVING_TUNING.liftDrag)*dt;
  if(hand)car.speed-=model.braking*.55*dt;
  if(hand)car.drift=Math.min(1,Math.abs(car.steer)*car.speed/200);
  car.speed=clamp(car.speed,0,model.maxSpeed);
@@ -1102,7 +1103,6 @@ function physics(car,i,dt){
  }
  ground=terrainAt(car.x,car.y,after);roadEdge=ground.offroad?ground.depth:0;
  updateProgress(car,after,previousX,previousY);
- if(tooFast>12&&upcoming.distance<130)car.speed=Math.max(30,car.speed-tooFast*dt*.045);
  car.skidTimer=Math.max(0,(car.skidTimer||0)-dt);
  const skidding=car.speed>58&&(car.handbrake||car.drift>.43);
  if(skidding&&car.skidTimer<=0){const wheels=(CAR_VISUALS[car.model]||CAR_VISUALS.balanced),rearX=car.x+Math.cos(car.heading)*wheels.rearAxle,rearY=car.y+Math.sin(car.heading)*wheels.rearAxle;

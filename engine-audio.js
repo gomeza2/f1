@@ -11,9 +11,9 @@
  };
  // A decaying combustion pulse, with limited upper harmonics instead of a raw saw/square.
  function pulseCoefficients(){
-  const real=new Float32Array(25),imag=new Float32Array(25);
+  const real=new Float32Array(17),imag=new Float32Array(17);
   for(let n=1;n<real.length;n++){
-   const amplitude=Math.exp(-n*.19)/Math.pow(n,.72),phase=-Math.atan(n*.45);
+   const amplitude=Math.exp(-n*.32)/Math.pow(n,.9),phase=-Math.atan(n*.45);
    real[n]=amplitude*Math.cos(phase);imag[n]=amplitude*Math.sin(phase);
   }
   return {real,imag};
@@ -45,10 +45,12 @@
    const targetRPM=clamp(coupled+launch,p.idle,p.redline*1.025);
    state.rpm+=(targetRPM-state.rpm)*(1-Math.exp(-dt*18));
    const cut=now-state.shiftAt<.075?.58:1;
-   const level=(.035+state.load*.045+ratio*.018)*clamp(mix,0,1)*cut;
-   engine.frequency.setTargetAtTime(state.rpm/60*p.cylinders/2,now,.025);
+   // Roll off the sustained top-end instead of adding a rev-limiter crackle.
+   const topEnd=clamp((ratio-.78)/.22,0,1);
+   const level=(.035+state.load*.033+ratio*.012)*(1-topEnd*.12)*clamp(mix,0,1)*cut;
+   engine.frequency.setTargetAtTime(state.rpm/60*p.cylinders/4,now,.025);
    sub.frequency.setTargetAtTime(state.rpm/60,now,.035);
-   filter.frequency.setTargetAtTime((420+state.rpm*.1+state.load*1100)*p.brightness,now,.045);
+   filter.frequency.setTargetAtTime((380+state.rpm*.055+state.load*650)*(1-topEnd*.25)*p.brightness,now,.045);
    gain.gain.setTargetAtTime(level,now,.025);subGain.gain.setTargetAtTime(level*p.body,now,.035);
   }
   return {engine,sub,filter,gain,subGain,state,update,reset};

@@ -53,7 +53,7 @@ assert.ok(Math.abs(Math.hypot(ai.x-from.x,ai.y-from.y)-Math.hypot(player.x-from.
 game.start('solo',0);const [obstacle,follower]=game.cars;
 game.placeCar(follower,150,0);game.placeCar(obstacle,190,0);follower.speed=100;
 game.physics(follower,1,dt);assert.ok(follower.speed<100,'CPU failed to brake for blocked lane');
-assert.ok(Math.abs(follower.speed-(100-(game.CAR_MODELS.balanced.braking+20)*dt))<1e-6,'CPU braking differs from Balanced plus coasting drag');
+assert.ok(Math.abs(follower.speed-(100-(game.CAR_MODELS.balanced.braking+30)*dt))<1e-6,'CPU braking differs from Balanced plus coasting drag');
 // Recovery uses steering and normal movement, with no teleport to the centerline.
 element('barrierMode').value='open';game.start('solo',0);game.cars[0].done=true;const recovering=game.cars[1];
 game.placeCar(recovering,150,78);recovering.speed=40;

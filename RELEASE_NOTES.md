@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.44
+# PIXEL GRAND PRIX — entrega 0.45
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, dos jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Soltar/frenar y motor de crucero en 0.45
+
+Volante/aceleración conservados; fuerza lateral cae gradualmente sobre el 58 % de máxima, hasta un 16 % adicional. Retención de 30 unidades/s al soltar; eliminado el pequeño frenado automático según la curva próxima. Mismas reglas de humanos y CPU, con plan de velocidad recalculado. Récords `:p5` conservan anteriores `:p4` y `:r1`. Comparación de dos alternativas en `tests/experiments/LIFT_045.md`; se descarta la de 24 % por excesiva penalización a gas continuo.
+
+Motor sostenido más grave y filtrado, con menos armónicos y brillo al máximo. Sin siseo de derrape en recta por un indicador de drift sin giro. Cuatro renderizados sostenidos de seis segundos: sexta estable, salida audible, sin recorte muestreado y menor energía aguda que 0.44. Calidad percibida pendiente de escucha humana. Sin nuevas longitudes ni modificación de perfiles de carretera.
 
 ## Secciones de pista en 0.44
 
@@ -42,6 +48,8 @@ Nuevo recorrido con recta larga, curva exterior, sector interior y regreso técn
 
 ## Evidencia
 
+- 0.45: 91 carreras/480 vueltas válidas conservadas en los registros de esta revisión: 42 clásicas, 20 parrilla, 14 tráfico y 15 pruebas de dos vueltas por perfil. El test final de frenado esperaba aún retención 20; corregida a 30 y repetida la comprobación focalizada. Audio sostenido de cuatro modelos, grafo/ciclo de vida, gas/retención/freno, colisiones, pausa, gates, integración y Chromium/entrega local comprobados. La prueba humana de sensación/timbre permanece abierta.
+
 - 0.44: 91 carreras simuladas y 480 vueltas válidas: 42 clásicas (14 pistas × 3 dificultades), 20 de parrilla, 14 de tráfico y 15 de dos vueltas con los cinco perfiles en las tres pistas revisadas. CPU libre Normal: Sunset 36,66 s, Neon 22,67 s y Dusty 21,11 s. El tamaño del recorrido no cambia en esta entrega.
 - 0.44: 10.004 sondas físicas de bordes variables, 9.845 sondas de píxeles reales de Canvas, 70 configuraciones de material/escapatorias y 947 decoraciones comprobadas. Geometría, gates, manejo, colisiones, pausa/reinicio y audio: pruebas automatizadas. Chromium completo, audio real y entrega sin instrumentación bajo `/f1/`: superados. Capturas abiertas/valladas y vistas cercanas revisadas. No sustituye jugar ni escuchar humanamente.
 
@@ -59,8 +67,8 @@ La carga pública de Pages no se pudo verificar desde esta sesión: el proxy blo
 
 ## Pendientes conocidos
 
-- Física 4: tráfico de dos coches sin contactos en las 14 referencias. Esto no garantiza carreras sin contactos contra personas.
-- Parrilla 0.44: contactos en Sunset/Jungle/Coastline/Industrial Normal, Dusty Fácil y Dusty Difícil. La referencia más alta es Dusty Difícil con 24 pasos a 30 Hz (0,8 s acumulados en tres vueltas), frente a menos contacto en 0.43; todos terminan. Son pasos con solapamiento, no 24 choques separados. Se conserva contacto físico; queda revisar equilibrio humano y contactos prolongados al estrechar sectores.
+- Física 5: tráfico de dos coches sin contactos en las 14 referencias. Esto no garantiza carreras sin contactos contra personas.
+- Parrilla 0.45: todos terminan, con contactos en varias referencias. El máximo es Sunset Normal, 19 pasos a 30 Hz (0,63 s acumulados en tres vueltas); no son 19 golpes separados. En 0.44 el máximo era Dusty Difícil con 24 pasos. Queda revisar el contacto y equilibrio contra personas; una comparación agregada no prueba mejora en todas las situaciones.
 - Duración y trazados: se busca variedad aproximada de 20/40/60 s, sin ventana obligatoria. Anchos variables presentes en tres pistas; once restantes y más rediseños pendientes.
 - Faltan calibración humana, pruebas en dispositivos físicos, controles táctiles y medición de rendimiento. Los videos adjuntos superaban el límite de transferencia y no pudieron verse.
 - Contrarreloj, desafíos, editor y progresión ampliada siguen pendientes. Esta entrega no equivale a terminar las 24 fases ni a declarar una versión estable definitiva.

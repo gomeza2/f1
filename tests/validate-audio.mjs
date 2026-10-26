@@ -37,6 +37,8 @@ assert.equal(motor.state.gear,0);assert.ok(motor.state.load<.001);
 const rpm=motor.state.rpm;context.currentTime+=1;motor.update({speed:232,throttle:1,audible:false});assert.equal(motor.state.rpm,rpm);assert.equal(motor.gain.gain.value,0);
 motor.reset();assert.equal(motor.state.gear,0);assert.equal(motor.state.lastTime,null);
 context.currentTime=0;
+const straight=game.cars[0];straight.speed=232;straight.steer=0;straight.yawRate=0;straight.drift=1;straight.handbrake=false;straight.braking=false;game.updateAudio();
+assert.equal(game.audioChannels[0].skid.gain.gain.value,0,'Steady straight-line cruise produced fake skid hiss');
 const car=game.cars[0];game.placeCar(car,150,65);car.speed=100;car.handbrake=true;car.braking=true;car.drift=.8;car.roadOffset=65;game.updateAudio();
 assert.ok(game.audioChannels[0].skid.gain.gain.value>0);assert.ok(game.audioChannels[0].terrain.gain.gain.value>0);
 game.playRaceCue('checkpoint',game.cars[1]);assert.equal(game.audioVoices.size,0,'Distant CPU checkpoint was audible');

@@ -83,6 +83,7 @@ node tests/validate-rival-awareness.mjs
 node tests/validate-race-lifecycle.mjs
 node tests/validate-driving.mjs
 node tests/validate-driving-demand.mjs
+node tests/validate-lift-demand.mjs
 node tests/validate-arcade-flow.mjs
 node tests/validate-gate-contact.mjs
 node tests/validate-runoff.mjs
@@ -96,7 +97,7 @@ La prueba de identidad detecta copias de un trazado aunque se escalen, giren o r
 
 La prueba de CPU comprueba límites físicos, desplazamiento y coste del freno de mano. La comparación de mejora de ritmo frente a 0.24 corresponde a la física anterior; con la versión 2 se mide una referencia nueva porque cambiaron las reglas para humanos y rivales. Usa el código real en un entorno DOM simulado: completa tres vueltas con checkpoints en las 14 pistas y las tres dificultades, verifica prestaciones compartidas y prueba frenado ante tráfico y recuperación. No sustituye una carrera humana.
 
-Pruebas opcionales de navegador: `node tests/browser-smoke.cjs`, `node tests/browser-audio.cjs` y `node tests/browser-release.cjs`. Para bordes/pianos: `node tests/browser-road-sectors.cjs`; `ROAD_SCREENSHOTS` guarda capturas opcionales. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
+Pruebas opcionales de navegador: `node tests/browser-smoke.cjs`, `node tests/browser-audio.cjs` y `node tests/browser-release.cjs`. Para crucero sostenido del motor: `node tests/browser-engine-cruise.cjs`. Para bordes/pianos: `node tests/browser-road-sectors.cjs`; `ROAD_SCREENSHOTS` guarda capturas opcionales. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
 ## Conducción — build 0.42
 
@@ -290,3 +291,14 @@ Motor sustituido e integrado; pruebas de régimen/cambios/carga, presupuesto de 
 ### Entrega 0.44 — fase 27, primera revisión
 
 Tres perfiles de anchura y pianos por sector integrados con física, CPU y barreras. Geometría independiente y pruebas de píxeles reales, además de carreras con checkpoints. Las capturas revisadas muestran sectores amplios/estrechos y vallas sobre sus bordes. La prueba automatizada no confirma diversión/equilibrio humano. Faltan más siluetas, ritmos largos y extensión de perfiles a las once pistas restantes; no se declara completada toda la fase 27.
+
+
+### Entrega 0.45 — soltar/frenar y crucero de motor
+
+Respuesta de volante y aceleración conservadas. Por encima del 58 % de la velocidad máxima, la fuerza lateral cae gradualmente hasta un 16 % adicional: a velocidad alta hace falta abrir la trayectoria o soltar/frenar antes de una curva cerrada. La retención al soltar pasa de 20 a 30 unidades/s; el freno sigue siendo una acción mucho más fuerte. Se elimina la pequeña desaceleración automática según la curva próxima: la conducción decide cuándo perder velocidad. CPU y humanos comparten estas reglas; se recalcula el plan de frenado del rival. Récords `:p5` conservan `:p4` (incluidos los `:r1`) y versiones anteriores.
+
+Comparadas reducciones del 16 y 24 %, se elige la moderada. En una política automática con la misma dirección, Sunset marca 37,72 s planificando velocidad frente a 45,90 s con gas continuo. Neon aún permite ir a gas con esa política; no se declara toda la IA óptima ni cada curva equilibrada. Valores y reproducción: `tests/experiments/LIFT_045.md`.
+
+Motor de crucero menos agudo: armónicos limitados, tono del escape más grave y menos brillo al llegar a máxima, sin alternar marchas/cortes repetitivos. No se activa el siseo de derrape en recta por el mero valor de drift: requiere giro real o freno de mano. Se comprueba audio sostenido de los cuatro modelos mediante Web Audio real; la energía filtrada y ausencia de recorte no sustituyen escuchar el timbre.
+
+Esta revisión responde al reporte del usuario. No modifica trazados ni añade el recorrido largo pendiente. Siguiente tramo: continuar fase 27, variedad de siluetas/ritmos y pistas largas, sujeto a la prueba humana del manejo/audio revisados.

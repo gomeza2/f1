@@ -22,13 +22,15 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 
 ## Fases abiertas
 
-### 25. Control arcade fluido y competición con contacto — primera revisión 0.42
+### 25. Control arcade fluido y competición con contacto — revisiones 0.42/0.45
 
 - Aceleración progresiva con respuesta útil al salir de una curva; límite lateral que conserve curva rápida a gas y exija bajar velocidad en horquillas.
 - Entrada de dirección exponencial independiente del paso, menos penalizaciones acumuladas y recuperación sin giro instantáneo. CPU comparte capacidades del coche.
 - Roce lateral leve mantiene flujo; no desactivar contactos ni permitir atravesar coches/vallas. Frenado anticipado ante coches detenidos, alcances fuertes y cierres de línea.
 - Cruce de gate/meta por punto exacto de intersección y contacto de la huella física con la franja legal. Fuera completo y orden incorrecto siguen rechazados.
 - Estado: implementado, probado automáticamente/en Chromium; sensación humana abierta. Recoger prueba de aceleración, entrada/salida de curva y adelantamiento en Sunset/Dusty antes de declararlo aceptado.
+
+Revisión 0.45 tras reporte humano de conducción demasiado permisiva: se conserva volante/aceleración y se reduce fuerza lateral solo en el rango alto (hasta 16 %), con retención al soltar de 30 y sin frenado automático por curva próxima. Comparación 16/24 % con política común; se elige 16 %. Física 5/anteriores preservadas. Frenar/soltar aporta ventaja en Sunset y Dusty; Neon admite gas continuo con la política usada y deja abierta una mejora del ritmo/trazada CPU. No se afirma equilibrio humano.
 
 ### 26. Sustituir motor y mezcla de audio — primera revisión 0.43
 
@@ -39,6 +41,8 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 - Recursos propios/síntesis o muestras con licencia comprobada. Validar limpieza, silencio en pausa/OFF/menú, navegador y escucha humana. Un analizador de señal no aprueba el timbre.
 
 Estado 0.43: motor reemplazado y separado en `engine-audio.js`; pulsos/armónicos, carga, régimen continuo y seis marchas con histéresis, cuatro perfiles. Integración de recursos y mezcla existente comprobadas. Grafo, marchas/carga, Web Audio real y navegador comprobados; escucha humana pendiente. Controles separados de volumen, ambientes temáticos y una revisión específica del sonido de roce quedan pendientes, sin opciones vacías. Física/ritmo de CPU sin cambios en esta entrega.
+
+Revisión 0.45 tras reporte humano de sonido desagradable a máxima estable: motor más grave/filtrado y menor brillo de crucero; evita ruido de derrape en recta sin giro. Prueba específica sostenida para cuatro modelos, con comparación frente a 0.44 de energía filtrada y estabilidad de marcha. Sigue pendiente escuchar/dispositivos reales; no se cierra fase 26 por resultados del analizador.
 
 ### 27. Anchura, curvas y duración variadas — primera revisión 0.44
 
@@ -112,4 +116,4 @@ Estado 0.43: motor reemplazado y separado en `engine-audio.js`; pulsos/armónico
 
 ## Continuación
 
-Verificar main y el último registro de `ROADMAP_24_FASES.md`. 0.43 sustituye el motor y conserva la revisión de manejo 0.42. 0.44 comienza la fase 27 con tres pistas de ancho variable. Próxima implementación: **continuar fase 27 con trazados/ritmos distintos, incluyendo recorridos largos y más perfiles**. La evaluación humana de motor y conducción permanece abierta; puede reordenar la prioridad. Local 3–4 y online siguen pendientes.
+Verificar main y el último registro de `ROADMAP_24_FASES.md`. 0.43 sustituye el motor y conserva la revisión de manejo 0.42. 0.44 comienza la fase 27 con tres pistas de ancho variable. 0.45 atiende el nuevo reporte de gas continuo demasiado fácil y motor agudo a máxima. Próxima implementación: **continuar fase 27 con trazados/ritmos distintos, incluyendo recorridos largos y más perfiles**. La evaluación humana de motor y conducción permanece abierta; puede reordenar la prioridad. Local 3–4 y online siguen pendientes.
