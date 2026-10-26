@@ -74,7 +74,8 @@ const server=http.createServer((req,res)=>{
   await page.click('#cameraBtn');assert.equal(await page.evaluate(()=>window.testGame.camera.zoom),await page.evaluate(()=>window.testGame.overview));
   await page.keyboard.press('c');assert.equal(await page.evaluate(()=>window.testGame.camera.zoom),1.35);
   await page.evaluate(()=>window.testGame.skipCountdown());
-  await page.keyboard.down('w');await page.waitForTimeout(500);await page.keyboard.up('w');
+  // Exercise countersteering while rolling; parked pivoting is no longer valid behaviour.
+  await page.keyboard.down('w');await page.waitForFunction(()=>window.testGame.cars[0].speed>=60);
   assert.ok(await page.evaluate(()=>window.testGame.cars[0].speed>0));
   await page.keyboard.down('d');await page.waitForTimeout(180);await page.keyboard.up('d');
   const turn=await page.evaluate(()=>({yaw:window.testGame.cars[0].yawRate,heading:window.testGame.cars[0].heading}));assert.ok(turn.yaw>0);assert.ok((await page.evaluate(()=>window.testGame.vehicleVisual())).wheelAngle>0);
@@ -83,7 +84,7 @@ const server=http.createServer((req,res)=>{
   assert.ok(Math.abs(release.yaw)<Math.abs(turn.yaw),'Keyboard release did not damp rotation');
   assert.ok(Math.atan2(Math.sin(release.heading-turn.heading),Math.cos(release.heading-turn.heading))>0,'Yaw stopped instantaneously');
   await page.keyboard.down('a');await page.waitForTimeout(180);await page.keyboard.up('a');
-  assert.ok(await page.evaluate(()=>window.testGame.cars[0].yawRate<0),'Keyboard countersteer failed');
+  assert.ok(await page.evaluate(()=>window.testGame.cars[0].yawRate<0),'Keyboard countersteer failed');await page.keyboard.up('w');
   await page.keyboard.down('s');await page.waitForTimeout(100);assert.ok((await page.evaluate(()=>window.testGame.vehicleVisual())).braking);await page.keyboard.up('s');await page.waitForTimeout(60);assert.equal((await page.evaluate(()=>window.testGame.vehicleVisual())).braking,false);
   // Dispatch the real visibility handler with a synthetic hidden state.
   await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});

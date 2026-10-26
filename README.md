@@ -40,6 +40,14 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## Conducción y primer detalle gráfico — 0.56
+
+El coche ya no gira sobre su eje estando totalmente detenido: podés orientar las ruedas y el chasis gira al avanzar. La CPU puede rodear un obstáculo cercano desde parado mediante avance lento y dirección normal, en lugar de depender de ese pivote. Un caso a 25 unidades que antes no salía en 20 s se recupera en ~11,9 s sin contacto en la referencia automatizada; otros a 30/40 lo hacen en ~4,6/4,3 s. No es recuperación universal ni una ayuda de posición/agarre.
+
+Las marcas y el humo de derrape usan la misma señal que el sonido: circular recto con un indicador interno de exceso de velocidad ya no dibuja neumáticos derrapando. Derrapes con giro, rotación residual y freno de mano conservan su respuesta. Aceleración, fuerza lateral, frenado y modelos en movimiento permanecen; la sensación humana de curvas sigue abierta.
+
+Primer paso de la nueva **fase 36: realismo estilizado con identidad retro**. El asfalto incorpora agregado fino de bajo contraste en **DETALLADOS** y **RETRO**, generado una vez y guardado con la carretera. **RENDIMIENTO** conserva su superficie anterior. Pianos, bordes, tierra, hielo, pasto y volcánico se mantienen; no se agregan colisiones ni recursos externos. La fase incluye posteriores mejoras de coches, luces/sombras, escala y detalle de escenarios, con presupuestos por calidad. Detalle en [experimento 0.56](tests/experiments/ROAD_FEEL_056.md).
+
 ## Mezcla de sonido — 0.55
 
 El botón **MEZCLA** de la cabecera (engranaje en pantallas pequeñas) abre tres controles: **general, motores y efectos/avisos**. Podés bajar o silenciar los motores y conservar checkpoints, salida y llegada; también podés silenciar efectos sin apagar el motor. Sus valores se guardan localmente, con botón para restablecerlos.
@@ -117,6 +125,7 @@ Con Node.js, desde la raíz y sin dependencias adicionales:
 ```sh
 node --check script.js
 node tests/validate-tracks.mjs
+node tests/validate-road-feedback.mjs
 node tests/validate-pixel.mjs
 node tests/validate-sunset.mjs
 node tests/validate-track-identity.mjs
@@ -156,6 +165,15 @@ La prueba de identidad detecta copias de un trazado aunque se escalen, giren o r
 La prueba de CPU comprueba límites físicos, desplazamiento y coste del freno de mano. La comparación de mejora de ritmo frente a 0.24 corresponde a la física anterior; con la versión 2 se mide una referencia nueva porque cambiaron las reglas para humanos y rivales. Usa el código real en un entorno DOM simulado: completa tres vueltas con checkpoints en las 14 pistas y las tres dificultades, verifica prestaciones compartidas y prueba frenado ante tráfico y recuperación. No sustituye una carrera humana.
 
 Pruebas opcionales de navegador: `node tests/browser-smoke.cjs`, `node tests/browser-audio.cjs`, `node tests/browser-audio-mix.cjs` y `node tests/browser-release.cjs`. Para crucero sostenido del motor: `node tests/browser-engine-cruise.cjs`. Para bordes/pianos: `node tests/browser-road-sectors.cjs`; `ROAD_SCREENSHOTS` guarda capturas opcionales. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
+
+Para reproducir la comparación gráfica 0.56 contra el código anterior:
+
+```sh
+git show b34df3a:script.js > /tmp/pixelgp-before-056.js
+ROAD_SOURCE_BASELINE=/tmp/pixelgp-before-056.js node tests/browser-road-detail.cjs
+```
+
+Esta prueba compara las superficies de las catorce pistas en tres calidades, sus bordes y la corrección del reposo. Las capturas opcionales se guardan indicando `DETAIL_SCREENSHOTS`.
 
 ## Conducción — build 0.42
 

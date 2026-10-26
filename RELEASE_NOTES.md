@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.55
+# PIXEL GRAND PRIX — entrega 0.56
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Conducción/lectura y comienzo gráfico en 0.56
+
+Chasis detenido sin pivote, ruedas dirigibles y salida rodando; recuperación CPU desde parado con avance mínimo/objetivo cercano, conservando aceleración/colisiones normales. Señal de deslizamiento común para sonido/marcas, eliminando neumáticos/humo falsos en recta. No se cambia la capacidad de giro, fuerza, velocidad ni frenado en movimiento; modelos/pistas/física 5/récords se conservan. Aceptación humana del manejo abierta.
+
+Agregado fino en asfalto detallado/retro, en caché; rendimiento y terrenos nativos preservados. Primer tramo de fase 36, que desarrolla realismo estilizado con lectura retro, coches/sombras/escenarios y calidad medida. No se anuncia un rediseño completo por una textura. Condiciones/pruebas en `tests/experiments/ROAD_FEEL_056.md`.
 
 ## Mezcla de audio en 0.55
 

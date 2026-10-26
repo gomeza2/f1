@@ -135,6 +135,22 @@ Avance 0.54: prioridad lateral para un rival solapado aunque haya un líder algo
 - Publicar versiones recuperables con recursos coherentes; distinguir push, despliegue Pages, pruebas automáticas y evaluación humana.
 - Esta es una línea de trabajo continua, no una última fase que impida seguir creciendo.
 
+### 36. Evolución gráfica: realismo estilizado con identidad retro
+
+Pedido nuevo del usuario: mejorar mucho la presentación para que coches/pistas/escenarios tengan materiales y volumen creíbles, conservando un toque retro y la identidad lima/cian. No convertirlo en una imitación de otra franquicia ni confundir detalle con ruido que esconda curvas.
+
+| Tramo | Desarrollo integrado | Criterio de comprobación |
+|---|---|---|
+| 36.1 Materiales y lectura de conducción | Asfalto con agregado fino, bordes/pianos claros, suelo nativo propio; marcas/partículas/sonido ligados a la acción y al material. Primer paso en 0.56. | Comparación de píxeles, límites físicos/visuales comunes, ausencia de derrape falso en recta y capturas cercanas antes/después. |
+| 36.2 Coches y luz coherente | Mejorar carrocería, ruedas, reflejos contenidos, sombra de contacto y sombra direccional con luz del mundo; conservar cuatro siluetas/pinturas y orientación clara. | Mismo coche en recta/curva/frenada, tamaños pequeños, impactos, dos/cuatro cámaras; el render no modifica física ni contorno de colisión. |
+| 36.3 Escenarios con escala y personalidad | Edificios/vegetación/rocas/público mejor proporcionados, bordes y elementos urbanos/costeros/rally propios, referencias visuales de frenado y curvas. | Huellas/sombras fuera del corredor y recuperación; ninguna decoración tapa salidas ni añade choques invisibles. |
+| 36.4 Iluminación y ambiente | Dirección de luz consistente, profundidad por capas, noche/atardecer legibles y reflejos de materiales; condiciones húmedas solo si aspecto y reglas se definen juntos. | Contraste coche/suelo/gates, minimapa/HUD, ausencia de brillos o efectos que oculten rivales y geometría. |
+| 36.5 Calidad y rendimiento medidos | Escalar detalle/retro/rendimiento, cachés y presupuestos, comparar captura y tiempos de frame en las mismas condiciones, accesibilidad/movimiento reducido. | Medir carga/dibujo/memoria y cuatro cámaras; no prometer FPS del dispositivo del usuario por una prueba de laboratorio. |
+
+Mantener Canvas 2D mientras permita los resultados medidos. Evaluar una evolución del renderizador solo si aparece un límite confirmado y preparar transición comprobable. Recursos originales/procedurales o con licencia revisada; sin dependencias gráficas nuevas por apariencia.
+
+Estado 0.56: textura de agregado de asfalto en detallado/retro, dos tiles reutilizados, cuerpo de carretera compartido con la sección legal, sin capa por frame; rendimiento y superficies nativas preservados. Es el inicio del tramo 36.1, no el rediseño visual completo. Coches, iluminación y escenarios detallados continúan abiertos.
+
 ## Continuación
 
 Verificar main y el último registro de `ROADMAP_24_FASES.md`. 0.43 sustituye el motor y conserva la revisión de manejo 0.42. 0.44 comienza la fase 27 con tres pistas de ancho variable. 0.45 atiende el reporte de gas continuo demasiado fácil y motor agudo a máxima. 0.46 añade Night largo con anchos variables y 16 gates. 0.47 diferencia Volcano y conecta su material con el render del corredor. 0.48 revisa lectura de curvas y consulta de frenado de CPU. Próxima implementación: **retomar fase 27 con trazado propio y secciones variables en otro circuito**. 0.49 adelanta la primera entrega local 2–4 por pedido explícito. La evaluación humana de motor/conducción y del multijugador permanece abierta; puede reordenar la prioridad. Local ya admite 2–4 con teclado/mandos estándar; remapeo y hardware físico pendientes. Online sigue en diseño.
@@ -158,3 +174,7 @@ Leído el prompt maestro adjunto completo. Su referencia 0.40 es histórica: con
 Conservar la evolución de CPU justa y competitiva, siluetas y anchos variados, pianos/barreras/escapatorias coherentes y duraciones cortas/medias/largas (unos 20/40/60 s sin regla universal). Cámara/HUD legibles, audio ligado al coche, local 2–4, progresión y online real siguen en este plan abierto. No limitarlo a 24 fases ni presentar funciones incompletas como terminadas.
 
 0.55 termina este tramo de mezcla; **próximo trabajo: retomar fase 25, conducción y curvas**, con comparaciones reproducibles y sin dar por aceptado el manejo actual. Fase 27 conserva siete trazados uniformes (Jungle candidato); fase 26 mantiene pendiente el timbre/escucha y ambientes. Mantener el avance CPU 0.54 y local 2–4.
+
+0.56 retoma fase 25 con correcciones concretas: el chasis no pivota a velocidad cero, ruedas aún dirigibles y salida rodando; CPU recupera un caso parado que dependía de ese pivote mediante avance mínimo con física normal y objetivo cercano. Audio/marcas comparten señal de deslizamiento y se eliminan marcas/humo falsos de recta. Se conservan fuerzas/modelos/reglas de conducción en movimiento y récords p5. No se declara aceptado el tacto de curvas ni cerrado el manejo.
+
+Próximo: continuar las comparaciones de conducción de fase 25; desarrollar después 36.2 (coches/sombras) y los materiales restantes, manteniendo lectura retro y el plan abierto. La mejora gráfica acompaña control/CPU/pistas, no reemplaza su evolución.

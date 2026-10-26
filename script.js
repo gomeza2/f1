@@ -124,6 +124,10 @@ function ensureAudioChannels(){
    audioChannels.push({...motor,skid:noiseChannel('bandpass'),terrain:noiseChannel('lowpass')});
   }
 }
+function drivingSlip(car){
+ const turning=Math.abs(car.steer)>.12||Math.abs(car.yawRate||0)>.25;
+ return Math.max(car.handbrake?1:0,turning&&car.drift>.4?car.drift:0,car.braking&&Math.abs(car.steer)>.3?.4:0);
+}
 function updateAudio(){
  if(!audioContext||!audioMaster)return;
  const now=audioContext.currentTime,allowed=audioOutputAllowed(),active=allowed&&running&&countdownRemaining<=0;
@@ -137,8 +141,7 @@ function updateAudio(){
   const audible=active&&!!car;
   channel.update({speed,maxSpeed:model.maxSpeed,model:car?.model,throttle:controlsFor(player).throttle,braking:!!car?.braking,audible,mix});
   const ground=car?terrainAt(car.x,car.y):{material:'asphalt',offroad:false},surface=ground.material,offroad=ground.offroad;
-  const turning=car&&(Math.abs(car.steer)>.12||Math.abs(car.yawRate)>.25);
-  const sliding=car?Math.max(car.handbrake?1:0,turning&&car.drift>.4?car.drift:0,car.braking&&Math.abs(car.steer)>.3?.4:0):0;
+  const sliding=car?drivingSlip(car):0;
   channel.skid.filter.frequency.setTargetAtTime(surface==='ice'?850:1450,now,.08);channel.skid.filter.Q.value=1.2;
   channel.skid.gain.gain.setTargetAtTime(audible&&speed>35?Math.min(.025,sliding*ratio*.035)*mix:0,now,.035);
   const roughness=surface==='gravel'?.025:offroad ? .018:surface==='dirt'||surface==='volcanic'?.009:surface==='grass'?.007:surface==='ice'?.002:0;
@@ -766,6 +769,26 @@ function drawVariableRoad(context){
   }
  }
 }
+const asphaltTextures=new Map();
+function asphaltTexture(context){
+ if(graphics==='lite')return null;
+ if(!asphaltTextures.has(graphics)){
+  const tile=document.createElement('canvas'),size=graphics==='high'?48:24;tile.width=tile.height=size;
+  const paint=tile.getContext('2d');let seed=0x504758;
+  const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+  // Fine aggregate, with low contrast so paint, tyres and cars remain easier to read.
+  for(let i=0;i<(graphics==='high'?400:64);i++){
+   const x=Math.floor(random()*size),y=Math.floor(random()*size),bright=random()>.52;
+   paint.fillStyle=bright?'#ffffff12':'#00000024';paint.fillRect(x,y,graphics==='high'?1:2,1);
+  }
+  asphaltTextures.set(graphics,tile);
+ }
+ return context.createPattern(asphaltTextures.get(graphics),'repeat');
+}
+function drawAsphaltTexture(context){
+ if(!['asphalt','coastal','mixed'].includes(track.surface))return;
+ const texture=asphaltTexture(context);if(texture)fillRoadRibbon(context,texture,d=>Math.max(8,roadSectionAt(d).halfWidth-8));
+}
 function drawTrackSurface(context){
  const key=stage+'|'+graphics+'|'+barrierMode+'|'+track.surface;
  if(!trackSurfaceCache||trackSurfaceKey!==key){
@@ -782,6 +805,7 @@ function drawTrackSurface(context){
   }else{
    strokeTrack(sc,'#11171c',96);strokeTrack(sc,'#cdd1d3',94,[18,18],0);strokeTrack(sc,'#d84b59',90,[12,24],0);strokeTrack(sc,'#282d37',84);strokeTrack(sc,'#e74b5d',82,[23,23],0);strokeTrack(sc,'#f5f0dc',82,[23,23],23);strokeTrack(sc,'#3c414c',74);strokeTrack(sc,graphics==='high'?'#707783':'#646873',68);strokeTrack(sc,'#2c313b',61);
   }
+  drawAsphaltTexture(sc);
   if(track.surface==='mixed'){for(const [start,end] of track.dirtRanges){strokeTrackRange(sc,start,end,'#76563c',76);strokeTrackRange(sc,start,end,'#ad8258',66,[14,11]);}}
   if(track.surface==='coastal'){strokeTrackRange(sc,track.length*.31,track.length*.37,'#846b47',74);strokeTrackRange(sc,track.length*.31,track.length*.37,'#c2a06b',63,[9,12]);}
   trackSurfaceCache=surface;trackSurfaceKey=key;
@@ -1075,7 +1099,11 @@ function aiTrafficAgainst(car,before,driver,dt,other,maneuver){
   const dx=other.x-car.x,dy=other.y-car.y;
   const forward=dx*Math.cos(car.heading)+dy*Math.sin(car.heading);
   const clearance=forward>0?Math.sqrt(Math.max(0,separation*separation-forward*forward)):separation;
-  if(other.speed<30&&clearance>24.5&&separation>25&&(maneuver.type==='pass'||maneuver.type==='alongside'))speedLimit=Math.max(speedLimit,18);
+  if(other.speed<30&&(maneuver.type==='pass'||maneuver.type==='alongside')){
+   if(clearance>24.5&&separation>25)speedLimit=Math.max(speedLimit,18);
+   // Barely roll into the reserved side; acceleration and contact resolution stay physical.
+   else if(car.speed<8&&separation>22.9&&Math.abs(lane-otherLoc.offset)>=25)speedLimit=Math.max(speedLimit,3);
+  }
  }
  // If the edge leaves no safe side-by-side lane, fall behind rather than squeeze.
  if(ahead&&maneuver.type==='alongside'&&Math.abs(lane-otherLoc.offset)<25){
@@ -1123,6 +1151,8 @@ function aiLookAhead(car){
  // A distant target cuts the corner across a nearby rival's reserved lane.
  // Shorten it only when the current arcs predict contact during overlap.
  if(car.aiManeuver?.type==='alongside'&&cars.some(other=>other!==car&&!other.done&&Math.hypot(other.x-car.x,other.y-car.y)<50&&trafficApproach(car,other).clearance<29))distance=Math.min(distance,28+car.speed*.06);
+ // A rolling parking-speed manoeuvre needs a nearby target, without a stationary pivot.
+ if(car.speed<8&&(car.aiManeuver?.type==='pass'||car.aiManeuver?.type==='alongside'))distance=Math.min(distance,2+car.speed*.15);
  if(car.speed<40&&car.aiManeuver?.type!=='clear')distance=Math.min(distance,8+car.speed*.15);
  return distance;
 }
@@ -1173,6 +1203,7 @@ function driveAI(car,before,model,dt){
 // Rotational inertia: build and release yaw smoothly, retaining full steady turn rate.
 // Integrate the first-order response exactly for this step, independent of FPS.
 function updateSteeringInertia(car,turnRate,maxSpeed,dt){
+ if(car.speed===0){car.yawRate=0;return;} // Wheels can steer at rest; the chassis needs motion to turn.
  const target=car.steer*turnRate,response=car.handbrake?20:DRIVING_TUNING.yawResponse-DRIVING_TUNING.yawSpeedWeight*clamp(car.speed/maxSpeed,0,1);
  const previous=car.yawRate||0,decay=Math.exp(-response*dt);
  car.yawRate=target+(previous-target)*decay;
@@ -1226,7 +1257,7 @@ function physics(car,i,dt){
  ground=terrainAt(car.x,car.y,after);roadEdge=ground.offroad?ground.depth:0;
  updateProgress(car,after,previousX,previousY);
  car.skidTimer=Math.max(0,(car.skidTimer||0)-dt);
- const skidding=car.speed>58&&(car.handbrake||car.drift>.43);
+ const skidding=car.speed>58&&drivingSlip(car)>.43;
  if(skidding&&car.skidTimer<=0){const wheels=(CAR_VISUALS[car.model]||CAR_VISUALS.balanced),rearX=car.x+Math.cos(car.heading)*wheels.rearAxle,rearY=car.y+Math.sin(car.heading)*wheels.rearAxle;
   for(const wheelSide of [-1,1]){const wx=rearX-Math.sin(car.heading)*wheelSide*wheels.halfTrack,wy=rearY+Math.cos(car.heading)*wheelSide*wheels.halfTrack;skidMarks.push({x:wx,y:wy,angle:car.heading,life:10,maxLife:10,color:TERRAIN_MATERIALS[terrainAt(wx,wy).material].mark||'#101419'});}
   car.skidTimer=.045;if(skidMarks.length>1400)skidMarks.splice(0,skidMarks.length-1400);
