@@ -40,6 +40,14 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## Pixel City — 0.53
+
+Pixel City deja el trazado parecido a Thunder y estrena un recorrido de **4.368 unidades** (+28,7 %): avenidas rápidas, desvío interior y retorno con curvas enlazadas. Su anchura útil varía entre **76 y 112**, con sectores con/sin pianos y **seis checkpoints**. Mundo 1600×1024, sin reducir el coche. Referencia CPU Normal libre **25,47/24,42 s**: una pista corta distinta de Frostbite (~36 s) y Night (~58 s), no un tiempo obligatorio para el jugador.
+
+Conserva asfalto y barreras parciales automáticas; los otros cuatro perfiles siguen disponibles. Dibujo, colisiones, grava, gates, minimapa, vista previa y CPU consultan la misma sección. Récords nuevos `PIXEL CITY@3:p5:r1`, anteriores @2 preservados. Los otros trece trazados, física 5, CPU 0.51, audio y local 2–4 se mantienen. **Siete pistas tienen sección variable y siete conservan sección uniforme.**
+
+La comparación de tamaños favorece esta versión compacta frente a una ampliación de 4.913 unidades (~27–28 s). Geometría y carreras automatizadas no aprueban diversión ni equilibrio humano. Evidencia y límites en [experimento Pixel](tests/experiments/PIXEL_053.md).
+
 ## Frostbite GP — 0.52
 
 Frostbite estrena un recorrido asimétrico: arco rápido amplio y regreso técnico, con secciones de **68–112** unidades de ancho útil. Mide **6.369** unidades (+86 %), mundo 2200×1408 y **nueve checkpoints**. La referencia CPU Normal libre queda alrededor de **36–37 s** por vuelta frente a unos 27 del recorrido anterior; no cambia la potencia ni la física para alargarlo.
@@ -93,6 +101,7 @@ Con Node.js, desde la raíz y sin dependencias adicionales:
 ```sh
 node --check script.js
 node tests/validate-tracks.mjs
+node tests/validate-pixel.mjs
 node tests/validate-sunset.mjs
 node tests/validate-track-identity.mjs
 node tests/validate-integration.mjs

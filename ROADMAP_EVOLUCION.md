@@ -61,6 +61,8 @@ Avance 0.47: Volcano Ring con silueta diagonal/horquilla/regreso enlazado, 4.961
 
 Avance 0.52: Frostbite GP deja la forma casi compartida con Thunder (distancia 0,060). Recorrido asimétrico de 6.369 unidades, arco rápido/regreso técnico, sección 68–112, nueve gates y mundo 2200×1408; silueta más próxima a 0,258 (Volcano). Se descartan dos propuestas parecidas a Night y una con inversión/superposición junto a meta. Material de hielo conservado en física, con carretera/rasguños/marcas nativas; sin pianos de asfalto. Referencia libre Normal 36,93/35,85 s y clave @3:p5:r1, con tiempos @2 preservados. Pruebas de cuatro modelos/cinco barreras/tres dificultades y Chromium; sensación humana pendiente. Los otros trece recorridos están preservados por fixture 0.51 y quince imágenes de los cinco corredores anteriores son idénticas. Seis pistas variables, ocho uniformes; fase 27 sigue abierta.
 
+Avance 0.53: Pixel City deja la plantilla similar a Thunder y estrena avenidas/desvío interior/retorno enlazado, 4.368 unidades (+28,7 %), sección útil 76–112, pianos por sector, seis gates y mundo 1600×1024. Se comparan escalas 1,6 y 1,8 y se conserva la corta (~25 s), distinta de las duraciones de Frost y Night. Distancia mínima de silueta 0,239 frente a 0,092 anterior. Fixture 0.52 preserva otros trece trazados/modelos/física/materiales/CPU; récord @3:p5:r1 con @2 intacto. Siete variables/siete uniformes. Sensación humana y detalles de ambientación urbana siguen abiertos.
+
 ### 28. CPU y estrategia de carrera — primera revisión 0.48
 
 - Ampliar trazadas y elección de líneas según anchura real/material; anticipar frenadas por la línea elegida y reaccionar a grupos.
@@ -140,3 +142,5 @@ En las cinco referencias de parrilla 0.50, 56 → 8 pasos de contacto, con contr
 0.51 atiende las tres referencias Night/Meadow/Industrial y conserva roces residuales como pendientes; no volver a tratarlas como no implementadas. Siguiente tramo recomendado: fase 27, silueta/ritmo y secciones de otro circuito (Frostbite es candidato por su semejanza histórica con Thunder). Fase 28 continúa abierta para grupos/Sunset y aceptación humana, sin exigir cero contactos en toda carrera arcade.
 
 0.52 entrega Frostbite propio y desplaza sus pruebas de conservación al fixture 0.51. No repetir como pendiente su rediseño ni comparar tiempos nuevos con la vuelta antigua. Siguiente propuesta: continuar fase 27 con Pixel City u otro trazado todavía similar; conservar física/CPU/local y medir juego real. Las revisiones humanas y la fase 28 de grupos/Sunset siguen abiertas.
+
+0.53 continúa fase 27 con Pixel City propio; no repetir este rediseño ni la migración de récords. Próxima propuesta: volver a fase 28 con reservas de espacio/elección de rival en grupos y el caso Sunset Normal, conservando las siete rutas variables y la base local 2–4. Las siete pistas uniformes, la escucha humana y el manejo siguen abiertos; no se declara terminada la base por una prueba automática.

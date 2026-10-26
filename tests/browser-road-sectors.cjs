@@ -12,7 +12,7 @@ const server=http.createServer((req,res)=>{const file=req.url.split('?')[0]==='/
   await page.goto('http://127.0.0.1:'+server.address().port);
   if(process.env.ROAD_SCREENSHOTS)fs.mkdirSync(process.env.ROAD_SCREENSHOTS,{recursive:true});
   let probes=0;
-  const stages=process.env.ROAD_STAGES?process.env.ROAD_STAGES.split(',').map(Number):process.env.NIGHT_ONLY?[3]:[0,1,2,3,4,6];
+  const stages=process.env.ROAD_STAGES?process.env.ROAD_STAGES.split(',').map(Number):process.env.NIGHT_ONLY?[3]:[0,1,2,3,4,6,7];
   for(const stage of stages)for(const profile of ['open','full','half','corners','auto']){
    const result=await page.evaluate(([stage,profile])=>window.roadTest.inspect(stage,profile),[stage,profile]);
    assert.deepEqual(result.errors,[],JSON.stringify(result));assert.ok(result.checked>150);probes+=result.checked;
@@ -20,10 +20,11 @@ const server=http.createServer((req,res)=>{const file=req.url.split('?')[0]==='/
    if(process.env.ROAD_SCREENSHOTS&&['open','full'].includes(profile))await page.screenshot({path:path.join(process.env.ROAD_SCREENSHOTS,`track-${stage}-${profile}.png`)});
    if(profile==='open'&&process.env.ROAD_SCREENSHOTS){for(const phase of [.12,.70]){await page.evaluate(phase=>window.roadTest.close(phase),phase);await page.screenshot({path:path.join(process.env.ROAD_SCREENSHOTS,`track-${stage}-close-${phase}.png`)});}}
   }
-  if(stages.includes(4))for(const quality of ['retro','lite']){const result=await page.evaluate(quality=>window.roadTest.inspect(4,'open',quality),quality);assert.deepEqual(result.errors,[],JSON.stringify(result));probes+=result.checked;if(process.env.ROAD_SCREENSHOTS)await page.screenshot({path:path.join(process.env.ROAD_SCREENSHOTS,'track-4-'+quality+'.png')});}
+  for(const surfaceStage of stages.filter(s=>[4,7].includes(s)))for(const quality of ['retro','lite']){const result=await page.evaluate(quality=>window.roadTest.inspect(...quality),[surfaceStage,'open',quality]);assert.deepEqual(result.errors,[],JSON.stringify(result));probes+=result.checked;if(process.env.ROAD_SCREENSHOTS)await page.screenshot({path:path.join(process.env.ROAD_SCREENSHOTS,'track-'+surfaceStage+'-'+quality+'.png')});}
   const race=await page.evaluate(()=>window.roadTest.race());assert.equal(race.laps,3);assert.equal(race.times.length,3);assert.ok(race.times.every(time=>time>50&&time<75));assert.ok(Number.isFinite(race.finish));
   if(stages.includes(6)){const volcanic=await page.evaluate(()=>window.roadTest.race(6));assert.equal(volcanic.laps,3);assert.ok(volcanic.times.every(t=>t>20&&t<40));console.log('VOLCANO CHROMIUM RACE: '+JSON.stringify(volcanic));}
   if(stages.includes(4)){const frost=await page.evaluate(()=>window.roadTest.race(4));assert.equal(frost.laps,3);assert.ok(frost.times.every(t=>t>30&&t<50));console.log('FROST CHROMIUM RACE: '+JSON.stringify(frost));}
+  if(stages.includes(7)){const pixel=await page.evaluate(()=>window.roadTest.race(7));assert.equal(pixel.laps,3);assert.ok(pixel.times.every(t=>t>20&&t<38));console.log('PIXEL CHROMIUM RACE: '+JSON.stringify(pixel));}
   const duo=await page.evaluate(()=>window.roadTest.nightDuo());assert.equal(duo.split,true);assert.equal(duo.gates,16);assert.ok(duo.distance>500);
   if(process.env.ROAD_SCREENSHOTS)await page.screenshot({path:path.join(process.env.ROAD_SCREENSHOTS,'night-duo.png')});
   console.log('NIGHT RACE: '+JSON.stringify(race)+'; split views '+JSON.stringify(duo));

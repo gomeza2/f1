@@ -5,8 +5,8 @@ import {loadGame} from './helpers/game-harness.mjs';
 const old=JSON.parse(readFileSync(new URL('./fixtures/cpu-0.47.json',import.meta.url),'utf8')),{game}=loadGame();
 assert.equal(game.PHYSICS_VERSION,old.physics);assert.equal(game.WORLD_SPEED_SCALE,old.worldSpeed);assert.deepEqual(JSON.parse(JSON.stringify(game.CAR_MODELS)),old.models);
 let comparisons=0;
-// Frost's layout migration is preserved and raced by validate-frost.mjs, not compared to old lap times.
-for(const t of game.tracks){if(t.name==='FROSTBITE GP'&&t.layoutVersion===3)continue;const hash=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');assert.equal(hash,old.tracks[t.name],t.name+': route changed during CPU work');}
+// Later route migrations have dedicated snapshots/races; old lap times cannot benchmark a different course.
+for(const t of game.tracks){if(['FROSTBITE GP','PIXEL CITY'].includes(t.name)&&t.layoutVersion===3)continue;const hash=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');assert.equal(hash,old.tracks[t.name],t.name+': route changed during CPU work');}
 for(const previous of old.runs){
  if(previous.stage===4&&game.tracks[4].layoutVersion===3)continue;comparisons++;
  game.start('solo',previous.stage);game.cars[0].done=true;const car=game.cars[1];let offroad=0,hand=0;

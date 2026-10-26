@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.52
+# PIXEL GRAND PRIX — entrega 0.53
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Pixel City en 0.53
+
+Nuevo recorrido de 4.368 unidades (+28,7 %), avenidas, desvío interior técnico y regreso enlazado; ancho útil 76–112, pianos por sector, seis checkpoints, mundo 1600×1024. Asfalto y perfil parcial automático conservados; cinco opciones de barreras. Referencia Normal libre 25,47/24,42 s, frente a 23,02/22,08 anteriores. Se elige un circuito corto propio en lugar de alargar todos hacia un minuto.
+
+La separación de siluetas normalizada pasa de 0,092 (Thunder) a 0,239 (Jungle); margen de carretera 51,8 y separación de ramales 59,7. Esta medida detecta copias geométricas, no demuestra diversión. Récord @3:p5:r1 separado de @2. Otros trece trazados/modelos/física/CPU/audio/local preservados; siete pistas variables y siete uniformes. Condiciones y pruebas en `tests/experiments/PIXEL_053.md`. Falta evaluación humana y verificación del sitio público.
 
 ## Frostbite GP en 0.52
 
