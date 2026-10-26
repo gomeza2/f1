@@ -40,6 +40,14 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## Mezcla de sonido — 0.55
+
+El botón **MEZCLA** de la cabecera (engranaje en pantallas pequeñas) abre tres controles: **general, motores y efectos/avisos**. Podés bajar o silenciar los motores y conservar checkpoints, salida y llegada; también podés silenciar efectos sin apagar el motor. Sus valores se guardan localmente, con botón para restablecerlos.
+
+Valores iniciales: general **80 %**, motores **70 %**, efectos **85 %**. El botón SONIDO ON/OFF sigue siendo independiente. Ajustar volumen no lo reactiva. Abrir el panel durante una carrera la pausa, limpia las teclas mantenidas y deja reanudación manual con **SEGUIR**; Escape cierra el panel. Se mantiene el teclado nativo de los deslizadores y el foco vuelve al botón de apertura.
+
+La mezcla se aplica a los 1–4 humanos con un contexto reutilizado. Motor/cuerpo van por una salida; derrape, terreno y señales van por otra, ambas bajo volumen general/compresor. No se crean grafos nuevos al mover deslizadores ni se reproducen motores CPU. **El timbre de `engine-audio.js` permanece y sigue pendiente de escucha/revisión humana**; bajar su nivel no lo convierte en un motor nuevo. Detalle en [pruebas de mezcla](tests/experiments/MIX_055.md).
+
 ## CPU en grupos — 0.54
 
 Al disputar posiciones, la CPU da prioridad de trazada al rival que circula a su lado. Un coche algo más cercano por delante ya no borra esa reserva. Sigue calculando el frenado frente a **todos** los rivales, aunque haya elegido otro como referencia lateral.
@@ -124,6 +132,7 @@ node tests/validate-scenery.mjs
 node tests/validate-finish.mjs
 node tests/validate-car-visuals.mjs
 node tests/validate-audio.mjs
+node tests/validate-audio-mix.mjs
 node tests/validate-menu.mjs
 node tests/validate-results.mjs
 node tests/validate-rival-awareness.mjs
@@ -146,7 +155,7 @@ La prueba de identidad detecta copias de un trazado aunque se escalen, giren o r
 
 La prueba de CPU comprueba límites físicos, desplazamiento y coste del freno de mano. La comparación de mejora de ritmo frente a 0.24 corresponde a la física anterior; con la versión 2 se mide una referencia nueva porque cambiaron las reglas para humanos y rivales. Usa el código real en un entorno DOM simulado: completa tres vueltas con checkpoints en las 14 pistas y las tres dificultades, verifica prestaciones compartidas y prueba frenado ante tráfico y recuperación. No sustituye una carrera humana.
 
-Pruebas opcionales de navegador: `node tests/browser-smoke.cjs`, `node tests/browser-audio.cjs` y `node tests/browser-release.cjs`. Para crucero sostenido del motor: `node tests/browser-engine-cruise.cjs`. Para bordes/pianos: `node tests/browser-road-sectors.cjs`; `ROAD_SCREENSHOTS` guarda capturas opcionales. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
+Pruebas opcionales de navegador: `node tests/browser-smoke.cjs`, `node tests/browser-audio.cjs`, `node tests/browser-audio-mix.cjs` y `node tests/browser-release.cjs`. Para crucero sostenido del motor: `node tests/browser-engine-cruise.cjs`. Para bordes/pianos: `node tests/browser-road-sectors.cjs`; `ROAD_SCREENSHOTS` guarda capturas opcionales. Requiere Playwright y Chromium instalados en el entorno de desarrollo; `CHROMIUM_PATH` permite indicar el ejecutable. Inicia un servidor temporal en localhost y bloquea Google Fonts. No agrega dependencias al juego.
 
 ## Conducción — build 0.42
 

@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="es">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="application-version" content="0.54"><title>PIXEL GRAND PRIX</title><link rel="stylesheet" href="style.css?v=0.54"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="application-version" content="0.55"><title>PIXEL GRAND PRIX</title><link rel="stylesheet" href="style.css?v=0.55"></head>
 <body><main class="shell">
-<header><div class="brand">PIXEL<span>GP</span></div><div class="topnote">ARCADE RACING SYSTEM // 1994</div><div class="header-actions"><button id="soundBtn" class="small" aria-pressed="true">♫ SONIDO: ON</button><button id="fullscreenBtn" class="small" aria-label="Pantalla completa">⛶ PANTALLA COMPLETA</button></div></header>
+<header><div class="brand">PIXEL<span>GP</span></div><div class="topnote">ARCADE RACING SYSTEM // 1994</div><div class="header-actions"><button id="soundBtn" class="small" aria-pressed="true">♫ SONIDO: ON</button><button id="audioSettingsBtn" aria-label="Ajustar mezcla de sonido" title="Mezcla de sonido" class="small" aria-haspopup="dialog">MEZCLA</button><button id="fullscreenBtn" class="small" aria-label="Pantalla completa">⛶ PANTALLA COMPLETA</button></div></header>
 <section id="menu" class="panel">
 <div class="paddock-heading"><div><p class="eyebrow">EL PADDOCK</p><h1 id="menuTitle" tabindex="-1">PIXEL GRAND<br><span>PRIX</span></h1><p class="intro">Elegí tu coche. Aprendé la pista. Ganá la carrera.</p></div><p class="paddock-badge"><strong id="menuTrackCount">14</strong> CIRCUITOS<br><span>ARCADE · LOCAL 1–4</span></p></div>
 <div class="paddock-layout">
@@ -40,4 +40,11 @@
 <div class="result-table-card"><table id="raceResults"><caption id="raceCaption">RESULTADO DE CARRERA</caption><thead><tr><th scope="col">POS</th><th scope="col">PILOTO</th><th scope="col">TIEMPO</th><th scope="col">MEJOR VUELTA</th><th scope="col">PTS</th></tr></thead><tbody id="raceRows"></tbody></table></div>
 <div class="result-table-card"><table id="seasonResults"><caption id="seasonCaption">CAMPEONATO</caption><thead><tr><th scope="col">POS</th><th scope="col">PILOTO</th><th scope="col">ESTA CARRERA</th><th scope="col">TOTAL</th></tr></thead><tbody id="seasonRows"></tbody></table></div>
 </div><p id="resultText"></p><button id="nextBtn" class="primary">SIGUIENTE ETAPA →</button><button id="menuBtn" class="small">VOLVER AL MENÚ</button></section>
-<footer><span>PIXELGP © ARCADE DIVISION</span><span>BUILD 0.54 // RACE SPACE</span></footer></main><script src="engine-audio.js?v=0.54"></script><script src="script.js?v=0.54"></script></body></html>
+<dialog id="audioSettings" class="audio-settings" aria-labelledby="audioTitle" aria-describedby="audioHelp">
+<h2 id="audioTitle">MEZCLA DE SONIDO</h2><p id="audioHelp">Ajustá el volumen general, los motores y los efectos. Se guarda en este navegador.</p>
+<label for="volumeMaster">GENERAL <output id="volumeMasterValue" for="volumeMaster">80 %</output></label><input id="volumeMaster" type="range" min="0" max="100" step="1" value="80">
+<label for="volumeEngine">MOTORES <output id="volumeEngineValue" for="volumeEngine">70 %</output></label><input id="volumeEngine" type="range" min="0" max="100" step="1" value="70">
+<label for="volumeEffects">EFECTOS Y AVISOS <output id="volumeEffectsValue" for="volumeEffects">85 %</output></label><input id="volumeEffects" type="range" min="0" max="100" step="1" value="85">
+<p id="audioMixStatus" role="status" aria-live="polite"></p><p id="audioPauseNotice"></p><div class="audio-actions"><button id="audioReset" class="small">RESTABLECER</button><button id="audioClose" class="primary" autofocus>CERRAR</button></div>
+</dialog>
+<footer><span>PIXELGP © ARCADE DIVISION</span><span>BUILD 0.55 // SOUND MIX</span></footer></main><script src="engine-audio.js?v=0.55"></script><script src="script.js?v=0.55"></script></body></html>

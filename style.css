@@ -253,3 +253,17 @@ body.racing .racebottom{flex:0 0 auto;padding-top:5px;font-size:8px;flex-wrap:no
 @media(max-width:500px){.player-hud>span{grid-column:1/-1}}
 
 body.racing.local-racing .shell{width:100%}
+
+/* Native modal keeps mixing controls out of the driving canvas until requested. */
+.audio-settings{width:min(420px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;background:#101729;color:#f5f6ff;border:1px solid #69758e;padding:22px;box-shadow:0 12px 50px #0009}
+.audio-settings::backdrop{background:#030714b8}
+.audio-settings h2{font-size:14px;color:var(--lime);margin:0 0 16px}
+.audio-settings p{font:14px/1.5 monospace;color:#c4c9df}
+.audio-settings label{display:flex;justify-content:space-between;gap:12px;font-size:10px;margin-top:20px}
+.audio-settings output{color:var(--cyan);white-space:nowrap}
+.audio-settings input{display:block;width:100%;margin:12px 0;min-height:30px;accent-color:var(--lime)}
+.audio-actions{display:flex;justify-content:space-between;gap:12px;margin-top:20px}
+.audio-settings :focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.audio-settings:not([open]){display:none}
+
+@media(max-width:760px){#audioSettingsBtn{font-size:0}#audioSettingsBtn::before{content:'⚙';font:14px/1 monospace}}

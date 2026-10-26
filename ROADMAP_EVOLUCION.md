@@ -44,6 +44,8 @@ Estado 0.43: motor reemplazado y separado en `engine-audio.js`; pulsos/armónico
 
 Revisión 0.45 tras reporte humano de sonido desagradable a máxima estable: motor más grave/filtrado y menor brillo de crucero; evita ruido de derrape en recta sin giro. Prueba específica sostenida para cuatro modelos, con comparación frente a 0.44 de energía filtrada y estabilidad de marcha. Sigue pendiente escuchar/dispositivos reales; no se cierra fase 26 por resultados del analizador.
 
+Avance 0.55: tres controles general/motores/efectos, guardado local y restauración, salidas separadas y valores iniciales 80/70/85. Panel modal con pausa/manual return, teclado/foco y cierre Escape sin reanudar detrás; compacto en móvil. No crea contexto al ajustar desde menú ni desactiva mute; reutiliza hasta cuatro motores humanos. Timbre de `engine-audio.js` intacto, sin presentar una reducción de nivel como motor nuevo. Escucha y nueva revisión de timbre siguen abiertas.
+
 ### 27. Anchura, curvas y duración variadas — primera revisión 0.44
 
 - Datos por sector con anchura y materiales; extender una consulta común como `roadHalfWidthAt` para render, línea de carrera, barreras, gates, minimapa y editor.
@@ -148,3 +150,11 @@ En las cinco referencias de parrilla 0.50, 56 → 8 pasos de contacto, con contr
 0.53 continúa fase 27 con Pixel City propio; no repetir este rediseño ni la migración de récords. Próxima propuesta: volver a fase 28 con reservas de espacio/elección de rival en grupos y el caso Sunset Normal, conservando las siete rutas variables y la base local 2–4. Las siete pistas uniformes, la escucha humana y el manejo siguen abiertos; no se declara terminada la base por una prueba automática.
 
 0.54 desarrolla la fase 28 con prioridad y espacio entre flancos; no volver a tratar el caso de selección lateral Sunset como no implementado. Continúan las revisiones humanas y los contactos residuales arcade. Próxima propuesta: fase 26, mezcla regulable y revisión auditiva del motor; fase 27 conserva siete circuitos uniformes por desarrollar (Jungle es candidato). Mantener control ágil con frenado útil y la base local 2–4.
+
+## Prioridad reafirmada por el usuario en 0.55
+
+Leído el prompt maestro adjunto completo. Su referencia 0.40 es histórica: continuar desde main real, sin reiniciar ni cerrar fases por pruebas de sintaxis. Mantener conducción divertida, ágil y con frenado útil por delante de ampliar opciones; comparar curvas/derrape/recuperación en varias pistas y separar verificación automática de aceptación humana.
+
+Conservar la evolución de CPU justa y competitiva, siluetas y anchos variados, pianos/barreras/escapatorias coherentes y duraciones cortas/medias/largas (unos 20/40/60 s sin regla universal). Cámara/HUD legibles, audio ligado al coche, local 2–4, progresión y online real siguen en este plan abierto. No limitarlo a 24 fases ni presentar funciones incompletas como terminadas.
+
+0.55 termina este tramo de mezcla; **próximo trabajo: retomar fase 25, conducción y curvas**, con comparaciones reproducibles y sin dar por aceptado el manejo actual. Fase 27 conserva siete trazados uniformes (Jungle candidato); fase 26 mantiene pendiente el timbre/escucha y ambientes. Mantener el avance CPU 0.54 y local 2–4.

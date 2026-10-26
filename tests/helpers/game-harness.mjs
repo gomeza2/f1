@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
 // Execute the real game closure; expose state only inside this test sandbox.
-export function loadGame({audioContextClass,frameScheduler,sourceOverride,gamepads=[]}={}) {
+export function loadGame({audioContextClass,frameScheduler,sourceOverride,gamepads=[],storage}={}) {
   const elements = new Map();
   const context = new Proxy({}, { get: () => () => {} });
   function element(id) {
@@ -17,7 +17,7 @@ export function loadGame({audioContextClass,frameScheduler,sourceOverride,gamepa
   const documentEvents=new Map();
   const sandbox = {
     document: { body:element('body'),getElementById: element, createElement: () => element(Symbol()), querySelectorAll: () => [], addEventListener(name,callback){documentEvents.set(name,callback)} },
-    window: { AudioContext:audioContextClass,addEventListener() {}, matchMedia:()=>({matches:false}) }, localStorage: { getItem: () => null, setItem() {} },
+    window: { AudioContext:audioContextClass,addEventListener() {}, matchMedia:()=>({matches:false}) }, localStorage: storage||{ getItem: () => null, setItem() {} },
     navigator:{getGamepads:()=>gamepads},performance: { now: () => 0 }, requestAnimationFrame: frameScheduler?.request||(() => 1), cancelAnimationFrame:frameScheduler?.cancel||(()=>{}), console,
   };
   vm.createContext(sandbox);
@@ -29,6 +29,7 @@ export function loadGame({audioContextClass,frameScheduler,sourceOverride,gamepa
     get checkpoints(){return checkpoints},get tracks(){return tracks},get cars(){return cars},get track(){return track},
     tick(dt){elapsed+=dt;cars.forEach((car,i)=>{if(!car.done)physics(car,i,dt)});const contact=cars.some((a,i)=>!a.done&&cars.slice(i+1).some(b=>!b.done&&Math.hypot(a.x-b.x,a.y-b.y)<23-1e-6));resolveCollisions(dt);return contact},
     setCountdown(value){countdownRemaining=value},setElapsed(value){elapsed=value},get running(){return running},setKeys(value){keys=value},setDifficulty(value){difficulty=value}};
+    if(typeof setAudioMix==='function'){Object.assign(globalThis.testGame,{setAudioMix});Object.defineProperties(globalThis.testGame,{audioMix:{get:()=>audioMix},audioEngineBus:{get:()=>audioEngineBus},audioEffectsBus:{get:()=>audioEffectsBus}});}
     if(typeof aiBoundarySpeed==='function')Object.assign(globalThis.testGame,{aiBoundarySpeed,projectVehicle});
     if(typeof controlsFor==='function')Object.assign(globalThis.testGame,{keyFor,controlsFor,connectedPad,checkLocalControllers,validateLocalSetup,updateLocalLobby,drivingViewports,drawFrame});`;
   vm.runInContext(source.replace(/\}\)\(\);\s*$/, expose + '})();'), sandbox);

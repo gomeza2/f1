@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import {loadGame} from './helpers/game-harness.mjs';
+import {AudioContext} from './helpers/audio-context.mjs';
+const data=new Map(),storage={getItem:key=>data.get(key)||null,setItem:(key,value)=>data.set(key,value)};
+const {game:g,element:e}=loadGame({audioContextClass:AudioContext,storage});
+assert.equal(g.audioContext,null,'Volume controls should not autoplay');
+assert.deepEqual(JSON.parse(JSON.stringify(g.audioMix)),{master:.8,engine:.7,effects:.85});
+g.setAudioMix('engine',.4);assert.equal(g.audioContext,null);assert.equal(e('volumeEngineValue').textContent,'40 %');
+g.start('solo',0);g.setCountdown(0);g.cars[0].speed=150;g.setKeys({w:true});g.updateAudio();
+const ctx=g.audioContext,engine=g.audioEngineBus,effects=g.audioEffectsBus,master=g.audioMaster,channel=g.audioChannels[0];
+assert.equal(engine.gain.value,.4);assert.equal(effects.gain.value,.85);assert.equal(master.gain.value,.55*.8);
+assert.deepEqual(channel.gain.connections,[engine]);assert.deepEqual(channel.subGain.connections,[engine]);
+assert.deepEqual(channel.skid.gain.connections,[effects]);assert.deepEqual(channel.terrain.gain.connections,[effects]);
+assert.deepEqual(engine.connections,[master]);assert.deepEqual(effects.connections,[master]);
+g.setAudioMix('engine',0);g.playRaceCue('checkpoint',g.cars[0]);assert.equal(engine.gain.value,0);assert.equal(g.audioVoices.size,1,'Motor mute silenced race cues');
+assert.ok(ctx.nodes.some(n=>n.connections?.includes(effects)&&n.stopTime===undefined&&n!==effects));
+ctx.advance(2);g.setAudioMix('effects',0);g.setAudioMix('engine',1);g.playRaceCue('lap',g.cars[0]);assert.equal(g.audioVoices.size,0);assert.ok(channel.gain.gain.value>0);assert.equal(effects.gain.value,0);
+g.setAudioMix('master',0);assert.equal(master.gain.value,0);g.playRaceCue('lap',g.cars[0]);assert.equal(g.audioVoices.size,0);
+g.setAudioMix('effects',1);g.setAudioMix('master',1);assert.ok(master.gain.value>0);
+const nodes=ctx.nodes.length;for(let i=0;i<100;i++)g.setAudioMix('engine',i/100);assert.equal(ctx.nodes.length,nodes,'Slider changes allocated audio graphs');
+g.togglePause();g.setAudioMix('master',.8);assert.equal(master.gain.value,0);g.togglePause();assert.ok(master.gain.value>0);
+e('soundBtn').onclick();g.setAudioMix('master',1);assert.equal(master.gain.value,0);assert.match(e('audioMixStatus').textContent,/APAGADO/);e('soundBtn').onclick();assert.ok(master.gain.value>0);
+g.setAudioMix('engine',NaN);g.setAudioMix('master',Infinity);g.setAudioMix('__proto__',.1);assert.equal(g.audioMix.master,1);
+g.setAudioMix('engine',4);assert.equal(g.audioMix.engine,1);g.setAudioMix('effects',-1);assert.equal(g.audioMix.effects,0);
+const restored=loadGame({storage});assert.equal(restored.game.audioMix.engine,1);assert.equal(restored.game.audioMix.effects,0);
+data.set('pixelGP.audioMix.v1','{"version":1,"master":-1,"engine":"1","effects":2}');const corrupt=loadGame({storage});assert.equal(corrupt.game.audioMix.master,0);assert.equal(corrupt.game.audioMix.engine,.7);assert.equal(corrupt.game.audioMix.effects,1);
+for(const value of ['{broken','null','{"version":2,"master":0}']){data.set('pixelGP.audioMix.v1',value);assert.equal(loadGame({storage}).game.audioMix.master,.8);}
+const blocked=loadGame({storage:{getItem(){throw Error('blocked')},setItem(){throw Error('full')}}});blocked.game.setAudioMix('master',.3);assert.equal(blocked.game.audioMix.master,.3);
+// Four local engines share one bus, cues/noise another, and the existing context is reused.
+e('localPlayerCount').value='4';g.start('duo',0);g.setCountdown(0);g.updateAudio();assert.equal(g.audioContext,ctx);assert.equal(g.audioChannels.length,4);assert.ok(g.audioChannels.every(c=>c.gain.connections[0]===engine&&c.skid.gain.connections[0]===effects));
+console.log('PASS: independent motor/effect/master buses, persisted bounded settings, malformed/full/blocked storage, no autoplay, 100 allocation-free slider changes, mute/pause semantics and four-human context reuse. Sound quality requires listening.');

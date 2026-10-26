@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.54
+# PIXEL GRAND PRIX — entrega 0.55
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Mezcla de audio en 0.55
+
+Tres volúmenes independientes (general/motores/efectos), persistencia local y restauración. Panel nativo accesible desde la cabecera, compacto en móvil; apertura en carrera pausa, Escape/cierre conservan pausa y SEGUIR reanuda manualmente. No reproduce audio al ajustar desde el menú ni anula SONIDO OFF. Los valores iniciales 80/70/85 reducen la presencia del motor respecto de los avisos.
+
+Salidas separadas para motor/cuerpo y efectos/terreno/señales, con rampas suaves y un contexto reutilizado hasta cuatro humanos. Datos corruptos/bloqueo de almacenamiento no impiden correr. Timbre, física 5, CPU 0.54, catorce pistas y récords conservados. La escucha del motor y aceptación de manejo permanecen abiertas; esto entrega control de mezcla, no aprobación auditiva. Evidencia en `tests/experiments/MIX_055.md`.
 
 ## Disputas en grupos en 0.54
 
