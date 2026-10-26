@@ -71,12 +71,13 @@ Avance 0.48: curvatura geométrica sobre tres posiciones en un arco de 72 unidad
 
 Consulta de velocidad con búsqueda por progreso y horizonte 240; 2.448 comparaciones de equivalencia y 31 lecturas frente a 891 entradas en Night. Pruebas generales de CPU/parrilla/tráfico mantienen límites y orden de dificultad. Los roces de Dusty Fácil (28 pasos/0,93 s en tres vueltas) dejan pendiente una revisión de tráfico, especialmente al estrechar y solapar líneas. Siguiente tramo: planificación de la línea elegida, ataque/defensa y salidas tras contacto; no se declara completada la fase 28. Física 5, audio, pistas y récords humanos intactos.
 
-### 29. Local de 2–4 humanos y entradas
+### 29. Local de 2–4 humanos y entradas — primera revisión 0.49
 
 - Mejorar el actual modo de dos y añadir selector real de 3/4 con entradas independientes/configurables. Mantener R/C/Esc fuera de las teclas de conducción; incorporar mandos mediante Gamepad API.
 - Cámaras y HUD por persona, tiempos/CP/vueltas, nombres/colores, clasificación y puntos de todos. Tres puede usar un cuarto cuadrante de información; cuatro necesita vista legible por coche.
 - Pausa/reinicio coherentes, conexión/desconexión de mandos y pruebas de teclado simultáneo. El hardware puede limitar muchas teclas a la vez: comprobar dispositivos reales, sin prometer resolverlo por software.
-- Estado: pendiente; solo hay dos humanos y 1–3 CPU en solo. No hay opciones vacías de 3/4.
+- Estado 0.49: implementada primera entrega por pedido del usuario, adelantada respecto al refinamiento de tráfico. Previa 2/3/4, modelos/pinturas individuales, teclado y mandos estándar exclusivos con entradas analógicas; detección de ausencia/desconexión y pausa/manual return. Cámaras independientes, viewport local adaptable, minimapa con sus campos reales, HUD exterior de velocidad/posición/vuelta/CP/tiempo/mejor por piloto, resultados/puntos/reinicio/siguiente para todos. Audio hasta cuatro motores con contexto reutilizado.
+- Validación: escenarios automáticos y Chromium con mandos emulados y teclado real automatizado; distribución en escritorio y móvil, capturas revisadas. No equivale a hardware real ni a una carrera humana de cuatro. Siguen pendientes remapeo configurable, comodidad de teclado/mandos físicos y rendimiento sostenido con cuatro cámaras. Física 5, CPU, recorridos y récords conservados.
 
 ### 30. Simulación y eventos mantenibles
 
@@ -124,4 +125,4 @@ Consulta de velocidad con búsqueda por progreso y horizonte 240; 2.448 comparac
 
 ## Continuación
 
-Verificar main y el último registro de `ROADMAP_24_FASES.md`. 0.43 sustituye el motor y conserva la revisión de manejo 0.42. 0.44 comienza la fase 27 con tres pistas de ancho variable. 0.45 atiende el reporte de gas continuo demasiado fácil y motor agudo a máxima. 0.46 añade Night largo con anchos variables y 16 gates. 0.47 diferencia Volcano y conecta su material con el render del corredor. 0.48 revisa lectura de curvas y consulta de frenado de CPU. Próxima implementación: **continuar fase 28 con líneas de ataque/defensa y tráfico, especialmente los roces en Dusty Fácil**. La evaluación humana de motor y conducción permanece abierta; puede reordenar la prioridad. Local 3–4 y online siguen pendientes.
+Verificar main y el último registro de `ROADMAP_24_FASES.md`. 0.43 sustituye el motor y conserva la revisión de manejo 0.42. 0.44 comienza la fase 27 con tres pistas de ancho variable. 0.45 atiende el reporte de gas continuo demasiado fácil y motor agudo a máxima. 0.46 añade Night largo con anchos variables y 16 gates. 0.47 diferencia Volcano y conecta su material con el render del corredor. 0.48 revisa lectura de curvas y consulta de frenado de CPU. Próxima implementación: **continuar fase 28 con líneas de ataque/defensa y tráfico, especialmente los roces en Dusty Fácil**. 0.49 adelanta la primera entrega local 2–4 por pedido explícito. La evaluación humana de motor/conducción y del multijugador permanece abierta; puede reordenar la prioridad. Local ya admite 2–4 con teclado/mandos estándar; remapeo y hardware físico pendientes. Online sigue en diseño.

@@ -56,6 +56,14 @@ element('barrierMode').value='full';game.start('solo',0);context.advance(4);
 const rail=game.physicalBarriers.find(b=>b.kind==='rail'),x=(rail.a.x+rail.b.x)/2,y=(rail.a.y+rail.b.y)/2,loc=game.nearestOnTrack(x,y),length=Math.hypot(loc.x-x,loc.y-y),nx=(loc.x-x)/length,ny=(loc.y-y)/length;
 const parked=game.cars[0];parked.x=x+nx*12;parked.y=y+ny*12;parked.heading=Math.atan2(rail.b.y-rail.a.y,rail.b.x-rail.a.x);parked.speed=0;
 game.resolveBarrierContact(parked,parked.x+nx*4,parked.y+ny*4);assert.equal(game.audioVoices.size,0,'Static barrier correction produced an impact sound');
+// Expand an existing context for four humans, then silence unused slots on return to two.
+element('localPlayerCount').value='4';game.start('duo',0);game.setCountdown(0);game.updateAudio();
+assert.equal(game.audioContext,context);assert.equal(game.audioChannels.length,4);assert.ok(game.audioChannels.every(c=>c.gain.gain.value>0));
+game.togglePause();assert.ok(game.audioChannels.every(c=>c.gain.gain.value===0));game.togglePause();
+element('backBtn').onclick();assert.equal(game.audioMaster.gain.value,0);
+element('localPlayerCount').value='2';game.start('duo',0);game.setCountdown(0);game.updateAudio();
+assert.equal(game.audioChannels.length,4,'Changing modes allocated another motor graph');assert.ok(game.audioChannels.slice(0,2).every(c=>c.gain.gain.value>0));assert.ok(game.audioChannels.slice(2).every(c=>c.gain.gain.value===0));
+element('backBtn').onclick();
 const broken=loadGame({audioContextClass:class{constructor(){throw new Error('Audio unavailable')}}});broken.game.start('solo',0);assert.equal(broken.game.audioContext,null);assert.equal(broken.game.running,true);
 const fallback=loadGame();fallback.game.start('solo',0);fallback.game.updateAudio();fallback.game.playRaceCue('record',fallback.game.cars[0]);assert.equal(fallback.game.running,true);
-console.log('PASS: model engines, human-only mix, skid/terrain response, CPU checkpoint silence, eight-voice budget, cleanup, pause/mute/hidden/menu, one reused context, two-player audio, result cue and no-Web-Audio fallback. Graph tests do not establish perceived sound quality.');
+console.log('PASS: model engines, human-only mix, skid/terrain response, CPU checkpoint silence, eight-voice budget, cleanup, pause/mute/hidden/menu, one reused context, two/four-player audio and bounded reused graphs, result cue and no-Web-Audio fallback. Graph tests do not establish perceived sound quality.');

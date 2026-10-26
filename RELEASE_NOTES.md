@@ -1,10 +1,18 @@
-# PIXEL GRAND PRIX — entrega 0.48
+# PIXEL GRAND PRIX — entrega 0.49
 
 ## Qué incluye esta base
 
-14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, dos jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
+14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Parrilla local en 0.49
+
+Previa de 2–4 humanos con pista/barreras/gráficos compartidos y coche/pintura/control individual. P1 usa el garaje; P2, P3 y P4 tienen sus propias elecciones. Teclado con cuatro conjuntos separados y mandos estándar con aceleración/freno/dirección analógicos, zona muerta y asignación exclusiva. Un mando ausente impide largar; desconectarlo pausa la carrera y exige reanudar manualmente tras reconectar.
+
+Cámara por persona, pantalla dividida adaptable al ancho de ventana sin estirar el render, HUD exterior por piloto y minimapa con todos sus campos de visión. Tres humanos aprovechan el cuarto cuadrante para posiciones. Resultados, puntos, reinicio y siguiente etapa incluyen hasta cuatro identidades humanas. Audio reutiliza un solo contexto y hasta cuatro canales de motor; los que dejan de usarse se silencian. Física 5, CPU 0.48, 14 recorridos y récords conservados.
+
+Pruebas específicas Node/Chromium de entradas, controles analógicos y ciclo de vida. Los mandos de las pruebas se emulan: falta hardware real, comodidad/teclas simultáneas, conducción humana completa y rendimiento sostenido con cuatro vistas. Sin remapeo libre ni táctil. Se adelanta fase 29 por pedido; fases 27/28 y aceptación de manejo/audio permanecen abiertas. Push y despliegue Pages se verifican por separado.
 
 ## Ritmo CPU en 0.48
 
@@ -65,6 +73,9 @@ El antiguo plan de cinco bloques se reemplaza por `ROADMAP_EVOLUCION.md`, sin l�
 Nuevo recorrido con recta larga, curva exterior, sector interior y regreso técnico. Longitud +76,5 %, nueve checkpoints y perfil abierto. Se conservan tamaño/velocidad del coche y los otros 13 trazados. Los récords @2 se conservan y el recorrido nuevo usa @3. Normal libre mide 34,86 s por vuelta de CPU; el objetivo humano de 25–45 s sigue pendiente de calibración.
 
 ## Evidencia
+
+- 0.49: 15 parrillas locales (2/3/4 humanos en Sunset, Dusty, Night, Volcano e Industrial), elección de coche/color/control, entradas aisladas, cuatro mandos analógicos emulados, cámara/HUD, DNF, puntos, pausa/reconexión, reinicio y siguiente. Chromium usa teclado real automatizado y Gamepad API emulada, cinco resoluciones (incluida ultrapanorámica), pantalla completa y capturas revisadas. No son 15 carreras completas ni una prueba de comodidad de cuatro personas.
+- Regresión focalizada: seis comparaciones de CPU/doce vueltas y dos parrillas Normal/24 vueltas, con los mismos tiempos de referencia 0.48; colisiones, manejo, audio 2/4/reutilización/silencio, ciclo de carrera, menú/resultados y entrega local. No se repiten las 94 carreras de 0.48. La inspección visual detectó márgenes laterales y solapamientos en HUD pequeño, corregidos con viewport local adaptable y distribución responsive; se comprueba que el texto no desborde sus celdas.
 
 - 0.48: 76 carreras generales/450 vueltas (42 CPU, 20 parrilla, 14 tráfico), más seis comparaciones de ritmo/doce vueltas y doce carreras Volcano/54 vueltas: 94 ejecuciones, 516 vueltas válidas en total. Límites compartidos, tres dificultades y orden de ritmo conservados. Dos coches no registran contactos en sus catorce referencias; no garantiza contacto cero contra personas.
 - Integración de las 14 pistas/70 perfiles, pruebas de aceleración/giro/frenado del jugador, colisiones, pausa/reinicio y Chromium completo/entrega local superados. La primera comprobación de cuenta atrás llegó tarde bajo carga; ahora verifica el estado al procesar R y conserva teclado real. Equilibrio y audio percibido siguen pendientes de prueba humana.

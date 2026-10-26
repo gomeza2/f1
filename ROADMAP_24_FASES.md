@@ -8,7 +8,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.48**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.49**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y 2–4 jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -1063,3 +1063,14 @@ Consultar `ROADMAP_EVOLUCION.md`; este archivo conserva historial y evidencia. C
 - Consulta del sobre de frenado por búsqueda y horizonte 240: igualdad con barrido completo en 2.448 casos, incluida la meta; Night pasa de 891 entradas a 31 lecturas en la consulta medida. No es un benchmark de FPS.
 - Pistas, modelos, física 5, tiempos humanos y audio conservados. Prueba de reinicio en Chromium estabilizada capturando cuenta 3/tiempo 0/coche no terminado en la misma tarea de teclado real; no se altera el reloj del juego.
 - Referencias, condiciones y limitaciones en `tests/experiments/AI_CURVATURE_048.md`. Políticas de tráfico/defensa requieren más trabajo: Dusty Fácil tiene 28 pasos de contacto en la parrilla; todos terminan, pero el aumento se deja explícito. Fases 27 y 28 siguen abiertas; siguiente prioridad: líneas de ataque/defensa y tráfico.
+
+
+## Avance 0.49 — fase 29 adelantada, parrilla local 2–4
+
+- Base real `4203e5f` / 0.48, árbol limpio y main remoto comprobado; rama `work/local-grid-049`. Pedido del usuario: mejorar dos jugadores, sumar tres/cuatro y una previa con elecciones individuales, velocímetro y tiempos por piloto.
+- Previa integrada al paddock, selector 2/3/4, coche/pintura/control por persona. Se mantienen cuatro modelos/seis pinturas y pista/barrera/gráficos compartidos. P2 deja de estar fijado a Balanced/cian. Teclado con veinte teclas de conducción distintas, sin R/C/Esc; mandos estándar con analógicos, zona muerta, exclusividad y pausa ante desconexión. No se añaden menús vacíos.
+- Cámaras independientes: dos mitades o cuadrantes; tres aprovecha el sobrante para posiciones. Área local adaptable al ancho útil, sin deformar el coche. HUD exterior individual, minimapa con todos los campos de visión, resultados/puntos/DNF y siguiente/reinicio. Audio amplía a cuatro canales reutilizados y silencia los sobrantes.
+- Física 5, prestaciones, política CPU de 0.48, geometrías y claves de récord intactas. Fase 28 conserva pendiente Dusty Fácil y planificación por carril; fase 27 sigue abierta. Fase 29 no se declara terminada: falta comodidad/hardware físico, remapeo y rendimiento real sostenido.
+- Pruebas nuevas: `validate-local.mjs` y `browser-local.cjs`; mandos emulados y teclado real automatizado. Los resultados sintéticos no se presentan como carreras humanas completas. Referencias y comprobaciones en README/notas de entrega.
+
+- Cierre: 15 parrillas de configuración/entrada en cinco pistas y pruebas Chromium 2/3/4 con teclado, mandos emulados y cinco resoluciones. Capturas revisadas; corregidos márgenes laterales, HUD superpuesto en pequeño y centrado cuando una vista supera el mundo. Regresión de CPU focalizada: ocho carreras/36 vueltas válidas; integración de 70 perfiles, manejo, contactos, audio hasta cuatro humanos, pausa/resultados y entrega local. No equivale a validación humana ni se repiten las 94 carreras previas.

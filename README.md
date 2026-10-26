@@ -14,8 +14,11 @@ La versión aparece en el pie. JavaScript y CSS llevan una versión en su URL pa
 
 - **Jugador 1:** W acelera, S frena, A/D gira, ESPACIO freno de mano.
 - **Jugador 2:** flechas para acelerar, frenar y girar; ENTER freno de mano.
+- **Jugador 3:** I acelera, K frena, J/L gira; U freno de mano.
+- **Jugador 4:** T acelera, G frena, F/H gira; Y freno de mano.
+- **Mandos estándar (local):** cada piloto puede elegir un mando diferente en la parrilla. Stick izquierdo gira, RT o A acelera, LT o B frena, X derrapa. Acelerador, freno y dirección analógicos con zona muerta. Conectá el mando y pulsá un botón para que el navegador lo detecte. Si falta un mando asignado, la carrera espera en pausa; reconectalo y pulsá ESC o SEGUIR. No se requiere mando para usar teclado.
 - **R:** reinicia la carrera actual.
-- **C / botón VISTA:** alterna vista cercana y circuito completo en modo individual. Dos jugadores usa pantalla dividida, con una cámara y contador de vuelta por jugador.
+- **C / botón VISTA:** alterna vista cercana y circuito completo en modo individual. El modo local usa una cámara por jugador: dos mitades para dos personas, tres/cuatro cuadrantes para tres/cuatro. La vista se adapta al espacio de la ventana sin deformar los coches.
 - **ESC:** pausa o reanuda la carrera. Si estás en pantalla completa, también permite salir. La pestaña oculta pausa automáticamente; al volver se reanuda de forma manual. Pausar limpia las teclas mantenidas: volvé a acelerar al continuar.
 - **Pantalla completa:** botón en la cabecera.
 
@@ -28,6 +31,14 @@ Antes de correr podés elegir gráficos, dificultad, circuito, coche, color y pe
 - **Mitad + neumáticos:** barreras en una mitad y neumáticos en curvas seleccionadas de la otra.
 - **Solo en curvas:** coloca barreras en sectores de mayor curvatura.
 - **Sin barreras:** deja zonas abiertas, pero la salida de pista sigue teniendo penalización y recuperación.
+
+## Parrilla local de 2–4 jugadores — 0.49
+
+En el paddock, elegí la pista, las barreras y los gráficos. **PREPARAR MULTIJUGADOR · 2–4** lleva a la parrilla local: seleccioná cuántos juegan y configurá cada coche/pintura/control. P1 conserva la elección del garaje superior; P2 ya no está limitado a Balanced. La dificultad y cantidad de CPU corresponden solo al botón individual.
+
+Cada persona tiene cámara propia y un panel exterior con posición, velocidad, vuelta, checkpoints, tiempo de vuelta y mejor vuelta de esa carrera. Al terminar aparece su tiempo final; resultados y puntos incluyen a todos. Para tres personas, el cuadrante restante muestra posiciones. Las cámaras y el minimapa usan los mismos rectángulos de vista. En ventanas anchas el área local aprovecha el ancho disponible, sin estirar el coche ni cambiar su física.
+
+El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
 ## Circuitos y superficies
 
@@ -55,7 +66,7 @@ Las superficies incluyen asfalto, tierra, pasto, hielo, volcánico y secciones m
 
 ## Funcionalidades actuales
 
-- Carrera para un jugador contra **1, 2 o 3 CPU** (tres por defecto) y modo local de dos jugadores sin CPU.
+- Carrera para un jugador contra **1, 2 o 3 CPU** (tres por defecto) y modo local de **2, 3 o 4 jugadores** sin CPU, con coche, pintura y control por persona.
 - Campeonato por carreras.
 - Cuenta regresiva, cronómetro, vueltas, checkpoints y resultados.
 - Récords de mejor vuelta guardados en `localStorage`.
@@ -337,3 +348,10 @@ La CPU lee la curvatura sobre un arco continuo de posiciones, reduciendo la infl
 La consulta de velocidad recorre solo las próximas 240 unidades de recorrido, con búsqueda inicial por progreso; no todo el plan en cada frame. Se comprueba igualdad con el barrido anterior, incluida la meta. Night tiene 891 entradas de plan: 31 lecturas de progreso en la consulta medida. No es una medición de FPS.
 
 Referencia/variantes y limitaciones: `tests/experiments/AI_CURVATURE_048.md`. Física/recorridos/récords `:p5` y audio se conservan. Sigue pendiente competir contra personas y refinar adelantamientos/defensa por línea elegida; Dusty Fácil muestra más roces en esta parrilla de prueba. La fase 28 sigue abierta y es la siguiente prioridad. Las nueve pistas sin sección variable y la fase 27 también permanecen abiertas.
+
+
+### Entrega 0.49 — fase 29, parrilla local
+
+Adelantada por pedido del usuario: previa real de 2–4 humanos, elecciones individuales, controles normalizados de teclado/mando, cámaras/HUD, resultados y continuidad del campeonato. Audio amplía el contexto existente hasta cuatro motores humanos; voces extra quedan mudas al volver a dos/solo. Sin cambios a física 5, potencia, geometrías, récords o política de CPU 0.48.
+
+Pruebas específicas: `node tests/validate-local.mjs` y, con Playwright/Chromium, `node tests/browser-local.cjs`. Cubren 15 parrillas de cinco pistas, entradas aisladas/simultáneas, selección, cámaras, HUD, resultados/DNF/puntos, pausa/reinicio/siguiente, cinco resoluciones y mandos estándar emulados con desconexión/reconexión/asignación exclusiva. No son carreras humanas completas ni validación de hardware físico. La revisión de tráfico de fase 28 (Dusty Fácil), más perfiles/siluetas de fase 27, escucha del audio y equilibrio humano siguen pendientes. Próximo tramo recomendado: tráfico y líneas de ataque/defensa, conservando esta base local.
