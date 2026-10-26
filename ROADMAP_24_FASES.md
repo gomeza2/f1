@@ -1008,3 +1008,11 @@ Partir de 0.41 y verificar main. Próximo bloque: **fase 15, sustituir el sonido
 ### Continuación vigente con «siguiente»
 
 Consultar `ROADMAP_EVOLUCION.md`; este archivo conserva historial y evidencia. Cerrar/revisar el feedback de manejo sin convertir parámetros en intocables. Próxima mejora propuesta: **fase 26, sustituir el motor sonoro** y separar su responsabilidad, conservando señales y ciclo de vida. Después se prioriza por impacto, sin obligación de agotar las fases antiguas ni un número fijo de entregas.
+
+
+## Avance 0.43 — motor nuevo, fase abierta 26
+
+- Base revisada: main `f3db8e4` / 0.42, árbol limpio, remoto verificado; rama recuperable `work/engine-audio-043`.
+- Reemplazado motor de osciladores crudos/bandas por pulsos propios de combustión filtrados, régimen/carga continuos y seis marchas con histéresis. Perfiles por modelo, mezcla de dos humanos y efectos de carrera conservados. Extraído `engine-audio.js`, rutas versionadas actualizadas.
+- Validación automática de régimen/cambios/carga/reset, grafo/ciclo de vida y regresiones de manejo/progreso; Web Audio real, flujo Chromium y entrega sin instrumentación bajo `/f1/`. No hay aprobación humana del timbre ni del manejo.
+- No se añadieron anchos variables, nuevos trazados ni 3/4 humanos. Fase 27 es la siguiente: anchos, pianos y barreras por sector, luego ritmos/duraciones variados; referencias 20/40/60 segundos sin imponer una ventana universal. Hoja vigente: `ROADMAP_EVOLUCION.md`.

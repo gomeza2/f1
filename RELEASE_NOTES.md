@@ -1,4 +1,4 @@
-# PIXEL GRAND PRIX — entrega 0.42
+# PIXEL GRAND PRIX — entrega 0.43
 
 ## Qué incluye esta base
 
@@ -6,11 +6,17 @@
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
 
+## Motor sustituido en 0.43
+
+Nueva síntesis propia en `engine-audio.js`: pulsos de combustión limitados en armónicos, cuerpo grave, filtro/carga del acelerador y seis marchas con histéresis y caída de régimen. Cuatro perfiles de motor. No cambia física, récords `:p4`, trazados ni controles. Se conservan capas de terreno/derrape, señales de carrera, mezcla de dos humanos y silencio en pausa/OFF/menú. Un contexto reutilizado; no se crean osciladores por frame.
+
+Pruebas de cambios/revoluciones/carga, grafo y ciclo de vida; medición real de salida en Chromium. Esto no confirma que el timbre guste: pendiente escucha humana. Fase 26 tiene una primera revisión; ambientes temáticos y controles separados de volumen quedan abiertos. Siguiente implementación: fase 27, anchuras/pianos/barreras por sector y ritmos distintos de pista.
+
 ## Fluidez y contacto en 0.42
 
 Respuesta de volante/acelerador más fluida, con capacidad de frenar y cerrar curvas. Comparadas dos alternativas frente a 0.41; la más permisiva se descartó. La CPU mantiene roces leves y anticipa impactos fuertes. Se corrige un gate que podía provocar una vuelta extra al coche parcialmente dentro de la franja; meta y checkpoints usan intersección real/huella del coche. Cuenta atrás en segundos reales incluso con pocos frames.
 
-Física `:p4`, con récords anteriores conservados. No se sube la velocidad máxima ni se borran las colisiones. La sensación de manejo necesita evaluación humana. Plan abierto: `ROADMAP_EVOLUCION.md`; quedan visibles motor nuevo, anchos/duraciones variados, 3–4 humanos, modos/progresión y arquitectura online. El motor actual y el límite de dos humanos no cambian en esta entrega.
+Física `:p4`, con récords anteriores conservados. No se sube la velocidad máxima ni se borran las colisiones. La sensación de manejo necesita evaluación humana. Plan abierto: `ROADMAP_EVOLUCION.md`; quedan visibles motor nuevo, anchos/duraciones variados, 3–4 humanos, modos/progresión y arquitectura online. El límite de dos humanos sigue vigente; el motor se reemplaza en 0.43.
 
 ## Grava y terrenos en 0.41
 
@@ -22,7 +28,7 @@ Recuperación con acelerador comprobada. Registro de física `:p3`, conservando 
 
 Aceleración progresiva y giro limitado por fuerza lateral. Frenar permite cerrar más la trayectoria. CPU y humanos comparten el cambio; máximas, trazados y tamaño del coche no se alteran. Récords con sufijo `:p2`, conservando los anteriores. La sensación de conducción aún necesita aprobación humana.
 
-El antiguo plan de cinco bloques se reemplaza por `ROADMAP_EVOLUCION.md`, sin límite artificial de fases. La estimación anterior de una sola entrega pendiente queda reemplazada. Grava implementada/comprobada en 0.41; sonido nuevo y 3–4 humanos todavía no están implementados.
+El antiguo plan de cinco bloques se reemplaza por `ROADMAP_EVOLUCION.md`, sin límite artificial de fases. La estimación anterior de una sola entrega pendiente queda reemplazada. Grava implementada/comprobada en 0.41; motor nuevo implementado en 0.43; 3–4 humanos todavía pendientes.
 
 ## Sunset ampliado en 0.39
 
@@ -30,13 +36,15 @@ Nuevo recorrido con recta larga, curva exterior, sector interior y regreso técn
 
 ## Evidencia
 
+- 0.43: sintaxis/integración, audio (régimen, marchas, carga y ciclo de vida), manejo, checkpoints, pausa/reinicio, Chromium completo, audio real y entrega bajo `/f1/` superados. RMS muestreado 0 en pausa/OFF/menú; pico de motor 0,114 en la muestra observada, sin recorte en esa muestra. No es un análisis de todos los estados ni escucha humana.
+
 - 0.42: se repiten 42 carreras clásicas, 20 de parrilla y 14 de tráfico; 450 vueltas válidas con física 4 y gates por contacto. La conducción humana no se sustituye por estas simulaciones.
 - 0.38: integración, pruebas focalizadas y Chromium completo/audio real. Entrega probada con archivos originales bajo `/f1/`, sin instrumentar el juego. La apertura directa del archivo no pudo comprobarse: Chromium administrado bloquea la navegación `file:`.
 - Fuente de verdad: versión visible en el pie, commit de `main` y último registro de `ROADMAP_24_FASES.md`.
 
 ## Publicación
 
-Archivos estáticos en raíz, sin instalación ni compilación. Para Pages: rama `main`, carpeta `/`. Conservar juntos `index.html`, `style.css` y `script.js`. Al cambiar la versión, actualizar metadato, consultas de ambos recursos y pie; la validación de integración detecta discrepancias.
+Archivos estáticos en raíz, sin instalación ni compilación. Para Pages: rama `main`, carpeta `/`. Conservar juntos `index.html`, `style.css`, `engine-audio.js` y `script.js`. Al cambiar la versión, actualizar metadato, consultas de todos los recursos y pie; la validación de integración detecta discrepancias.
 
 La carga pública de Pages no se pudo verificar desde esta sesión: el proxy bloqueó la conexión a `gomeza2.github.io` con 403. Una subida a `main` no demuestra por sí sola que Pages terminó su despliegue. Las URLs versionadas tampoco fuerzan renovar un HTML todavía en caché.
 

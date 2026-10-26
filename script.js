@@ -98,11 +98,9 @@ function initAudio(){
   audioNoise=audioContext.createBuffer(1,audioContext.sampleRate,audioContext.sampleRate);const data=audioNoise.getChannelData(0);let seed=0x51f015;
   for(let i=0;i<data.length;i++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;data[i]=(seed/2147483648-1)*.7;}
   for(let player=0;player<2;player++){
-   const engine=audioContext.createOscillator(),sub=audioContext.createOscillator(),filter=audioContext.createBiquadFilter(),gain=audioContext.createGain(),subGain=audioContext.createGain();
-   engine.type='sawtooth';sub.type='triangle';filter.type='lowpass';gain.gain.value=0;subGain.gain.value=0;
-   engine.connect(filter);filter.connect(gain);gain.connect(audioMaster);sub.connect(subGain);subGain.connect(audioMaster);engine.start();sub.start();
+   const motor=window.PixelEngineAudio.create(audioContext,audioMaster);
    function noiseChannel(type){const source=audioContext.createBufferSource(),band=audioContext.createBiquadFilter(),level=audioContext.createGain();source.buffer=audioNoise;source.loop=true;band.type=type;level.gain.value=0;source.connect(band);band.connect(level);level.connect(audioMaster);source.start();return {source,filter:band,gain:level};}
-   audioChannels.push({engine,sub,filter,gain,subGain,skid:noiseChannel('bandpass'),terrain:noiseChannel('lowpass')});
+   audioChannels.push({...motor,skid:noiseChannel('bandpass'),terrain:noiseChannel('lowpass')});
   }
   if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});
  }catch(e){try{audioContext?.close().catch(()=>{});}catch(ignored){}audioContext=null;audioMaster=null;audioCompressor=null;audioNoise=null;audioChannels.length=0;audioVoices.clear();}
@@ -115,14 +113,9 @@ function updateAudio(){
  const humans=cars.filter(car=>!car.isAI&&!car.done),mix=1/Math.sqrt(Math.max(1,humans.length));
  audioChannels.forEach((channel,player)=>{
   const car=cars.find(candidate=>candidate.player===player&&!candidate.isAI&&!candidate.done),speed=car?.speed||0,model=CAR_MODELS[car?.model]||CAR_MODELS.balanced;
-  const ratio=clamp(speed/model.maxSpeed,0,1),load=car?.braking ? .08:keys[keyFor(player).up]?1:speed>3?.38:.18;
-  const band=Math.min(3,Math.floor(ratio*4)),rpm=ratio*4-band,signature=car?.model==='speed'?16:car?.model==='corner'?8:car?.model==='rally'?-6:0;
-  const frequency=38+band*8+rpm*54+load*12+signature;
-  const wave=car?.model==='corner'?'square':car?.model==='rally'?'triangle':'sawtooth';if(channel.engine.type!==wave)channel.engine.type=wave;
-  channel.engine.frequency.setTargetAtTime(frequency,now,.065);channel.sub.frequency.setTargetAtTime(frequency/2,now,.065);
-  channel.filter.frequency.setTargetAtTime(250+load*900+ratio*900,now,.08);
-  const audible=active&&!!car,volume=audible?(.016+load*.018+ratio*.018)*mix:0;
-  channel.gain.gain.setTargetAtTime(volume,now,.045);channel.subGain.gain.setTargetAtTime(volume*.25,now,.045);
+  const ratio=clamp(speed/model.maxSpeed,0,1);
+  const audible=active&&!!car;
+  channel.update({speed,maxSpeed:model.maxSpeed,model:car?.model,throttle:keys[keyFor(player).up]?1:0,braking:!!car?.braking,audible,mix});
   const ground=car?terrainAt(car.x,car.y):{material:'asphalt',offroad:false},surface=ground.material,offroad=ground.offroad;
   const sliding=car?Math.max(car.handbrake?1:0,car.drift>.4?car.drift:0,car.braking&&Math.abs(car.steer)>.3?.4:0):0;
   channel.skid.filter.frequency.setTargetAtTime(surface==='ice'?850:1450,now,.08);channel.skid.filter.Q.value=1.2;
@@ -721,7 +714,7 @@ function placeCar(car,progress,lateral){
 }
 function start(m,s=Number($('stageSelect').value),keepSeason=false){
  if(!keepSeason)resetChampionship();
- mode=m;stage=s;track=tracks[stage];$('stageSelect').value=String(stage);audioResultActive=false;audioResultCue=null;lastAudioImpact=-Infinity;releaseAudioVoices();graphics=$('graphics').value;difficulty=$('difficulty').value;
+ mode=m;stage=s;track=tracks[stage];$('stageSelect').value=String(stage);audioResultActive=false;audioResultCue=null;lastAudioImpact=-Infinity;releaseAudioVoices();audioChannels.forEach(channel=>channel.reset());graphics=$('graphics').value;difficulty=$('difficulty').value;
  backgroundCache=null;backgroundCacheKey='';trackSurfaceCache=null;trackSurfaceKey='';checkpoints=checkpointsForTrack();aiSpeedPlan=buildAiSpeedPlan();
  cars=[setupCar(0)];
  if(mode==='solo'){const count=clamp(Number($('opponentCount').value)||3,1,3);for(let i=1;i<=count;i++)cars.push(setupCar(i,true));}else cars.push(setupCar(1));

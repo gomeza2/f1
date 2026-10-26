@@ -30,13 +30,15 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 - Cruce de gate/meta por punto exacto de intersección y contacto de la huella física con la franja legal. Fuera completo y orden incorrecto siguen rechazados.
 - Estado: implementado, probado automáticamente/en Chromium; sensación humana abierta. Recoger prueba de aceleración, entrada/salida de curva y adelantamiento en Sunset/Dusty antes de declararlo aceptado.
 
-### 26. Sustituir motor y mezcla de audio — siguiente
+### 26. Sustituir motor y mezcla de audio — primera revisión 0.43
 
 - Separar motor del código principal con una interfaz pequeña de estado del coche y ciclo de vida; migrar rutas y pruebas de publicación al introducir el módulo.
 - Probar pulsos de combustión/armónicos, carga del acelerador, régimen continuo y cambios suaves. Evitar saltos de tono repetitivos, zumbido plano y fatiga auditiva.
 - Motor al acelerar, retener, frenar, deslizar, tocar grava y chocar; mezcla de varios humanos. Volumen general/motor/efectos si ayuda a ajustar la experiencia.
 - Efectos útiles de salida, vuelta/record y llegada; sonido de roce de baja energía frente a golpe fuerte. Ambientes temáticos con presupuesto de voces.
 - Recursos propios/síntesis o muestras con licencia comprobada. Validar limpieza, silencio en pausa/OFF/menú, navegador y escucha humana. Un analizador de señal no aprueba el timbre.
+
+Estado 0.43: motor reemplazado y separado en `engine-audio.js`; pulsos/armónicos, carga, régimen continuo y seis marchas con histéresis, cuatro perfiles. Integración de recursos y mezcla existente comprobadas. Grafo, marchas/carga, Web Audio real y navegador comprobados; escucha humana pendiente. Controles separados de volumen, ambientes temáticos y una revisión específica del sonido de roce quedan pendientes, sin opciones vacías. Física/ritmo de CPU sin cambios en esta entrega.
 
 ### 27. Anchura, curvas y duración variadas
 
@@ -108,4 +110,4 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 
 ## Continuación
 
-Verificar main y el último registro de `ROADMAP_24_FASES.md`. 0.42 prioriza respuesta de conducción y corrige progreso/contacto. Siguiente mejora propuesta: **fase 26, motor nuevo**, salvo que la prueba humana de conducción revele un problema más importante. La variedad de tiempos/anchuras, local 3–4 y online permanecen visibles en el plan; no se presentan como implementados.
+Verificar main y el último registro de `ROADMAP_24_FASES.md`. 0.43 sustituye el motor y conserva la revisión de manejo 0.42. Próxima implementación: **fase 27, anchuras/pianos/barreras por sector y trazados con ritmos distintos**. La evaluación humana de motor y conducción permanece abierta; puede reordenar la prioridad. Local 3–4 y online siguen pendientes.

@@ -170,9 +170,11 @@ Las ruedas delanteras muestran la dirección suavizada del coche. La rodadura si
 
 No se cambian prestaciones, tamaños físicos, superficies, dificultad ni controles. Las geometrías de carrocería y los estados de dibujo están separados del modelo de conducción; el render no modifica el estado del coche.
 
-## Audio — build 0.33
+## Audio — motor nuevo en 0.43
 
-**Revisión de calidad pendiente:** el usuario informó que la síntesis actual no se parece a un motor convincente. La próxima revisión de fase 15 debe reemplazar el timbre y respuesta al acelerador; las pruebas técnicas previas solo verifican salida y ciclo de vida.
+El motor anterior se reemplazó por síntesis propia de pulsos de combustión con armónicos limitados, cuerpo grave y filtro según carga. `engine-audio.js` concentra el régimen, seis marchas con histéresis y una caída breve al cambiar; las marchas son sonoras y no modifican las prestaciones. Cada modelo tiene régimen, cilindros y cuerpo distintos. El acelerador abre el timbre y soltarlo reduce la carga. No se usan muestras externas.
+
+**Escucha pendiente:** se comprobó salida y ciclo de vida en Chromium, pero el nuevo timbre necesita evaluación humana en auriculares/parlantes y móvil. No se declara solucionada la calidad percibida por medir una señal.
 
 El motor sintetizado cambia de timbre según el coche y de régimen según velocidad, acelerador y frenado. El derrape y el terreno tienen capas propias. En modo local se mezclan los dos coches humanos; los checkpoints de las CPU lejanas no producen avisos que se confundan con los tuyos. La primera llegada de un rival conserva su señal de aviso y los impactos cercanos se escuchan según intensidad/proximidad.
 
@@ -212,7 +214,8 @@ En una convergencia cercana en paralelo, la CPU establece antes su objetivo de c
 
 - `index.html`: menú, opciones, interfaz de carrera y telemetría.
 - `style.css`: diseño adaptable, modo de pantalla completa y estilos de la interfaz.
-- `script.js`: circuitos, conducción, CPU, superficies, colisiones, checkpoints, renderizado y audio.
+- `script.js`: circuitos, conducción, CPU, superficies, colisiones, checkpoints, renderizado y mezcla/señales de audio.
+- `engine-audio.js`: síntesis del motor, régimen, carga y cambios de marcha; cargar antes de `script.js`.
 - `ROADMAP_EVOLUCION.md`: plan abierto, auditoría, prioridades y ruta online.
 - `ROADMAP_24_FASES.md`: historial de sistemas y entregas.
 - `tests/`: validación de geometría, ancho completo, integración, conducción, récords, barreras y CPU; prueba opcional de Chromium.
@@ -271,3 +274,8 @@ La planificación vigente está en [`ROADMAP_EVOLUCION.md`](ROADMAP_EVOLUCION.md
 Los cambios se publican mediante Git usando el historial real de `gomeza2/f1`, conservando las revisiones previas. La app de GitHub y la CLI pueden tener capacidades diferentes: una lectura fallida por API no demuestra por sí sola que un push por Git esté bloqueado.
 
 Para servir el juego con GitHub Pages, usá la rama/carpeta configurada en Settings → Pages y comprobá el despliegue. Subir código a una rama no implica que Pages ya haya terminado de actualizarse.
+
+
+### Entrega 0.43 — fase 26, primera revisión
+
+Motor sustituido e integrado; pruebas de régimen/cambios/carga, presupuesto de voces y ciclo de vida, salida Web Audio real, recorrido de Chromium y recursos versionados bajo `/f1/`. Física `:p4`, trazados y controles conservados. La evaluación humana del motor y manejo sigue abierta. Próxima implementación: fase 27, anchos/pianos/barreras por sector y variedad real de recorridos cortos, medios y largos; 20/40/60 s son referencias, no un límite universal.
