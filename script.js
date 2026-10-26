@@ -9,7 +9,7 @@ const trackDefs=[
 {name:'NIGHT RUN',worldScale:2.65,layoutVersion:3,roadVersion:1,roadProfile:[[0,50,0],[0.1,54,0],[0.16,38,6],[0.24,48,6],[0.34,42,0],[0.42,34,0],[0.5,46,6],[0.6,52,0],[0.7,48,6],[0.8,38,6],[0.9,40,0],[1,50,0]],sky:'#5a5b9e',grass:'#263a54',accent:'#ff5fae',points:[[130,85],[340,85],[390,85],[420,110],[450,110],[480,85],[650,85],[880,100],[930,170],[900,240],[800,265],[700,240],[670,290],[720,335],[835,320],[900,365],[925,440],[880,520],[780,565],[600,575],[460,530],[320,560],[155,550],[90,490],[85,420],[145,375],[240,390],[330,450],[460,450],[540,400],[540,330],[470,280],[350,250],[240,285],[155,280],[95,220],[95,150]]},
 {name:'FROSTBITE GP',worldScale:1.4,layoutVersion:2,sky:'#d9eff4',grass:'#83b3a3',accent:'#ffffff',points:[[155,115],[320,85],[445,120],[490,180],[600,150],[745,120],[830,180],[850,255],[780,305],[670,285],[620,350],[680,410],[650,500],[525,530],[450,470],[355,480],[305,545],[205,510],[150,430],[95,400],[105,300],[150,255],[115,185]]},
 {name:'JUNGLE SPRINT',worldScale:1.4,layoutVersion:2,sky:'#72b987',grass:'#205a3d',accent:'#a8e77e',points:[[135,125],[285,90],[385,120],[435,195],[530,210],[575,135],[735,115],[825,180],[800,255],[720,285],[690,360],[750,415],[700,515],[570,525],[500,455],[400,465],[335,540],[220,525],[175,445],[100,420],[80,330],[145,260],[100,190]]},
-{name:'VOLCANO RING',worldScale:1.4,layoutVersion:2,sky:'#9e645d',grass:'#4c4349',accent:'#ff704e',points:[[125,130],[280,90],[395,125],[440,200],[510,165],[650,110],[790,135],[860,215],[810,280],[710,270],[665,335],[720,420],[680,500],[550,540],[465,475],[385,495],[320,555],[210,520],[170,435],[100,390],[85,295],[140,250],[105,190]]},
+{name:'VOLCANO RING',worldScale:1.8,layoutVersion:3,roadVersion:1,roadProfile:[[0,48,0],[0.14,56,0],[0.26,44,0],[0.35,38,0],[0.45,34,0],[0.56,44,0],[0.66,50,0],[0.77,40,0],[0.88,36,0],[1,48,0]],sky:'#9e645d',grass:'#4c4349',accent:'#ff704e',points:[[160,400],[320,360],[490,245],[670,125],[800,90],[885,130],[920,205],[885,270],[800,290],[740,265],[675,275],[650,325],[690,370],[780,375],[860,425],[860,500],[790,555],[670,560],[580,520],[500,465],[420,470],[340,525],[240,560],[145,545],[85,500],[80,450],[105,415]]},
 {name:'PIXEL CITY',worldScale:1.4,layoutVersion:2,sky:'#c67bb2',grass:'#356c5d',accent:'#5bf4ec',points:[[160,100],[325,90],[390,140],[465,110],[610,115],[680,170],[790,145],[865,205],[830,270],[735,285],[685,340],[735,405],[700,500],[590,530],[510,470],[420,500],[345,550],[225,520],[175,440],[105,410],[85,315],[145,265],[115,185]]},
 {name:'THUNDER VALLEY',worldScale:1.4,layoutVersion:2,sky:'#a4b4d3',grass:'#406d5a',accent:'#e8f6ff',points:[[130,125],[280,85],[405,115],[450,185],[540,160],[680,110],[785,145],[860,215],[810,285],[705,270],[650,345],[720,425],[670,510],[550,535],[470,465],[380,485],[325,550],[215,520],[170,435],[100,405],[80,310],[135,250],[100,185]]},
 {name:'CHAMPION ROAD',worldScale:1.4,layoutVersion:2,sky:'#f3dc7e',grass:'#397653',accent:'#ffffff',points:[[140,100],[400,100],[680,100],[850,100],[910,150],[910,260],[850,300],[750,270],[690,290],[690,380],[790,410],[890,400],[920,460],[890,520],[790,550],[650,530],[580,470],[500,460],[430,520],[320,550],[210,540],[120,500],[90,430],[110,365],[190,350],[270,380],[350,350],[360,270],[290,240],[210,270],[130,250],[90,180]]}
@@ -58,11 +58,11 @@ function makeTrack(def){
 const tracks=trackDefs.map(makeTrack);
 const TRACK_SURFACES=['asphalt','asphalt','dirt','asphalt','ice','grass','volcanic','asphalt','mixed','asphalt','coastal','dirt','grass','mixed'];
 const TERRAIN_MATERIALS={
- asphalt:{grip:1,drag:0,edgeDrag:0,particle:'#aeb6c5',life:.46,size:2},
- dirt:{grip:.84,drag:54,edgeDrag:2.8,particle:'#ad8053',life:.62,size:3},
+ asphalt:{road:{edge:'#141b22',kerb:'#f5f0dc',border:'#3c414c',body:'#646c78',lite:'#59616c',center:'#303640'},grip:1,drag:0,edgeDrag:0,particle:'#aeb6c5',life:.46,size:2},
+ dirt:{road:{edge:'#49372b',kerb:'#b18c64',border:'#a27d55',body:'#b8996d',center:'#987449'},grip:.84,drag:54,edgeDrag:2.8,particle:'#ad8053',life:.62,size:3},
  grass:{grip:.79,drag:34,edgeDrag:2.2,particle:'#6e9958',life:.46,size:2},
  ice:{grip:.68,drag:58,edgeDrag:4.6,particle:'#d9f1f6',life:.46,size:2},
- volcanic:{grip:.87,drag:54,edgeDrag:2.8,particle:'#cf603c',life:.58,size:3},
+ volcanic:{road:{edge:'#211d25',kerb:'#ad704d',border:'#986447',body:'#715047',center:'#42343b',grain:['#5b4745','#b37751','#cf8b57']},grip:.87,drag:54,edgeDrag:2.8,particle:'#cf603c',life:.58,size:3},
  coastal:{grip:1,drag:54,edgeDrag:2.8,particle:'#c9ad7a',life:.58,size:3},
  gravel:{mark:'#816c50',grip:.60,drag:130,edgeDrag:0,speedDrag:.35,particle:'#c4a47b',life:.62,size:3,palette:['#a48c6d','#b59b77','#c3ab86','#d1bb96']}
 };
@@ -712,10 +712,10 @@ function fillRoadRibbon(context,color,widthAt,item=track){
  context.fill();
 }
 function drawVariableRoad(context){
- const dirt=track.surface==='dirt';
- fillRoadRibbon(context,dirt?'#49372b':'#141b22',d=>roadHalfWidthAt(d)+1);
- fillRoadRibbon(context,dirt?'#b18c64':'#f5f0dc',d=>roadHalfWidthAt(d));
- if(!dirt){
+ const style=TERRAIN_MATERIALS[track.surface]?.road||TERRAIN_MATERIALS.asphalt.road;
+ fillRoadRibbon(context,style.edge,d=>roadHalfWidthAt(d)+1);
+ fillRoadRibbon(context,style.kerb,d=>roadHalfWidthAt(d));
+ if(track.surface==='asphalt'||track.surface==='coastal'){
   // Kerbs are optional by sector. Draw both bands before filling the asphalt.
   context.fillStyle='#d84b59';context.beginPath();
   for(let d=0;d<track.length;d+=18){
@@ -730,9 +730,21 @@ function drawVariableRoad(context){
   }
   context.fill();
  }
- fillRoadRibbon(context,dirt?'#a27d55':'#3c414c',d=>roadSectionAt(d).halfWidth);
- fillRoadRibbon(context,dirt?'#b8996d':graphics==='high'?'#646c78':'#59616c',d=>Math.max(8,roadSectionAt(d).halfWidth-3));
- fillRoadRibbon(context,dirt?'#987449':'#303640',d=>Math.max(8,roadSectionAt(d).halfWidth-8));
+ fillRoadRibbon(context,style.border,d=>roadSectionAt(d).halfWidth);
+ fillRoadRibbon(context,graphics==='high'?style.body:(style.lite||style.body),d=>Math.max(8,roadSectionAt(d).halfWidth-3));
+ fillRoadRibbon(context,style.center,d=>Math.max(8,roadSectionAt(d).halfWidth-8));
+ if(style.grain){
+  // Sparse deterministic cinders stay inside the same native road corridor.
+  const step=graphics==='high'?12:graphics==='retro'?20:28;
+  for(let d=0;d<track.length;d+=step){
+   for(let side=0;side<2;side++){let seed=Math.imul(Math.floor(d)+side*307,374761393);seed=Math.imul(seed^(seed>>>13),1274126177);seed=(seed^(seed>>>16))>>>0;
+    const progress=d+(seed>>>8)%step,p=sampleAt(progress),width=roadSectionAt(progress).halfWidth-6,offset=(seed/4294967296*2-1)*width;
+    const x=p.x-Math.sin(p.angle)*offset,y=p.y+Math.cos(p.angle)*offset,loc=nearestOnTrack(x,y);
+    if(loc.distance>roadSectionAt(loc.progress).halfWidth-5)continue;
+    context.fillStyle=style.grain[seed%style.grain.length];context.fillRect(x-1,y-1,2+(seed%2),2);
+   }
+  }
+ }
 }
 function drawTrackSurface(context){
  const key=stage+'|'+graphics+'|'+barrierMode+'|'+track.surface;

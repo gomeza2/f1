@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.46
+# PIXEL GRAND PRIX — entrega 0.47
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, dos jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Volcano Ring en 0.47
+
+Nuevo trazado diagonal con horquilla interior y regreso enlazado, 4.961 unidades, ancho útil 68–112 y siete gates. Primeras vueltas Normal libre a 60 Hz: 29,45/28,37 s. Mantiene el agarre y suelo volcánico; apariencia/grano del corredor desde el material compartido, sin pianos de asfalto. Preserva los otros trece trazados, física/audio 0.45 y opciones de barreras. Récord @3:p5:r1 conserva @2.
+
+Se rechazó una primera variante por superposición de bordes cerca de meta. Final: margen 49,3 y separación 69,5. Comparación de doce imágenes reales demuestra que la extracción del estilo no cambia los cuatro corredores previos. Doce carreras focalizadas/54 vueltas válidas, cuatro coches y tres dificultades; no es validación de todas las combinaciones ni aprobación humana. Fase 27 abierta; siguiente prioridad CPU, fase 28.
 
 ## Night Run largo en 0.46
 
@@ -54,6 +60,9 @@ Nuevo recorrido con recta larga, curva exterior, sector interior y regreso técn
 
 ## Evidencia
 
+- 0.47: doce carreras focalizadas/54 vueltas válidas en Volcano (cinco perfiles, cuatro modelos, tres dificultades con parrilla de cuatro). Orden Fácil/Normal/Difícil comprobado; 0/0/7 pasos de contacto respectivamente, sin ventajas de potencia. No se repitió toda la matriz anterior de 96 carreras ni se presenta como prueba humana.
+- Integración/registro/menú/geometría de las 14 pistas; 22.265 sondas de bordes variables, 3.880 comprobaciones de píxeles en Volcano/cinco perfiles; dos contornos cerrados/1.128 sondas de barreras en la pista nueva y 211 colocaciones de decoración en tres calidades. Doce imágenes completas de los cuatro corredores previos idénticas antes/después de extraer el estilo. Chromium completa tres vueltas Volcano (29,43/28,40/28,37 s), además de Night/división de cámaras, recorrido general y entrega local bajo `/f1/` superados; capturas Volcano abierta/vallada/cercana revisadas.
+
 - 0.46: 96 carreras simuladas/490 vueltas válidas: 42 clásicas, 20 parrilla, 14 tráfico y 20 pruebas de dos vueltas por perfil. Night Normal libre promedia 58,93 s; su parrilla completa sin contactos en esta referencia. Los otros trece tiempos/trazados permanecen como en 0.45.
 - Geometría con ancho real, 18.313 sondas físicas y 18.090 comprobaciones de píxeles en cuatro pistas/cinco perfiles; 37 contornos cerrados/13.183 sondas de vallas y 70 configuraciones de grava, con 43.896 puntos independientes del mundo. Chromium completa tres vueltas Night (59,60/58,60/58,60), prueba cámaras separadas de dos jugadores, recorrido general y entrega local bajo `/f1/`. Capturas de Night abierta/vallada/cercana y duo revisadas. No confirma diversión humana ni despliegue de Pages.
 - La ampliación excedía el límite de decoración: corregida con presupuesto 150/110/80 por calidad, selección distribuida y caché, con 1.213 colocaciones comprobadas entre las tres calidades y manteniendo huella/espaciado. Rendimiento en teléfonos físicos sigue pendiente.
@@ -77,8 +86,8 @@ La carga pública de Pages no se pudo verificar desde esta sesión: el proxy blo
 
 ## Pendientes conocidos
 
-- Física 5: tráfico de dos coches sin contactos en las 14 referencias. Esto no garantiza carreras sin contactos contra personas.
+- Referencia 0.45: tráfico de dos coches sin contactos en sus 14 trazados de entonces. Esto no garantiza carreras sin contactos contra personas.
 - Parrilla 0.45: todos terminan, con contactos en varias referencias. El máximo es Sunset Normal, 19 pasos a 30 Hz (0,63 s acumulados en tres vueltas); no son 19 golpes separados. En 0.44 el máximo era Dusty Difícil con 24 pasos. Queda revisar el contacto y equilibrio contra personas; una comparación agregada no prueba mejora en todas las situaciones.
-- Duración y trazados: se busca variedad aproximada de 20/40/60 s, sin ventana obligatoria. Anchos variables presentes en cuatro pistas; diez restantes y más rediseños pendientes. Night aporta una referencia cercana a 60 s.
+- Duración y trazados: se busca variedad aproximada de 20/40/60 s, sin ventana obligatoria. Anchos variables presentes en cinco pistas; nueve restantes y más rediseños pendientes. Night aporta una referencia cercana a 60 s.
 - Faltan calibración humana, pruebas en dispositivos físicos, controles táctiles y medición de rendimiento. Los videos adjuntos superaban el límite de transferencia y no pudieron verse.
 - Contrarreloj, desafíos, editor y progresión ampliada siguen pendientes. Esta entrega no equivale a terminar las 24 fases ni a declarar una versión estable definitiva.

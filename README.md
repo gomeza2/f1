@@ -45,6 +45,10 @@ En **0.46 Night Run** estrena un trazado largo propio, con recta de salida, chic
 
 Los checkpoints dejan de limitarse a nueve: Night tiene **16** en orden, con unos **628** de recorrido entre marcas. Los otros trece circuitos conservan sus puntos, ancho y longitudes; mantienen sus referencias cortas/medias. Night usa `NIGHT RUN@3:p5:r1`, conservando los récords de la versión 2. Ya hay cuatro pistas de ancho variable; diez mantienen ancho histórico.
 
+En **0.47 Volcano Ring** deja de compartir casi la misma silueta que Thunder Valley. Nuevo recorrido de **4.961** unidades, recta diagonal para adelantar, horquilla interior y regreso enlazado; ancho útil **68–112** y siete checkpoints. Las primeras vueltas Normal libres a 60 Hz marcan **29,45/28,37 s**. Mantiene terreno volcánico con agarre propio, gránulos y ceniza, partículas y límites físicos según sección, sin pianos de asfalto sobre ese material. No se añaden trampas de lava invisibles. Barreras automáticas en curvas y todos los perfiles seleccionables.
+
+La paleta del corredor se toma del mismo material que su física. La extracción conserva exactamente los píxeles de los cuatro corredores variables anteriores (comparación en Chromium de tres calidades). Volcano usa `VOLCANO RING@3:p5:r1`, preservando los tiempos @2; los otros trece recorridos permanecen iguales. Ya hay **cinco** pistas de ancho variable; quedan nueve con sección histórica.
+
 El perfil automático deja **siete pistas abiertas, cuatro con protección en curvas cerradas y tres con vallas parciales**. Sunset Circuit arranca sin muros. Podés seguir eligiendo vallas completas o cualquier otro perfil en el menú.
 
 Las superficies incluyen asfalto, tierra, pasto, hielo, volcánico y secciones mixtas. En las pistas mixtas, el agarre, las partículas y el minimapa cambian según el sector. Cada pista tiene entre cinco y dieciséis checkpoints secuenciales según su longitud, para evitar recortes grandes entre sectores. Los récords se separan por versión del recorrido: se conservan los anteriores, pero no compiten con los tiempos de los trazados nuevos.
@@ -95,6 +99,7 @@ node tests/validate-steering-inertia.mjs
 node tests/validate-barriers.mjs
 node tests/validate-road-sectors.mjs
 node tests/validate-night-long.mjs
+node tests/validate-volcano.mjs
 node tests/validate-sector-races.mjs
 ```
 
@@ -312,3 +317,12 @@ Esta revisión responde al reporte del usuario. No modifica trazados ni añade e
 ### Entrega 0.46 — fase 27, recorrido largo
 
 Night Run aporta una silueta y duración distintas; no es solo una ampliación del trazado anterior. La primera variante se rechazó por semejanza con Champion y se rediseñó. Geometría con ancho completo, conservación de los otros trece circuitos, checkpoints secuenciales, récords y pruebas de carrera forman parte de `validate-night-long.mjs` y de las baterías de CPU/perfiles. Chromium comprueba píxeles de la carretera y cámaras del mundo largo. Queda conducción humana, rendimiento en teléfonos y seguir diferenciando los otros trazados. Física/audio de 0.45 conservados. La expansión detectó exceso de decoración: el fondo conserva como máximo 150/110/80 objetos en alta/retro/ligera, distribuidos por todo el mundo y reutilizados desde caché.
+
+
+### Entrega 0.47 — Volcano Ring y material de carretera
+
+Rediseño de nivel, paleta/grano de superficie volcánica y selección de pruebas focalizadas con `TEST_TRACKS=6` en barreras/decoración y `ROAD_STAGES=6` en el navegador. Los comandos sin esas variables siguen validando todos sus casos. `validate-volcano.mjs` comprueba doce carreras/54 vueltas válidas: cinco perfiles, cuatro modelos, tres parrillas de cuatro coches/dificultades, límites compartidos y orden Fácil/Normal/Difícil. No es toda la combinación cartesiana ni una aprobación humana de equilibrio.
+
+La comparación visual opcional requiere guardar el script anterior: `git show 301bb27:script.js > /tmp/script-046.js` y ejecutar `ROAD_SOURCE_BASELINE=/tmp/script-046.js node tests/browser-material-parity.cjs` con Playwright/Chromium disponibles. Comprueba imágenes completas de carretera, no solo llamadas de dibujo.
+
+Siguiente prioridad propuesta: fase 28, ritmo y trazada CPU en curvas rápidas/tráfico; la revisión de más siluetas y perfiles de fase 27 queda abierta. Física y audio siguen en la revisión 0.45, con aceptación humana pendiente.

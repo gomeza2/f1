@@ -8,7 +8,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.46**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.47**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y dos jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -1044,3 +1044,13 @@ Consultar `ROADMAP_EVOLUCION.md`; este archivo conserva historial y evidencia. C
 - Dieciséis checkpoints ordenados, intervalos de unos 628 unidades; se elimina el máximo global de nueve manteniendo las posiciones de las otras trece. Clave `NIGHT RUN@3:p5:r1` conserva tiempos @2. Física y audio 0.45 intactos. Primeras vueltas Normal a 60 Hz 59,80/58,67 s; queda evaluación humana.
 - Plan activo en `ROADMAP_EVOLUCION.md`: seguir diferenciando trazados y comprobar la experiencia del recorrido largo. No se declara concluida toda la fase 27 ni el balance de las catorce pistas.
 - Cierre: 96 carreras/490 vueltas válidas; Night Normal libre media 58,93 s y parrilla sin contactos en esta referencia. Chromium completa tres vueltas y prueba dos cámaras, píxeles y entrega local. Se detectó exceso de decoración al ampliar el mundo: presupuesto 150/110/80 según calidad con distribución por todo el escenario y caché, comprobado contra huellas/espaciado. Evaluación humana y móvil físico pendientes.
+
+
+## Avance 0.47 — Volcano Ring y coherencia de material
+
+- Base real `301bb27` / 0.46, árbol limpio y main remoto confirmado; rama `work/volcanic-ridge-047`.
+- Volcano era casi una copia de Thunder (distancia de silueta 0,047). Rediseñado: 4.961 unidades, recta diagonal, horquilla interior y regreso enlazado; sección 68–112, siete checkpoints y perfil automático en curvas. Los otros trece trazados/física 5/audio conservados. Récord @3:p5:r1 preserva @2.
+- Se descartó una primera geometría con bordes superpuestos cerca de la meta; variante final margen 49,3 y separación 69,5. Distancia más cercana a otra silueta 0,213 (Dusty). Las comprobaciones geométricas no prueban diversión.
+- Material volcánico con paleta/grano nativo ligado a la definición física, sin pianos de asfalto. Comparación real en Chromium de doce imágenes antes/después: cuatro corredores previos × tres calidades, píxeles idénticos.
+- Doce carreras focalizadas/54 vueltas válidas: cinco perfiles, cuatro modelos y parrillas en tres dificultades, con orden de dificultad correcto. Integración/geometría/menú de catorce circuitos, récords, checkpoints y conservación de las otras trece versiones comprobados. Queda evaluación humana y más combinaciones. Siguiente prioridad: CPU (fase 28); nueve pistas sin perfiles variables y más variedad de fase 27 siguen abiertas.
+- Evidencia: 22.265 sondas físicas de sección y 3.880 de píxeles Volcano; cinco perfiles de valla, dos contornos cerrados/1.128 sondas y 211 objetos de escenario en tres calidades. Chromium completo/entrega local superados, imágenes reales revisadas. Esta revisión ejecuta doce carreras focalizadas, no afirma repetir las 96 de 0.46.

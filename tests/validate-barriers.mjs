@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import {loadGame} from './helpers/game-harness.mjs';
 const {game,element}=loadGame();
 let contours=0,checked=0;
-for(let stage=0;stage<game.tracks.length;stage++){
+const stages=process.env.TEST_TRACKS?process.env.TEST_TRACKS.split(',').map(Number):game.tracks.map((_,i)=>i);
+assert.ok(stages.every(i=>Number.isInteger(i)&&i>=0&&i<game.tracks.length),'Invalid TEST_TRACKS');
+for(const stage of stages){
  element('barrierMode').value='full';game.start('solo',stage);
  const outlines=game.barrierContoursForTrack();
  assert.ok(outlines.length>=1,`${game.track.name}: missing boundary`);
