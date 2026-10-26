@@ -1,0 +1,132 @@
+{
+  "commit": "6b86503cbf244dcb76d8c630b1456285ba9bee84",
+  "dt": 0.03333333333333333,
+  "laps": 3,
+  "stage": 2,
+  "difficulty": "easy",
+  "opponents": 3,
+  "allAi": true,
+  "physics": 5,
+  "worldSpeed": 0.84,
+  "drivers": {
+    "easy": {
+      "pace": 0.82,
+      "brakingMargin": 0.62,
+      "response": 5.8,
+      "laneSpeed": 15,
+      "handbrake": false
+    },
+    "normal": {
+      "pace": 0.97,
+      "brakingMargin": 0.9,
+      "response": 7.5,
+      "laneSpeed": 22,
+      "handbrake": true
+    },
+    "hard": {
+      "pace": 1,
+      "brakingMargin": 0.98,
+      "response": 9.2,
+      "laneSpeed": 28,
+      "handbrake": true
+    }
+  },
+  "personalities": {
+    "racer": {
+      "name": "TRAZO",
+      "description": "equilibrado",
+      "color": "#ffc857",
+      "pace": 0,
+      "braking": 0,
+      "response": 0,
+      "lane": 0,
+      "attackGap": 135,
+      "closing": 4
+    },
+    "attacker": {
+      "name": "FURIA",
+      "description": "ataca antes",
+      "color": "#ff794f",
+      "pace": 0.03,
+      "braking": 0.05,
+      "response": 1,
+      "lane": 4,
+      "attackGap": 150,
+      "closing": 2
+    },
+    "precise": {
+      "name": "\u00c1PICE",
+      "description": "respuesta precisa",
+      "color": "#ae97ff",
+      "pace": 0.02,
+      "braking": 0.06,
+      "response": 1.4,
+      "lane": 2,
+      "attackGap": 120,
+      "closing": 6
+    }
+  },
+  "models": {
+    "balanced": {
+      "name": "BALANCED",
+      "maxSpeed": 232,
+      "acceleration": 110,
+      "braking": 230,
+      "steering": 1,
+      "grip": 1,
+      "grass": 1,
+      "description": "Equilibrado para aprender y competir."
+    },
+    "corner": {
+      "name": "CORNER KING",
+      "maxSpeed": 218,
+      "acceleration": 105,
+      "braking": 255,
+      "steering": 1.19,
+      "grip": 1.15,
+      "grass": 0.86,
+      "description": "M\u00e1s agarre y frenado; velocidad punta menor."
+    },
+    "speed": {
+      "name": "SPEED DEMON",
+      "maxSpeed": 250,
+      "acceleration": 123,
+      "braking": 215,
+      "steering": 0.84,
+      "grip": 0.87,
+      "grass": 1.12,
+      "description": "R\u00e1pido en rectas, dif\u00edcil en curvas cerradas."
+    },
+    "rally": {
+      "name": "RALLY FOX",
+      "maxSpeed": 222,
+      "acceleration": 112,
+      "braking": 245,
+      "steering": 1.08,
+      "grip": 1.04,
+      "grass": 0.57,
+      "description": "Pierde menos velocidad si toca el pasto."
+    }
+  },
+  "contactSteps": 28,
+  "meanLaps": [
+    25.177777777777205,
+    24.37777777777725,
+    23.588888888888405,
+    25.5999999999994
+  ],
+  "additionalRuns": [
+    {
+      "stage": 6,
+      "difficulty": "normal",
+      "contactSteps": 4,
+      "meanLaps": [
+        28.577777777777012,
+        28.877777777776995,
+        27.011111111110434,
+        27.722222222221504
+      ],
+      "offroadSteps": 22
+    }
+  ]
+}

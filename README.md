@@ -355,3 +355,14 @@ Referencia/variantes y limitaciones: `tests/experiments/AI_CURVATURE_048.md`. F�
 Adelantada por pedido del usuario: previa real de 2–4 humanos, elecciones individuales, controles normalizados de teclado/mando, cámaras/HUD, resultados y continuidad del campeonato. Audio amplía el contexto existente hasta cuatro motores humanos; voces extra quedan mudas al volver a dos/solo. Sin cambios a física 5, potencia, geometrías, récords o política de CPU 0.48.
 
 Pruebas específicas: `node tests/validate-local.mjs` y, con Playwright/Chromium, `node tests/browser-local.cjs`. Cubren 15 parrillas de cinco pistas, entradas aisladas/simultáneas, selección, cámaras, HUD, resultados/DNF/puntos, pausa/reinicio/siguiente, cinco resoluciones y mandos estándar emulados con desconexión/reconexión/asignación exclusiva. No son carreras humanas completas ni validación de hardware físico. La revisión de tráfico de fase 28 (Dusty Fácil), más perfiles/siluetas de fase 27, escucha del audio y equilibrio humano siguen pendientes. Próximo tramo recomendado: tráfico y líneas de ataque/defensa, conservando esta base local.
+
+
+### Entrega 0.50 — fase 28, velocidad por carril de disputa
+
+La CPU conserva el signo de la curvatura y reduce su velocidad prevista cuando ocupa una línea interior, cuyo radio es menor que el del centro de pista. La previsión conserva el horizonte de frenado y el coste físico del freno de mano. No recibe un aumento de velocidad por ir por fuera. La conducción libre, prestaciones, dificultad, físicas y recorridos siguen iguales.
+
+Referencia reproducible Dusty Fácil, cuatro controladores y tres vueltas a 30 Hz: contacto acumulado de **28 a 3 pasos** (0,93 a 0,10 s). El piloto que quedaba trabado mejora de **25,60 a 23,41 s** de media; los demás marcan 24,57/25,07/23,83. Son pasos con solapamiento, no un contador de choques separados. La colisión sigue activa; no es una promesa de carreras sin contacto contra personas.
+
+Pruebas: `node tests/validate-lane-speed.mjs` comprueba el radio interior, curvas reflejadas, rectas, meta, prestaciones preservadas y la carrera de regresión; `node tests/validate-ai-plan-query.mjs` compara 7.344 consultas con el barrido completo. Experimentos y límites: `tests/experiments/TRAFFIC_LANES_050.md`. La fase 28 sigue abierta: transiciones de línea y grupos de varios coches necesitan más trabajo, además de balance humano. El modo local 2–4 de 0.49 se conserva.
+
+En cinco comparaciones de parrilla frente a 0.49, el contacto acumulado suma 56 → 8 pasos. Hay contrapartidas documentadas: Night Normal tiene 32 pasos-coche fuera de la franja legal y Sunset Difícil dos pasos de contacto nuevos. La CPU conserva la penalización física y todos terminan; estas transiciones y reservas de espacio siguen pendientes. No se declara una IA sin errores ni se extrapola la mejora a todo tráfico humano.

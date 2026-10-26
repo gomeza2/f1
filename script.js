@@ -935,7 +935,7 @@ function buildAiSpeedPlan(){
   // Geometric curvature over the turning arc avoids treating each polyline joint as a hairpin.
   const a=sampleAt(d-36),b=sampleAt(d),c=sampleAt(d+36);
   const ab=pointDistance(a,b),bc=pointDistance(b,c),ac=pointDistance(a,c);
-  const curvature=2*Math.abs((b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x))/Math.max(1,ab*bc*ac);
+  const signedCurvature=2*((b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x))/Math.max(1,ab*bc*ac),curvature=Math.abs(signedCurvature);
   const bend=curvatureAt(d),surface=surfaceAtProgress(d);
   // Find a speed the shared steering physics can actually hold at this radius.
   function limit(hand){
@@ -948,11 +948,11 @@ function buildAiSpeedPlan(){
    }
    return low;
   }
-  plan.push({progress:d,speed:limit(false),driftSpeed:limit(true),curvature});
+  plan.push({progress:d,speed:limit(false),driftSpeed:limit(true),curvature,signedCurvature});
  }
  return plan;
 }
-function aiTargetSpeed(progress,model,driver,allowHandbrake=false){
+function aiTargetSpeed(progress,model,driver,allowHandbrake=false,lane=0){
  let target=model.maxSpeed*driver.pace;
  // Search the sorted plan, then scan only the next braking horizon, including the lap seam.
  const count=aiSpeedPlan.length;if(!count)return target;
@@ -963,7 +963,10 @@ function aiTargetSpeed(progress,model,driver,allowHandbrake=false){
   const point=aiSpeedPlan[(low+step)%count],distance=wrapDistance(point.progress-current);
   if(distance>240)break;
   const planned=allowHandbrake&&point.curvature>1/180?Math.max(point.speed,point.driftSpeed*.98):point.speed;
-  const cornerSpeed=planned*driver.pace;
+  // An occupied inside lane has a smaller radius than the centerline: v² / r stays bounded.
+  // Do not award an outside-lane speed bonus; tight offsets retain a recovery crawl.
+  const radiusRatio=clamp(1-point.signedCurvature*lane,.12,1);
+  const cornerSpeed=planned*driver.pace*Math.sqrt(radiusRatio);
   const allowed=Math.sqrt(cornerSpeed*cornerSpeed+2*model.braking*driver.brakingMargin*distance/WORLD_SPEED_SCALE);
   target=Math.min(target,allowed);
  }
@@ -1102,7 +1105,9 @@ function driveAI(car,before,model,dt){
  const laneOffset=clamp(traffic.lane,-room,room);
  const ground=terrainAt(car.x,car.y,before);
  const allowHandbrake=driver.handbrake&&car.aiManeuver.type==='clear'&&Math.abs(before.offset)<roadSectionAt(before.progress).halfWidth-8;
- let targetSpeed=Math.min(aiTargetSpeed(before.progress,model,driver,allowHandbrake),traffic.speedLimit);
+ // Use the occupied lane: a requested lateral change is not instantaneous movement.
+ const racingLane=car.aiManeuver.type==='clear'?0:before.offset;
+ let targetSpeed=Math.min(aiTargetSpeed(before.progress,model,driver,allowHandbrake,racingLane),traffic.speedLimit);
  // Establish the reserved target lane sooner; actual turning still uses shared vehicle physics.
  const laneStep=driver.laneSpeed*dt*(car.aiManeuver.type==='alongside'&&lookAhead<clamp(28+car.speed*.27,32,94)?1.5:1);
  car.aiLane=(car.aiLane||0)+clamp(laneOffset-(car.aiLane||0),-laneStep,laneStep);

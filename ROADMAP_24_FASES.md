@@ -8,7 +8,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.49**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y 2–4 jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.50**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y 2–4 jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -1074,3 +1074,14 @@ Consultar `ROADMAP_EVOLUCION.md`; este archivo conserva historial y evidencia. C
 - Pruebas nuevas: `validate-local.mjs` y `browser-local.cjs`; mandos emulados y teclado real automatizado. Los resultados sintéticos no se presentan como carreras humanas completas. Referencias y comprobaciones en README/notas de entrega.
 
 - Cierre: 15 parrillas de configuración/entrada en cinco pistas y pruebas Chromium 2/3/4 con teclado, mandos emulados y cinco resoluciones. Capturas revisadas; corregidos márgenes laterales, HUD superpuesto en pequeño y centrado cuando una vista supera el mundo. Regresión de CPU focalizada: ocho carreras/36 vueltas válidas; integración de 70 perfiles, manejo, contactos, audio hasta cuatro humanos, pausa/resultados y entrega local. No equivale a validación humana ni se repiten las 94 carreras previas.
+
+
+## Avance 0.50 — fase 28, radio de carril y disputa
+
+- Base real `6b86503` / 0.49, árbol limpio y main remoto comprobado; rama `work/traffic-space-050`.
+- Reproducidos 28 pasos de contacto en Dusty Fácil y analizada la trayectoria previa: la velocidad basada solo en el centro no contemplaba el radio interior menor de la línea reservada. Se conserva signo de curvatura en el plan y se ajusta su límite por radio interior ocupado cuando hay disputa; sin bonus exterior ni cambio de volante/reservas, potencia o perfiles de dificultad.
+- La variante que suponía ocupar el carril solicitado bajaba Dusty a 2 pasos pero subía Volcano de 4 a 24: descartada. Se comparan posición real, objetivo filtrado, mezcla y predicción; se conserva la posición real, con Dusty en 3 y Volcano en 0, sin modificar dirección ni trazada libre. Medias Dusty 24,57/25,07/23,83/23,41 frente a 25,18/24,38/23,59/25,60. No se afirma que cada rival sea siempre más rápido.
+- Regresión congelada en `tests/fixtures/traffic-0.49.json`; prueba analítica de radio, simetría, recta, meta y carrera. Consulta optimizada comparada con barrido completo en 7.344 combinaciones de carril/modelo/dificultad/meta/freno de mano. La recuperación acota radios extremos; no es un optimizador global de trayectorias.
+- Física 5, modelos, 14 trazados, récords, audio y local 2–4 conservados. Fase 28 continúa abierta para grupos y transiciones laterales; conducción/escucha y comodidad del multijugador requieren personas/hardware real.
+
+- Cierre automático: batería principal de 42 carreras libres/126 vueltas, 20 parrillas/240 y 14 tráfico/84, más dos regresiones focalizadas/24; integración 70 perfiles, consulta 7.344 casos, conciencia de rivales y local. Chromium completo, local 2–4/cinco resoluciones y entrega `/f1/` superados. Cinco comparaciones congeladas suman 56 → 8 pasos con contacto; Night tiene 32 pasos-coche fuera nuevos y Sunset Difícil dos de contacto nuevos. Se conservan como pendientes, junto a roces residuales en Meadow/Industrial y grupos. No se cuentan las variantes descartadas como validación de la elegida ni se presenta la prueba automática como aceptación humana.
