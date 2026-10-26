@@ -972,18 +972,18 @@ function aiTargetSpeed(progress,model,driver,allowHandbrake=false,lane=0){
  }
  return target;
 }
-// Predict short-term contact from actual world velocities, including lateral cut-ins.
-function trafficApproach(car,other){
- // Continue the current yaw for a short horizon, including curved approaches.
- function projected(vehicle,time){
+// Continue the current world velocity and yaw along a circular arc.
+function projectVehicle(vehicle,time){
   const yaw=vehicle.yawRate||0,travel=vehicle.speed*WORLD_SPEED_SCALE;
   if(Math.abs(yaw)<.01)return {x:vehicle.x+Math.cos(vehicle.heading)*travel*time,y:vehicle.y+Math.sin(vehicle.heading)*travel*time};
   const heading=vehicle.heading+yaw*time;
   return {x:vehicle.x+travel/yaw*(Math.sin(heading)-Math.sin(vehicle.heading)),y:vehicle.y+travel/yaw*(Math.cos(vehicle.heading)-Math.cos(heading))};
- }
+}
+// Predict short-term contact from the same motion used by road-edge anticipation.
+function trafficApproach(car,other){
  let time=0,clearance=Math.hypot(other.x-car.x,other.y-car.y);
  for(let step=1;step<=12;step++){
-  const candidateTime=step/16,a=projected(car,candidateTime),b=projected(other,candidateTime);
+  const candidateTime=step/16,a=projectVehicle(car,candidateTime),b=projectVehicle(other,candidateTime);
   const distance=Math.hypot(b.x-a.x,b.y-a.y);
   if(distance<clearance){time=candidateTime;clearance=distance;}
  }
@@ -1097,6 +1097,20 @@ function aiLookAhead(car){
  if(car.speed<40&&car.aiManeuver?.type!=='clear')distance=Math.min(distance,8+car.speed*.15);
  return distance;
 }
+// During a dispute, brake before the current motion carries the car beyond the road.
+// This changes controls only: position, tire force and deceleration remain shared physics.
+function aiBoundarySpeed(car,before){
+ if(!car.aiManeuver||car.aiManeuver.type==='clear'||car.speed<50)return Infinity;
+ const margin=roadHalfWidthAt(before.progress)-6-Math.abs(before.offset);
+ let worst=margin;
+ for(const time of [0.25,0.5]){
+  const projected=projectVehicle(car,time),loc=nearestOnTrack(projected.x,projected.y);
+  worst=Math.min(worst,roadHalfWidthAt(loc.progress)-6-Math.abs(loc.offset));
+ }
+ // An already displaced car moving back inside keeps its normal recovery control.
+ if(worst>=Math.min(0,margin))return Infinity;
+ return Math.max(30,car.speed*Math.sqrt(clamp(Math.max(0,margin)/Math.max(.001,margin-worst),.1,1)));
+}
 function driveAI(car,before,model,dt){
  const driver=driverFor(car);
  const traffic=aiTraffic(car,before,driver,dt);
@@ -1107,7 +1121,7 @@ function driveAI(car,before,model,dt){
  const allowHandbrake=driver.handbrake&&car.aiManeuver.type==='clear'&&Math.abs(before.offset)<roadSectionAt(before.progress).halfWidth-8;
  // Use the occupied lane: a requested lateral change is not instantaneous movement.
  const racingLane=car.aiManeuver.type==='clear'?0:before.offset;
- let targetSpeed=Math.min(aiTargetSpeed(before.progress,model,driver,allowHandbrake,racingLane),traffic.speedLimit);
+ let targetSpeed=Math.min(aiTargetSpeed(before.progress,model,driver,allowHandbrake,racingLane),traffic.speedLimit,aiBoundarySpeed(car,before));
  // Establish the reserved target lane sooner; actual turning still uses shared vehicle physics.
  const laneStep=driver.laneSpeed*dt*(car.aiManeuver.type==='alongside'&&lookAhead<clamp(28+car.speed*.27,32,94)?1.5:1);
  car.aiLane=(car.aiLane||0)+clamp(laneOffset-(car.aiLane||0),-laneStep,laneStep);

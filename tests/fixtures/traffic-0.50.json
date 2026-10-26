@@ -1,0 +1,69 @@
+{
+  "commit": "eef9493b4f028e756f55ccee958f490ea16d2a72",
+  "dt": 0.03333333333333333,
+  "laps": 3,
+  "opponents": 3,
+  "allAi": true,
+  "cases": [
+    {
+      "stage": "NIGHT RUN",
+      "level": "normal",
+      "contactSteps": 2,
+      "offroadSteps": 32,
+      "maxOffset": 52.96321842755412,
+      "laps": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "meanLaps": [
+        58.999999999997506,
+        58.711111111108636,
+        56.41111111110877,
+        58.08888888888645
+      ],
+      "stageIndex": 3
+    },
+    {
+      "stage": "MEADOW RUN",
+      "level": "normal",
+      "contactSteps": 7,
+      "offroadSteps": 0,
+      "maxOffset": 30.48899334655048,
+      "laps": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "meanLaps": [
+        30.64444444444356,
+        29.67777777777695,
+        28.777777777777,
+        30.033333333332482
+      ],
+      "stageIndex": 12
+    },
+    {
+      "stage": "INDUSTRIAL MIX",
+      "level": "normal",
+      "contactSteps": 12,
+      "offroadSteps": 0,
+      "maxOffset": 39.35583895472412,
+      "laps": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "meanLaps": [
+        28.255555555554807,
+        27.777777777777057,
+        26.577777777777126,
+        26.099999999999373
+      ],
+      "stageIndex": 13
+    }
+  ]
+}

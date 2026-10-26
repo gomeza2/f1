@@ -366,3 +366,14 @@ Referencia reproducible Dusty Fácil, cuatro controladores y tres vueltas a 30 H
 Pruebas: `node tests/validate-lane-speed.mjs` comprueba el radio interior, curvas reflejadas, rectas, meta, prestaciones preservadas y la carrera de regresión; `node tests/validate-ai-plan-query.mjs` compara 7.344 consultas con el barrido completo. Experimentos y límites: `tests/experiments/TRAFFIC_LANES_050.md`. La fase 28 sigue abierta: transiciones de línea y grupos de varios coches necesitan más trabajo, además de balance humano. El modo local 2–4 de 0.49 se conserva.
 
 En cinco comparaciones de parrilla frente a 0.49, el contacto acumulado suma 56 → 8 pasos. Hay contrapartidas documentadas: Night Normal tiene 32 pasos-coche fuera de la franja legal y Sunset Difícil dos pasos de contacto nuevos. La CPU conserva la penalización física y todos terminan; estas transiciones y reservas de espacio siguen pendientes. No se declara una IA sin errores ni se extrapola la mejora a todo tráfico humano.
+
+
+### Entrega 0.51 — fase 28, anticipación del borde
+
+Durante una disputa, la CPU proyecta su movimiento y giro a 0,25/0,5 segundos y pide frenar antes de una salida prevista. Usa la anchura legal real, sin cambiar su posición, agarre ni potencia. Pista libre, conducción humana y recuperación hacia dentro conservadas. La proyección se comparte con la anticipación de contactos.
+
+Referencias Normal de cuatro coches/tres vueltas: Night pasa de 32 a 0 pasos-coche fuera y de 2 a 0 con contacto; Meadow 7 → 0 contactos; Industrial 12 → 0. Dusty Fácil conserva el avance previo (3 → 1 paso de contacto) y Volcano sigue sin contactos. Son referencias automatizadas, no una garantía de carreras sin roces contra personas. Sunset Normal sube de 1 a 13 pasos con contacto y queda documentado como pendiente.
+
+Pruebas nuevas: `node tests/validate-boundary-plan.mjs`, `node tests/validate-boundary-races.mjs` y `node tests/browser-boundary.cjs` con Playwright/Chromium. La prueba de navegador completa las tres carreras y comprueba el plazo real de llegada, además del render y la consola. Condiciones/variantes/límites en `tests/experiments/BOUNDARY_051.md`. Se conservan local 2–4, física 5, récords, audio y los 14 trazados.
+
+Siguiente prioridad propuesta: retomar variedad de fase 27, diferenciando otro circuito y sus secciones; las reservas frente a grupos y los roces de Sunset siguen abiertos para otra revisión de fase 28. Evaluación humana de conducción/audio/local aún pendiente.

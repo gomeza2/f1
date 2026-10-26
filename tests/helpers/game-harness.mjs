@@ -29,6 +29,7 @@ export function loadGame({audioContextClass,frameScheduler,sourceOverride,gamepa
     get checkpoints(){return checkpoints},get tracks(){return tracks},get cars(){return cars},get track(){return track},
     tick(dt){elapsed+=dt;cars.forEach((car,i)=>{if(!car.done)physics(car,i,dt)});const contact=cars.some((a,i)=>!a.done&&cars.slice(i+1).some(b=>!b.done&&Math.hypot(a.x-b.x,a.y-b.y)<23-1e-6));resolveCollisions(dt);return contact},
     setCountdown(value){countdownRemaining=value},setElapsed(value){elapsed=value},get running(){return running},setKeys(value){keys=value},setDifficulty(value){difficulty=value}};
+    if(typeof aiBoundarySpeed==='function')Object.assign(globalThis.testGame,{aiBoundarySpeed,projectVehicle});
     if(typeof controlsFor==='function')Object.assign(globalThis.testGame,{keyFor,controlsFor,connectedPad,checkLocalControllers,validateLocalSetup,updateLocalLobby,drivingViewports,drawFrame});`;
   vm.runInContext(source.replace(/\}\)\(\);\s*$/, expose + '})();'), sandbox);
   return { game: sandbox.testGame, element,document:sandbox.document,documentEvents };

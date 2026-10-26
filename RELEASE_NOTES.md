@@ -1,10 +1,18 @@
-# PIXEL GRAND PRIX — entrega 0.50
+# PIXEL GRAND PRIX — entrega 0.51
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Anticipación del borde en 0.51
+
+La CPU proyecta velocidad/yaw a 0,25 y 0,5 s durante una disputa y pide menor velocidad cuando prevé empeorar su margen hasta salir de la franja legal. Usa aceleración/frenado de la física común; sin recolocación, fuerza extra ni intervención en el coche humano. Respeta pista libre, baja velocidad y recuperación hacia dentro. Proyección compartida con contactos.
+
+Night Normal: 32 → 0 pasos-coche fuera y 2 → 0 pasos con contacto; Meadow 7 → 0 contactos; Industrial 12 → 0, todos en referencias de cuatro coches/tres vueltas. Chromium confirma estas tres carreras, el plazo de llegada y ausencia de errores de JavaScript. Dusty Fácil y Volcano mantienen el avance previo. Comparadas tres anticipaciones y cambios de separación/activación; se elige 0,5 s sin cambiar el volante/reservas. Sunset Normal tiene 13 pasos con contacto frente a uno anterior: pendiente explícito.
+
+No es una predicción exhaustiva de todos los controles futuros ni aprobación humana del manejo. Física 5, modelos, dificultad, 14 trazados, audio, récords y local 2–4 se conservan. Evidencia y condiciones en `tests/experiments/BOUNDARY_051.md`.
 
 ## Velocidad de disputa en 0.50
 
@@ -80,6 +88,9 @@ Nuevo recorrido con recta larga, curva exterior, sector interior y regreso técn
 
 ## Evidencia
 
+- 0.51: batería Node de 20 parrillas/240 vueltas, 14 carreras de tráfico/84, seis referencias libres/doce, tres regresiones de borde/36 y dos de carril/24: **396 vueltas válidas**. CPU focalizada (movimiento/frenado/recuperación), planner, colisiones, integración 70 perfiles, local 2–4 y 7.344 consultas superados. No se repiten las 42 carreras libres de tres dificultades, porque el cambio no interviene en pista libre; las seis comparaciones conservan la referencia anterior.
+- Chromium completo, local 2–4/cinco resoluciones y entrega `/f1/` superados. Prueba nueva de Night/Meadow/Industrial: 36 vueltas adicionales con los cuatro controladores y resultado coincidente, cierre dentro de los 18 s y sin errores de JavaScript. Captura instrumental de Night revisada. No se equipara a prueba humana o de mandos físicos.
+
 - Batería principal 0.50: 42 carreras libres/126 vueltas (14 pistas × tres dificultades), 20 parrillas/240 vueltas y 14 carreras de tráfico/84 vueltas; más dos regresiones focalizadas/24 vueltas. Integración de 70 perfiles, consultas, conciencia de rivales y Node local superados. Chromium completo, local 2–4 en cinco resoluciones y entrega sin instrumentación bajo `/f1/` superados; sin errores de JavaScript en esos recorridos. No se cuentan las variantes descartadas como validación de la versión elegida.
 - 0.50: regresión específica Dusty Fácil/Volcano Normal con cuatro coches/tres vueltas, contactos 28 → 3 y 4 → 0 respectivamente. Radio analítico, simetría, recta, meta y conservación de modelos/perfiles/física; 7.344 consultas comparadas con barrido independiente. La primera variante solicitaba frenado como si el carril ya estuviese ocupado y empeoraba Volcano: descartada por la comparación.
 - Cinco comparaciones de parrilla 0.49/0.50 suman 56 → 8 pasos de contacto y 72 → 45 pasos-coche fuera del corredor. No todas mejoran: Night suma 32 pasos-coche fuera y Sunset Difícil dos pasos de contacto nuevos; todos completan tres vueltas. Condiciones/resultados/limitaciones en `tests/experiments/TRAFFIC_LANES_050.md`.
@@ -116,8 +127,8 @@ La carga pública de Pages no se pudo verificar desde esta sesión: el proxy blo
 
 ## Pendientes conocidos
 
-- 0.50: roces residuales en las parrillas Normal de Meadow (7 pasos) e Industrial (12), además de Frostbite Difícil (5). Las reservas frente a varios rivales siguen pendientes.
-- 0.50: revisar las salidas de Night Normal (32 pasos-coche fuera en la comparación), transiciones laterales y reservas frente a grupos. Sunset Difícil tiene dos pasos de contacto nuevos. No se declaran resueltos por pasar límites generales.
+- 0.51 resuelve las referencias Normal de Meadow/Industrial y la salida Night de 0.50. Quedan reservas frente a grupos y comprobar otras situaciones de tráfico humano.
+- 0.51: Sunset Normal sube de 1 a 13 pasos con contacto y Rally Normal registra cuatro nuevos en sus referencias; Frostbite Difícil conserva cinco. Se mantienen como pendientes. La previsión de borde puede inducir otra disputa y no es un plan global de todas las trayectorias.
 - Referencia 0.45: tráfico de dos coches sin contactos en sus 14 trazados de entonces. Esto no garantiza carreras sin contactos contra personas.
 - Parrilla Dusty Fácil: los 28 pasos de 0.48/0.49 se reducen a 3 en 0.50 mediante previsión por radio interior. Son pasos con solapamiento, no choques separados. No implica contacto cero ni resuelve todos los grupos/recuperaciones; balance humano y otros escenarios siguen abiertos.
 - Duración y trazados: se busca variedad aproximada de 20/40/60 s, sin ventana obligatoria. Anchos variables presentes en cinco pistas; nueve restantes y más rediseños pendientes. Night aporta una referencia cercana a 60 s.

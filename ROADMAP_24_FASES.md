@@ -8,7 +8,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.50**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y 2–4 jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.51**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y 2–4 jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -1085,3 +1085,14 @@ Consultar `ROADMAP_EVOLUCION.md`; este archivo conserva historial y evidencia. C
 - Física 5, modelos, 14 trazados, récords, audio y local 2–4 conservados. Fase 28 continúa abierta para grupos y transiciones laterales; conducción/escucha y comodidad del multijugador requieren personas/hardware real.
 
 - Cierre automático: batería principal de 42 carreras libres/126 vueltas, 20 parrillas/240 y 14 tráfico/84, más dos regresiones focalizadas/24; integración 70 perfiles, consulta 7.344 casos, conciencia de rivales y local. Chromium completo, local 2–4/cinco resoluciones y entrega `/f1/` superados. Cinco comparaciones congeladas suman 56 → 8 pasos con contacto; Night tiene 32 pasos-coche fuera nuevos y Sunset Difícil dos de contacto nuevos. Se conservan como pendientes, junto a roces residuales en Meadow/Industrial y grupos. No se cuentan las variantes descartadas como validación de la elegida ni se presenta la prueba automática como aceptación humana.
+
+
+## Avance 0.51 — fase 28, anticipación de salida durante una disputa
+
+- Base real `eef9493` / 0.50, main remoto verificado y árbol limpio; rama `work/traffic-corridor-051`. Reproducidas tres carreras: Night con 32 pasos-coche fuera/2 con contacto, Meadow 7 contactos e Industrial 12.
+- Proyección de movimiento/yaw compartida con contactos; dos consultas a 0,25/0,5 s durante disputa y límite de velocidad si prevé empeorar el margen hacia el borde. Solo modifica controles, con fuerza/física normal. No interviene en humanos, pista libre o baja velocidad y deja recuperar hacia dentro.
+- Comparadas anticipaciones 0,35/0,5/0,65, más separación lateral y activación solo cerca del borde. Se conserva 0,5 sin modificar reservas/volante. Night/Meadow/Industrial quedan sin contacto ni pasos fuera en las referencias; tres carreras reales de Chromium lo confirman y todos llegan antes del cierre normal. Dusty Fácil 3 → 1 contacto y Volcano conserva cero.
+- Nueva regresión congelada 0.50, pruebas de planner inmutable, ambos lados, recuperación y límites físicos. Documentadas variantes/medias/límites en `tests/experiments/BOUNDARY_051.md`. Sunset Normal sube de 1 a 13 pasos con contacto; pendiente explícito, sin elevar umbrales ni declarar completada toda fase 28.
+- Se conservan física 5, modelos, dificultad, récords, audio, 14 trazados y local 2–4. Próxima prioridad propuesta: fase 27, variedad real de otro circuito, manteniendo abierta revisión de grupos/Sunset y evaluación humana.
+
+- Cierre: 396 vueltas válidas en la batería Node (20 parrillas/240, 14 tráfico/84, seis referencias libres/doce, tres regresiones nuevas/36 y dos anteriores/24). Se conserva el ritmo libre, sin repetir las 42 carreras de tres dificultades. CPU focalizada, colisiones, integración 70 perfiles, local y 7.344 consultas superados. Chromium completo/local/entrega y tres carreras nuevas/36 vueltas adicionales superados; captura Night revisada. Todas las parrillas respetan el presupuesto vigente de contactos, sin elevarlo. Rally Normal tiene cuatro pasos nuevos y Frostbite Difícil conserva cinco; quedan junto a Sunset como pendientes, sin prometer cero contacto ni aceptación humana.
