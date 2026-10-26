@@ -20,7 +20,7 @@ for(const graphics of ['high','retro','lite']){
   assert.ok(list.length>0,`${game.track.name}/${graphics}: no scenery`);
   assert.strictEqual(game.decorationsForTrack(),list,'Scenery should be reused from cache');
   assert.ok(list.length<160,'Unbounded decoration density');
-  if(stage===3){
+  if(game.track.worldWidth>=2200){
    assert.ok(list.length<=({high:150,retro:110,lite:80})[graphics],'Long-world scenery exceeds quality budget');
    const quadrants=[0,0,0,0];for(const d of list)quadrants[Number(d.x>game.track.worldWidth/2)+2*Number(d.y>game.track.worldHeight/2)]++;assert.ok(quadrants.every(n=>n>=3),'Budget cropped scenery to one corner of the long world');
   }

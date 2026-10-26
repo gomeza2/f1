@@ -8,7 +8,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.51**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y 2–4 jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.52**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y 2–4 jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -1096,3 +1096,14 @@ Consultar `ROADMAP_EVOLUCION.md`; este archivo conserva historial y evidencia. C
 - Se conservan física 5, modelos, dificultad, récords, audio, 14 trazados y local 2–4. Próxima prioridad propuesta: fase 27, variedad real de otro circuito, manteniendo abierta revisión de grupos/Sunset y evaluación humana.
 
 - Cierre: 396 vueltas válidas en la batería Node (20 parrillas/240, 14 tráfico/84, seis referencias libres/doce, tres regresiones nuevas/36 y dos anteriores/24). Se conserva el ritmo libre, sin repetir las 42 carreras de tres dificultades. CPU focalizada, colisiones, integración 70 perfiles, local y 7.344 consultas superados. Chromium completo/local/entrega y tres carreras nuevas/36 vueltas adicionales superados; captura Night revisada. Todas las parrillas respetan el presupuesto vigente de contactos, sin elevarlo. Rally Normal tiene cuatro pasos nuevos y Frostbite Difícil conserva cinco; quedan junto a Sunset como pendientes, sin prometer cero contacto ni aceptación humana.
+
+
+## Avance 0.52 — fase 27, Frostbite GP y material de hielo
+
+- Base real `5e2c27a` / 0.51, árbol limpio/main remoto confirmado; rama `work/frostbite-layout-052`. Frost antiguo a distancia 0,060 de Thunder: se rediseña la geometría, sin cambiar nombres ni sustituir el proyecto.
+- Recorrido final de 6.369 unidades (+86 %), mundo 2200×1408, ancho 68–112 y nueve gates. Arco rápido y regreso técnico de hielo. Distancia más cercana a otra silueta 0,258; margen físico 86,1 y separación 57,4. Se rechazan variantes próximas a Night y otra con bordes superpuestos antes de elegir esta.
+- Paleta/rasguños/marcas de hielo desde material, con agarre/resistencia conservados y sin pianos de asfalto. La sección alimenta render, colisión, superficies, CPU, gates, escenario, minimapa y vista previa. Récord @3:p5:r1 conserva @2. Otros trece recorridos/modelos/física/CPU/audio/local intactos.
+- Nuevos fixture/test Frost: doce carreras/54 vueltas, cuatro modelos, cinco perfiles y tres parrillas de cuatro coches/dificultades. Normal libre 36,93/35,85 frente a 27,17/26,17 anteriores. Contactos de parrilla Easy/Normal/Hard 1/4/4 pasos, dentro del presupuesto vigente; no se afirma contacto cero universal.
+- Validaciones históricas conservan los otros hashes y remiten Frost al fixture nuevo. El benchmark CPU mantiene cinco comparaciones en recorridos intactos y no compara el tiempo del Frost antiguo contra el nuevo. Quedan seis pistas variables y ocho uniformes; fase 27 y aceptación humana continúan abiertas. Próxima propuesta: otro trazado débil de identidad, como Pixel City.
+
+- Cierre: doce carreras Frost/54 vueltas, doce Volcano/54 y cinco comparaciones CPU/diez: 118 vueltas válidas Node, sin repetir las 42 libres/20 parrillas completas. Geometría catorce pistas/seis perfiles variables/27.280 sondas, dos contornos Frost/1.366 sondas y 340 colocaciones entre tres calidades. Chromium píxeles (6.944), tres vueltas Frost más Night/cámaras y recorrido general/local/entrega superados; capturas revisadas. Quince imágenes de los cinco corredores anteriores idénticas en tres calidades. Local Node ampliado a 18 parrillas incluyendo Frost; consolas sin errores en los recorridos automatizados. Evaluación humana, móvil físico y Pages público no se declaran comprobados.

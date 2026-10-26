@@ -40,6 +40,14 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## Frostbite GP — 0.52
+
+Frostbite estrena un recorrido asimétrico: arco rápido amplio y regreso técnico, con secciones de **68–112** unidades de ancho útil. Mide **6.369** unidades (+86 %), mundo 2200×1408 y **nueve checkpoints**. La referencia CPU Normal libre queda alrededor de **36–37 s** por vuelta frente a unos 27 del recorrido anterior; no cambia la potencia ni la física para alargarlo.
+
+Hielo con paleta, rasguños y marcas azuladas propios, sin pianos de asfalto. Conserva el agarre y respuesta físicos del hielo, protección automática en curvas y los cinco perfiles seleccionables. Minimapa, cámara, vista previa, límites y checkpoints usan el mismo recorrido. Los récords nuevos usan `FROSTBITE GP@3:p5:r1`; los anteriores se conservan.
+
+Las otras trece pistas, física 5, CPU 0.51, audio y local 2–4 permanecen. Ya hay **seis pistas con anchura por sectores; ocho siguen con sección uniforme**. Se comprobaron carreras de los cuatro modelos y parrillas en tres dificultades, además de píxeles/carreras en Chromium; falta conducirlo humanamente para aprobar la sensación de hielo y el equilibrio.
+
 ## Circuitos y superficies
 
 El registro conserva los 14 circuitos y los diez nombres originales. La ampliación de 0.22 se conserva: Champion Road tiene una nueva recta larga y un sector técnico, y Coastline Run, Rally Canyon, Meadow Run e Industrial Mix tienen ramales separados para que sus caminos no se superpongan. El coche conserva su tamaño; el ancho uniforme histórico empieza a reemplazarse por sectores en 0.44. En 0.23, Dusty Mesa estrena un trazado triangular de tierra: recta rápida superior, “S” técnica al este y regreso diagonal. Sigue abierto y conserva su nombre y lugar en el campeonato.
@@ -377,3 +385,12 @@ Referencias Normal de cuatro coches/tres vueltas: Night pasa de 32 a 0 pasos-coc
 Pruebas nuevas: `node tests/validate-boundary-plan.mjs`, `node tests/validate-boundary-races.mjs` y `node tests/browser-boundary.cjs` con Playwright/Chromium. La prueba de navegador completa las tres carreras y comprueba el plazo real de llegada, además del render y la consola. Condiciones/variantes/límites en `tests/experiments/BOUNDARY_051.md`. Se conservan local 2–4, física 5, récords, audio y los 14 trazados.
 
 Siguiente prioridad propuesta: retomar variedad de fase 27, diferenciando otro circuito y sus secciones; las reservas frente a grupos y los roces de Sunset siguen abiertos para otra revisión de fase 28. Evaluación humana de conducción/audio/local aún pendiente.
+
+
+### Entrega 0.52 — fase 27, Frostbite propio
+
+Geometría nueva, material nativo de hielo y récord de recorrido separado. Se descartan propuestas demasiado próximas a Night y otra con bordes superpuestos en el cierre; el recorrido elegido pasa a distancia 0,258 de la silueta más cercana. Condiciones, medidas y variantes: `tests/experiments/FROST_052.md`.
+
+Prueba dedicada: `node tests/validate-frost.mjs`; píxeles/calidades/carreras: `ROAD_STAGES=4 node tests/browser-road-sectors.cjs` con Playwright/Chromium. Las comprobaciones históricas conservan sus otros recorridos y usan el nuevo fixture para Frost. Su vuelta anterior ya no se compara con el nuevo trazado en el benchmark de velocidad CPU.
+
+Siguiente prioridad propuesta: continuar fase 27 con otro recorrido de identidad débil, como Pixel City; completar variedad sin perder las mejoras de conducción, CPU y local. Siguen abiertas evaluación humana de motor/manejo, reservas de tráfico y rendimiento en hardware físico.

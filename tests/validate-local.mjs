@@ -9,7 +9,7 @@ assert.ok(uniqueKeys.every(key=>!['r','c','escape'].includes(key)));
 for(const count of [2,3,4]){
  element('localPlayerCount').value=String(count);game.updateLocalLobby();
  assert.match(element('localStart').textContent,new RegExp(count+' JUGADORES'));
- for(const stage of [0,2,3,6,13]){
+ for(const stage of [0,2,3,4,6,13]){
   game.start('duo',stage);assert.equal(game.cars.length,count);assert.ok(game.cars.every(car=>!car.isAI));
   assert.deepEqual(Array.from(game.cars,c=>c.model),models.slice(0,count));
   assert.equal(new Set(game.cars.map(c=>c.color)).size,count);
@@ -56,4 +56,4 @@ element('playerInput4').value='pad3';pads[3].mapping='';assert.equal(game.valida
 for(let i=1;i<=4;i++)element('playerInput'+i).value='keyboard';
 // Individual mode ignores local controller configuration and retains the CPU grid.
 element('opponentCount').value='3';game.start('solo',0);assert.equal(game.cars.length,4);assert.equal(game.cars.filter(c=>c.isAI).length,3);game.setKeys({w:true});assert.equal(game.controlsFor(0).throttle,1);
-console.log('PASS: 15 local grids, 2/3/4 humans, individual models/paint/controls/HUD/cameras, non-overlapping starts, results/DNF/points/restart/next, four analog gamepads, deadzone, exclusive assignment, missing/unsupported controller and pause/reconnection. Hardware comfort remains to test.');
+console.log('PASS: 18 local grids, 2/3/4 humans, individual models/paint/controls/HUD/cameras, non-overlapping starts, results/DNF/points/restart/next, four analog gamepads, deadzone, exclusive assignment, missing/unsupported controller and pause/reconnection. Hardware comfort remains to test.');

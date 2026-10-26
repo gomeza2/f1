@@ -3,7 +3,7 @@ import {loadGame} from './helpers/game-harness.mjs';
 import {analyzeTrackWidth} from './helpers/track-geometry.mjs';
 const {game,element}=loadGame();
 let checks=0;
-for(const stage of [0,1,2,3,6]){
+for(const stage of [0,1,2,3,4,6]){
  element('barrierMode').value='open';game.start('solo',stage);const track=game.track;
  const geometry=analyzeTrackWidth(track,d=>game.roadHalfWidthAt(d));
  assert.ok(geometry.roadMargin>12,`${track.name}: road/world margin ${geometry.roadMargin}`);
@@ -37,7 +37,7 @@ for(const stage of [0,1,2,3,6]){
  console.log(`SECTORS: ${track.name}, full width ${(2*narrow).toFixed(1)}–${(2*wide).toFixed(1)}, margin ${geometry.roadMargin.toFixed(1)}, clearance ${geometry.clearance.toFixed(1)}.`);
 }
 for(const item of game.tracks.filter(t=>!t.roadProfile))for(let d=0;d<item.length;d+=100){const paved=['asphalt','coastal'].includes(game.surfaceAtProgress(d,item));assert.equal(game.roadHalfWidthAt(d,item),paved?48:42);}
-console.log(`PASS: five distinct width profiles, smooth loop transitions, legal materials at ${checks} real edge probes, kerb/bare sectors, variable road geometry, ordered gate widths, separate records and nine unchanged cross-sections. Render agreement is checked in Chromium.`);
+console.log(`PASS: six distinct width profiles, smooth loop transitions, legal materials at ${checks} real edge probes, kerb/bare sectors, variable road geometry, ordered gate widths, separate records and eight unchanged cross-sections. Render agreement is checked in Chromium.`);
 
 // A localized widening can overlap while the old constant-width corridor still passes.
 const points=[[60,60],[240,60],[240,180],[60,180]],samples=[];let length=0;

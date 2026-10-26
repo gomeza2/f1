@@ -1,10 +1,18 @@
-# PIXEL GRAND PRIX — entrega 0.51
+# PIXEL GRAND PRIX — entrega 0.52
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Frostbite GP en 0.52
+
+Trazado asimétrico con arco oriental rápido y regreso técnico, 6.369 unidades (+86 %), ancho 68–112, nueve checkpoints y mundo 2200×1408. La silueta antigua estaba a 0,060 de Thunder; la nueva queda a 0,258 de la más próxima (Volcano). Se descartan propuestas similares a Night y un cierre con bordes superpuestos. Geometría elegida: margen 86,1 y separación de ramales 57,4.
+
+Carretera de hielo con paleta/rasguños propios y marcas azuladas desde el material compartido, sin pianos de asfalto. Agarre/resistencia del hielo intactos. Primeras vueltas Normal libres 36,93/35,85 s frente a 27,17/26,17 anteriores. Perfil automático en curvas y alternativas existentes. Récord `FROSTBITE GP@3:p5:r1` conserva @2.
+
+Los otros trece trazados, física 5, prestaciones, CPU 0.51, audio y local 2–4 se conservan. Quedan seis pistas con sección variable y ocho uniformes. Carrera y aspecto comprobados automáticamente/en Chromium; diversión, control humano y equilibrio pendientes. Condiciones en `tests/experiments/FROST_052.md`.
 
 ## Anticipación del borde en 0.51
 
@@ -88,6 +96,10 @@ Nuevo recorrido con recta larga, curva exterior, sector interior y regreso técn
 
 ## Evidencia
 
+- 0.52: doce carreras Frost/54 vueltas y doce Volcano/54 vueltas; cinco comparaciones de CPU en recorridos intactos/diez vueltas. Batería principal Node: **118 vueltas válidas**. Las 42 carreras libres y toda la matriz de 20 parrillas no se repiten: el cambio de recorrido tiene prueba focalizada y los otros trece se conservan por hash. Especificaciones físicas/modelos/dificultades intactas; CPU focalizada, colisiones, menú, gates e integración de 70 configuraciones superados.
+- Geometría de catorce pistas y seis perfiles variables: 27.280 sondas de borde. Frost: dos contornos cerrados/1.366 sondas de barrera y 340 objetos de escenario entre tres calidades, con presupuesto 150/110/80 y distribución por el mundo. Regresión local ampliada a 18 parrillas de 2/3/4 humanos, incluida Frost.
+- Chromium completo/local 2–4/entrega `/f1/` superados. Frost: 6.944 sondas de píxeles en cinco barreras/tres calidades y tres vueltas 36,87/35,80/35,73; Night y cámaras divididas también comprobadas. Capturas hielo abierto/vallado/cercano/ligero revisadas. Quince imágenes de los cinco corredores anteriores son idénticas frente a 0.51; esto no declara igual el Frost que se rediseñó ni sustituye prueba humana.
+
 - 0.51: batería Node de 20 parrillas/240 vueltas, 14 carreras de tráfico/84, seis referencias libres/doce, tres regresiones de borde/36 y dos de carril/24: **396 vueltas válidas**. CPU focalizada (movimiento/frenado/recuperación), planner, colisiones, integración 70 perfiles, local 2–4 y 7.344 consultas superados. No se repiten las 42 carreras libres de tres dificultades, porque el cambio no interviene en pista libre; las seis comparaciones conservan la referencia anterior.
 - Chromium completo, local 2–4/cinco resoluciones y entrega `/f1/` superados. Prueba nueva de Night/Meadow/Industrial: 36 vueltas adicionales con los cuatro controladores y resultado coincidente, cierre dentro de los 18 s y sin errores de JavaScript. Captura instrumental de Night revisada. No se equipara a prueba humana o de mandos físicos.
 
@@ -131,6 +143,6 @@ La carga pública de Pages no se pudo verificar desde esta sesión: el proxy blo
 - 0.51: Sunset Normal sube de 1 a 13 pasos con contacto y Rally Normal registra cuatro nuevos en sus referencias; Frostbite Difícil conserva cinco. Se mantienen como pendientes. La previsión de borde puede inducir otra disputa y no es un plan global de todas las trayectorias.
 - Referencia 0.45: tráfico de dos coches sin contactos en sus 14 trazados de entonces. Esto no garantiza carreras sin contactos contra personas.
 - Parrilla Dusty Fácil: los 28 pasos de 0.48/0.49 se reducen a 3 en 0.50 mediante previsión por radio interior. Son pasos con solapamiento, no choques separados. No implica contacto cero ni resuelve todos los grupos/recuperaciones; balance humano y otros escenarios siguen abiertos.
-- Duración y trazados: se busca variedad aproximada de 20/40/60 s, sin ventana obligatoria. Anchos variables presentes en cinco pistas; nueve restantes y más rediseños pendientes. Night aporta una referencia cercana a 60 s.
+- Duración y trazados: referencias variadas 20/40/60 s, sin ventana obligatoria. Seis pistas con ancho variable y ocho pendientes; Frost nuevo ronda 36–37 s y Night cerca de 60. Faltan más siluetas propias y evaluación humana.
 - Faltan calibración humana, pruebas en dispositivos físicos, controles táctiles y medición de rendimiento. Los videos adjuntos superaban el límite de transferencia y no pudieron verse.
 - Contrarreloj, desafíos, editor y progresión ampliada siguen pendientes. Esta entrega no equivale a terminar las 24 fases ni a declarar una versión estable definitiva.

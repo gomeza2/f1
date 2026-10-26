@@ -7,7 +7,7 @@ const trackDefs=[
 {name:'NEON HARBOR',roadVersion:1,roadProfile:[[0,44,6],[0.1,50,6],[0.2,38,0],[0.3,38,0],[0.4,46,6],[0.52,48,6],[0.62,36,0],[0.72,40,6],[0.82,46,6],[0.92,44,0],[1,44,6]],worldScale:1.4,layoutVersion:2,sky:'#5dbfc8',grass:'#25766b',accent:'#84fff0',points:[[150,95],[330,100],[385,145],[470,120],[535,95],[730,100],[820,148],[855,230],[810,275],[700,270],[650,340],[700,430],[640,490],[510,495],[455,435],[340,450],[295,520],[180,510],[120,445],[95,350],[145,285],[110,200]]},
 {name:'DUSTY MESA',roadVersion:1,roadProfile:[[0,46,0],[0.14,54,0],[0.28,48,0],[0.4,36,0],[0.52,36,0],[0.64,44,0],[0.76,50,0],[0.88,40,0],[1,46,0]],worldScale:1.4,layoutVersion:3,sky:'#dfb878',grass:'#b99c61',accent:'#f5dd91',points:[[140,120],[360,90],[600,90],[820,110],[900,170],[910,240],[850,290],[760,280],[690,240],[620,250],[570,310],[580,380],[650,420],[680,480],[640,540],[560,550],[450,500],[340,430],[230,360],[130,300],[90,230],[110,160]]},
 {name:'NIGHT RUN',worldScale:2.65,layoutVersion:3,roadVersion:1,roadProfile:[[0,50,0],[0.1,54,0],[0.16,38,6],[0.24,48,6],[0.34,42,0],[0.42,34,0],[0.5,46,6],[0.6,52,0],[0.7,48,6],[0.8,38,6],[0.9,40,0],[1,50,0]],sky:'#5a5b9e',grass:'#263a54',accent:'#ff5fae',points:[[130,85],[340,85],[390,85],[420,110],[450,110],[480,85],[650,85],[880,100],[930,170],[900,240],[800,265],[700,240],[670,290],[720,335],[835,320],[900,365],[925,440],[880,520],[780,565],[600,575],[460,530],[320,560],[155,550],[90,490],[85,420],[145,375],[240,390],[330,450],[460,450],[540,400],[540,330],[470,280],[350,250],[240,285],[155,280],[95,220],[95,150]]},
-{name:'FROSTBITE GP',worldScale:1.4,layoutVersion:2,sky:'#d9eff4',grass:'#83b3a3',accent:'#ffffff',points:[[155,115],[320,85],[445,120],[490,180],[600,150],[745,120],[830,180],[850,255],[780,305],[670,285],[620,350],[680,410],[650,500],[525,530],[450,470],[355,480],[305,545],[205,510],[150,430],[95,400],[105,300],[150,255],[115,185]]},
+{name:'FROSTBITE GP',worldScale:2.2,layoutVersion:3,roadVersion:1,roadProfile:[[0, 52, 0], [0.12, 56, 0], [0.22, 44, 0], [0.31, 38, 0], [0.4, 48, 0], [0.5, 54, 0], [0.61, 42, 0], [0.7, 34, 0], [0.79, 38, 0], [0.9, 46, 0], [1, 52, 0]],sky:'#d9eff4',grass:'#a4c9d8',accent:'#e7fbff',points:[[340, 80], [560, 100], [760, 180], [875, 280], [900, 400], [830, 490], [700, 520], [610, 480], [570, 400], [500, 350], [430, 380], [370, 480], [280, 540], [160, 530], [90, 450], [90, 350], [170, 285], [270, 280], [350, 235], [360, 180], [300, 170], [190, 185], [130, 150], [150, 100], [240, 80]]},
 {name:'JUNGLE SPRINT',worldScale:1.4,layoutVersion:2,sky:'#72b987',grass:'#205a3d',accent:'#a8e77e',points:[[135,125],[285,90],[385,120],[435,195],[530,210],[575,135],[735,115],[825,180],[800,255],[720,285],[690,360],[750,415],[700,515],[570,525],[500,455],[400,465],[335,540],[220,525],[175,445],[100,420],[80,330],[145,260],[100,190]]},
 {name:'VOLCANO RING',worldScale:1.8,layoutVersion:3,roadVersion:1,roadProfile:[[0,48,0],[0.14,56,0],[0.26,44,0],[0.35,38,0],[0.45,34,0],[0.56,44,0],[0.66,50,0],[0.77,40,0],[0.88,36,0],[1,48,0]],sky:'#9e645d',grass:'#4c4349',accent:'#ff704e',points:[[160,400],[320,360],[490,245],[670,125],[800,90],[885,130],[920,205],[885,270],[800,290],[740,265],[675,275],[650,325],[690,370],[780,375],[860,425],[860,500],[790,555],[670,560],[580,520],[500,465],[420,470],[340,525],[240,560],[145,545],[85,500],[80,450],[105,415]]},
 {name:'PIXEL CITY',worldScale:1.4,layoutVersion:2,sky:'#c67bb2',grass:'#356c5d',accent:'#5bf4ec',points:[[160,100],[325,90],[390,140],[465,110],[610,115],[680,170],[790,145],[865,205],[830,270],[735,285],[685,340],[735,405],[700,500],[590,530],[510,470],[420,500],[345,550],[225,520],[175,440],[105,410],[85,315],[145,265],[115,185]]},
@@ -61,7 +61,7 @@ const TERRAIN_MATERIALS={
  asphalt:{road:{edge:'#141b22',kerb:'#f5f0dc',border:'#3c414c',body:'#646c78',lite:'#59616c',center:'#303640'},grip:1,drag:0,edgeDrag:0,particle:'#aeb6c5',life:.46,size:2},
  dirt:{road:{edge:'#49372b',kerb:'#b18c64',border:'#a27d55',body:'#b8996d',center:'#987449'},grip:.84,drag:54,edgeDrag:2.8,particle:'#ad8053',life:.62,size:3},
  grass:{grip:.79,drag:34,edgeDrag:2.2,particle:'#6e9958',life:.46,size:2},
- ice:{grip:.68,drag:58,edgeDrag:4.6,particle:'#d9f1f6',life:.46,size:2},
+ ice:{road:{edge:'#5b8194',kerb:'#e9f8fc',border:'#94bed2',body:'#c7e6ef',lite:'#b5dbe8',center:'#b1d3e3',grain:['#f5feff','#d9f0fa','#8cbacf'],grainKind:'ice'},mark:'#6e9caf',grip:.68,drag:58,edgeDrag:4.6,particle:'#d9f1f6',life:.46,size:2},
  volcanic:{road:{edge:'#211d25',kerb:'#ad704d',border:'#986447',body:'#715047',center:'#42343b',grain:['#5b4745','#b37751','#cf8b57']},grip:.87,drag:54,edgeDrag:2.8,particle:'#cf603c',life:.58,size:3},
  coastal:{grip:1,drag:54,edgeDrag:2.8,particle:'#c9ad7a',life:.58,size:3},
  gravel:{mark:'#816c50',grip:.60,drag:130,edgeDrag:0,speedDrag:.35,particle:'#c4a47b',life:.62,size:3,palette:['#a48c6d','#b59b77','#c3ab86','#d1bb96']}
@@ -739,14 +739,14 @@ function drawVariableRoad(context){
  fillRoadRibbon(context,graphics==='high'?style.body:(style.lite||style.body),d=>Math.max(8,roadSectionAt(d).halfWidth-3));
  fillRoadRibbon(context,style.center,d=>Math.max(8,roadSectionAt(d).halfWidth-8));
  if(style.grain){
-  // Sparse deterministic cinders stay inside the same native road corridor.
+  // Sparse deterministic surface marks stay inside the same native road corridor.
   const step=graphics==='high'?12:graphics==='retro'?20:28;
   for(let d=0;d<track.length;d+=step){
    for(let side=0;side<2;side++){let seed=Math.imul(Math.floor(d)+side*307,374761393);seed=Math.imul(seed^(seed>>>13),1274126177);seed=(seed^(seed>>>16))>>>0;
     const progress=d+(seed>>>8)%step,p=sampleAt(progress),width=roadSectionAt(progress).halfWidth-6,offset=(seed/4294967296*2-1)*width;
     const x=p.x-Math.sin(p.angle)*offset,y=p.y+Math.cos(p.angle)*offset,loc=nearestOnTrack(x,y);
     if(loc.distance>roadSectionAt(loc.progress).halfWidth-5)continue;
-    context.fillStyle=style.grain[seed%style.grain.length];context.fillRect(x-1,y-1,2+(seed%2),2);
+    if(style.grainKind==='ice'){const length=5+seed%9,angle=p.angle+((seed%11)-5)*.04;context.strokeStyle=style.grain[seed%style.grain.length];context.lineWidth=1;context.beginPath();context.moveTo(x-Math.cos(angle)*length/2,y-Math.sin(angle)*length/2);context.lineTo(x+Math.cos(angle)*length/2,y+Math.sin(angle)*length/2);context.stroke();}else{context.fillStyle=style.grain[seed%style.grain.length];context.fillRect(x-1,y-1,2+(seed%2),2);}
    }
   }
  }

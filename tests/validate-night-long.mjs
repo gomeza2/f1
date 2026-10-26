@@ -11,7 +11,7 @@ assert.ok(night.length>10000&&night.length<11500);assert.ok(normalizedShapeDista
 assert.deepEqual(JSON.parse(JSON.stringify(game.CAR_MODELS)),old.models);assert.equal(game.PHYSICS_VERSION,5);assert.equal(game.WORLD_SPEED_SCALE,.84);
 let nearest=Infinity;
 for(const t of game.tracks.filter(t=>t!==night)){
- const signature=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');if(t.name!=='VOLCANO RING'||t.layoutVersion!==3)assert.equal(signature,old.otherTracks[t.name],`${t.name} changed`);
+ const signature=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');if(!(['VOLCANO RING','FROSTBITE GP'].includes(t.name)&&t.layoutVersion===3))assert.equal(signature,old.otherTracks[t.name],`${t.name} changed`);
  const distance=normalizedShapeDistance(shape,sampleTrackShape(t));nearest=Math.min(nearest,distance);assert.ok(distance>.2,`Night resembles ${t.name}: ${distance}`);
 }
 const geometry=analyzeTrackWidth(night,d=>game.roadHalfWidthAt(d,night));assert.ok(geometry.roadMargin>50&&geometry.clearance>25);
@@ -20,4 +20,4 @@ const gates=[0,...game.checkpoints.map(g=>g.progress),night.length];assert.ok(ga
 game.bestLapRecords['NIGHT RUN@2:p5']=28;assert.equal(game.lapRecordKey(),'NIGHT RUN@3:p5:r1');game.saveBestLap(game.lapRecordKey(),60);assert.equal(game.bestLapRecords['NIGHT RUN@2:p5'],28);
 const player=game.cars[0];game.placeCar(player,night.length-3,0);player.speed=120;game.setKeys({w:true});game.physics(player,0,.1);assert.equal(player.lap,0,'Meta accepted a lap without ordered gates');
 element('stageSelect').value='3';game.updateMenuPreview();assert.match(element('previewRouteInfo').textContent,/16 CHECKPOINTS/);
-console.log(`PASS: Night ${night.length.toFixed(1)} units, distinct shape (nearest ${nearest.toFixed(3)}), real-width margin ${geometry.roadMargin.toFixed(1)}/clearance ${geometry.clearance.toFixed(1)}, sixteen ordered gates, preserved records/physics and twelve preserved historical tracks; Volcano has its own 0.46 snapshot. Lap duration is tested through actual simulation.`);
+console.log(`PASS: Night ${night.length.toFixed(1)} units, distinct shape (nearest ${nearest.toFixed(3)}), real-width margin ${geometry.roadMargin.toFixed(1)}/clearance ${geometry.clearance.toFixed(1)}, sixteen ordered gates, preserved records/physics and eleven preserved historical tracks; Volcano and Frost have dedicated later snapshots. Lap duration is tested through actual simulation.`);
