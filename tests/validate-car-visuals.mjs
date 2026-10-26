@@ -43,3 +43,21 @@ for(const model of Object.keys(game.CAR_MODELS)){
  game.placeCar(car,150,0);assert.equal(car.wheelTravel,0);assert.equal(car.braking,false);
 }
 console.log('PASS: four distinct models/six paints/three qualities, brake and handbrake lights, steering/countersteer, distance-based rolling, static wheels, rear-axle skid marks, reduced motion, reset and pure bounded drawing state.');
+
+// The same world-facing facet receives the same light at every car heading.
+for(const heading of [0,.4,Math.PI/2,Math.PI,5.5]){
+ const dx=-Math.sin(heading),dy=-Math.cos(heading);
+ assert.ok(Math.abs(game.carEdgeLight(heading,dx,dy)-.6)<1e-12);
+ assert.equal(game.carEdgeLight(heading,0,0),0);
+}
+for(const quality of ['high','retro','lite'])for(const heading of [0,.8,Math.PI/2,Math.PI]){
+ element('graphics').value=quality;game.start('solo',0);const car=game.cars[0];Object.assign(car,{x:200,y:300,heading,steer:.5});
+ const before=JSON.stringify(car),r=recorder();game.drawCarShadow(r.context,car);
+ assert.equal(JSON.stringify(car),before);assert.equal(r.stackDepth,0);
+ if(quality==='lite'){assert.equal(r.operations.length,0);continue;}
+ const a=game.CAR_VISUALS[car.model].body[0],first=r.operations.find(op=>op[0]==='point');
+ assert.ok(Math.abs(first[1]-(car.x+3+a[0]*Math.cos(heading)-a[1]*Math.sin(heading)))<1e-10);
+ assert.ok(Math.abs(first[2]-(car.y+4+a[0]*Math.sin(heading)+a[1]*Math.cos(heading)))<1e-10);
+ assert.equal(r.operations.filter(op=>op[0]==='fill').length,quality==='high'?2:1);
+}
+console.log('PASS: heading-independent world light and fixed shadow displacement; contact layer in high, single cast layer in retro, no shadow work in lite; render is pure.');

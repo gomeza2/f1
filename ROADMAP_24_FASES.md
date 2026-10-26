@@ -8,7 +8,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.56**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y 2–4 jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.57**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y 2–4 jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -1149,3 +1149,10 @@ Consultar `ROADMAP_EVOLUCION.md`; este archivo conserva historial y evidencia. C
 - Cierre Node: veinte parrillas/240 vueltas, diez grupos/120, tres borde/36, dos carril/24 y cinco ritmo libre/diez: **430 vueltas** entre suites (con referencias compartidas, sin contar candidatos/repeticiones/maniobras parciales). Conservan presupuestos de contacto y referencias de ritmo. Reposo a tres pasos, nueve recuperaciones, marcas/audio, inercia, terreno/grava, contactos y recuperación superados. Integración setenta perfiles, geometría catorce y local veintiuna configuraciones superados.
 - Chromium: cinco parrillas/60 vueltas con métricas y plazo normal de llegada; comparación gráfica/reposo/recuperación, suite general, local 2–4 y entrega `/f1/` superadas. El escenario aislado de recuperación se corrigió para elegir un rival (antes dejaba los otros dos del default); la prueba de contravolante ahora garantiza movimiento y mantiene gas, sin depender del pivote estacionado. Aserciones de inercia con tiempo fijo conservadas. Sintaxis/diff revisados.
 - Evidencia detallada: `tests/experiments/ROAD_FEEL_056.md`. Manejo humano/curvas, coste sostenido en hardware real y Pages público quedan pendientes. Continuar fase 25 y después 36.2, sin perder CPU/local/pistas y sin techo artificial de fases.
+
+
+## Avance 0.57 — tramo gráfico 36.2 del plan abierto
+
+Coches con sombra de silueta/ruedas cuya dirección permanece fija en el mundo y borde de contacto en detallado. Reflejos de borde responden a orientación respecto de luz fija; se conservan cuatro modelos/seis pinturas, dirección, freno y destello de impacto. Retro simplifica la sombra; rendimiento mantiene sus píxeles anteriores. Sin cambios de física 5, CPU, pistas, récords, audio o controles.
+
+La ampliación gráfica está en `ROADMAP_EVOLUCION.md`, no se da por cerrada con este paso. Pruebas, comparación y límites en `tests/experiments/CAR_LIGHT_057.md`. Pendiente aceptación humana del aspecto y manejo; próxima prioridad de conducción: fase 25. Escenarios y siete trazados uniformes permanecen abiertos.

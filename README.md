@@ -40,6 +40,12 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## Coches, sombras y luz — 0.57
+
+Continúa el tramo **36.2**, con profundidad de carrocería y lectura retro. La sombra proyectada utiliza la silueta y las ruedas del modelo, con desplazamiento fijo hacia abajo/derecha del mundo; ya no gira su dirección al girar el coche. En detallado se añade una sombra de contacto de borde corto. Los bordes de carrocería reciben luz desde arriba/izquierda según su orientación real. Las vistas de garaje y parrilla utilizan también esa orientación.
+
+Las cuatro siluetas, seis pinturas, ruedas dirigibles, luces de freno y destello de impacto siguen legibles. Retro usa una sola capa de sombra; rendimiento conserva sus píxeles anteriores. No se agregan filtros borrosos, recursos externos ni colisiones. Física, trazados, récords, audio y controles permanecen. Es una entrega de coches/luz, no el cierre de toda la fase gráfica ni la aceptación humana del manejo. Ver [evidencia 0.57](tests/experiments/CAR_LIGHT_057.md).
+
 ## Conducción y primer detalle gráfico — 0.56
 
 El coche ya no gira sobre su eje estando totalmente detenido: podés orientar las ruedas y el chasis gira al avanzar. La CPU puede rodear un obstáculo cercano desde parado mediante avance lento y dirección normal, en lugar de depender de ese pivote. Un caso a 25 unidades que antes no salía en 20 s se recupera en ~11,9 s sin contacto en la referencia automatizada; otros a 30/40 lo hacen en ~4,6/4,3 s. No es recuperación universal ni una ayuda de posición/agarre.
@@ -439,3 +445,12 @@ Geometría nueva, material nativo de hielo y récord de recorrido separado. Se d
 Prueba dedicada: `node tests/validate-frost.mjs`; píxeles/calidades/carreras: `ROAD_STAGES=4 node tests/browser-road-sectors.cjs` con Playwright/Chromium. Las comprobaciones históricas conservan sus otros recorridos y usan el nuevo fixture para Frost. Su vuelta anterior ya no se compara con el nuevo trazado en el benchmark de velocidad CPU.
 
 Siguiente prioridad propuesta: continuar fase 27 con otro recorrido de identidad débil, como Pixel City; completar variedad sin perder las mejoras de conducción, CPU y local. Siguen abiertas evaluación humana de motor/manejo, reservas de tráfico y rendimiento en hardware físico.
+
+Comparación gráfica de coches 0.57 (Playwright/Chromium):
+
+```sh
+git show 2f37712:script.js > /tmp/pixelgp-before-057.js
+CAR_SOURCE_BASELINE=/tmp/pixelgp-before-057.js node tests/browser-car-light.cjs
+```
+
+`CAR_SCREENSHOTS` guarda las planchas antes/después. Compara cuatro modelos, seis pinturas, cuatro orientaciones y tres calidades; el microbenchmark de dibujo no mide FPS del juego completo.

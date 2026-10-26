@@ -178,3 +178,10 @@ Conservar la evolución de CPU justa y competitiva, siluetas y anchos variados, 
 0.56 retoma fase 25 con correcciones concretas: el chasis no pivota a velocidad cero, ruedas aún dirigibles y salida rodando; CPU recupera un caso parado que dependía de ese pivote mediante avance mínimo con física normal y objetivo cercano. Audio/marcas comparten señal de deslizamiento y se eliminan marcas/humo falsos de recta. Se conservan fuerzas/modelos/reglas de conducción en movimiento y récords p5. No se declara aceptado el tacto de curvas ni cerrado el manejo.
 
 Próximo: continuar las comparaciones de conducción de fase 25; desarrollar después 36.2 (coches/sombras) y los materiales restantes, manteniendo lectura retro y el plan abierto. La mejora gráfica acompaña control/CPU/pistas, no reemplaza su evolución.
+
+
+### Avance 0.57 — tramo 36.2, profundidad de coches
+
+Separadas las sombras del cuerpo rotado: silueta/ruedas proyectadas con vector fijo del mundo, capa de contacto en detallado y una sola sombra en retro. Bordes de carrocería calculan iluminación con su normal orientada en el mundo; garaje/parrilla explicitan su ángulo. Se conservan siluetas, pinturas, freno/impactos y modo rendimiento. No cambia simulación, colisiones, audio, récords ni las catorce rutas.
+
+Tramo implementado y comparado automáticamente en Canvas real; capturas revisadas. No cierra 36.2 completo ni 36.3/36.4/36.5: quedan más detalle de carrocería, escenarios y luz ambiental coherente, medición completa de cuatro cámaras y evaluación humana. Las mediciones aisladas de dibujo no acreditan FPS del dispositivo del jugador. Próximo trabajo prioritario: fase 25, comparación de curvas/frenado/recuperación y conducción; continuar luego escenarios 36.3 y siete pistas uniformes de fase 27 según evidencia.

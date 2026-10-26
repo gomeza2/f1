@@ -568,7 +568,7 @@ function updateGaragePreview(){
  const image=$('carPreview'),context=image.getContext('2d'),width=image.width||480,height=image.height||180;
  context.setTransform(1,0,0,1,0,0);context.clearRect(0,0,width,height);context.fillStyle='#0c1727';context.fillRect(0,0,width,height);
  context.fillStyle=paint.hex+'18';context.beginPath();context.ellipse(width/2,height/2+8,110,48,0,0,Math.PI*2);context.fill();
- context.save();context.translate(width/2,height/2);context.rotate(-.16);context.scale(5,5);drawCarBody(context,{model:id,color:paint.hex,steer:0,braking:false,wheelTravel:0,done:false,flash:0,offroad:0});context.restore();
+ context.save();context.translate(width/2,height/2);context.rotate(-.16);context.scale(5,5);drawCarBody(context,{model:id,heading:-.16,color:paint.hex,steer:0,braking:false,wheelTravel:0,done:false,flash:0,offroad:0});context.restore();
  image.setAttribute('aria-label',car.name+', pintura '+paint.name);
 }
 function updateMenuPreview(){
@@ -887,7 +887,7 @@ function updateLocalLobby(){
  for(let i=2;i<=4;i++){
   $('localSeat'+i).classList.toggle('hidden',i>count);
   const choice=playerChoice(i-1),image=$('playerPreview'+i),context=image.getContext('2d');
-  context.setTransform(1,0,0,1,0,0);context.clearRect(0,0,image.width,image.height);context.save();context.translate(image.width/2,image.height/2);context.rotate(-.16);context.scale(2.5,2.5);drawCarBody(context,{model:choice.model,color:CAR_PAINTS[choice.color].hex,steer:0,braking:false,wheelTravel:0,done:false,flash:0,offroad:0});context.restore();
+  context.setTransform(1,0,0,1,0,0);context.clearRect(0,0,image.width,image.height);context.save();context.translate(image.width/2,image.height/2);context.rotate(-.16);context.scale(2.5,2.5);drawCarBody(context,{model:choice.model,heading:-.16,color:CAR_PAINTS[choice.color].hex,steer:0,braking:false,wheelTravel:0,done:false,flash:0,offroad:0});context.restore();
   image.setAttribute('aria-label','P'+i+' · '+CAR_MODELS[choice.model].name+' · '+CAR_PAINTS[choice.color].name);
  }
  validateLocalSetup();
@@ -1402,6 +1402,29 @@ const CAR_VISUALS={
  rally:{rearAxle:-7.5,frontAxle:7,halfTrack:7.5,steerAngle:.38,body:[[-14,-6],[-12,-8],[10,-8],[15,-5],[15,5],[10,8],[-12,8],[-14,6]],roof:[[-7,-5],[4,-5],[7,-3],[7,3],[4,5],[-7,5]]}
 };
 const motionPreference=typeof window.matchMedia==='function'?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
+// Screen/world light stays fixed as a car changes heading. No blurred Canvas shadows.
+const CAR_LIGHT={x:-.6,y:-.8,shadowX:3,shadowY:4};
+function carEdgeLight(heading,dx,dy){
+ const length=Math.hypot(dx,dy);if(!length)return 0;
+ const c=Math.cos(heading),s=Math.sin(heading),nx=dy/length,ny=-dx/length;
+ return (nx*c-ny*s)*CAR_LIGHT.x+(nx*s+ny*c)*CAR_LIGHT.y;
+}
+function drawCarShadow(context,car){
+ if(graphics==='lite')return;
+ const v=carVisualState(car).profile;
+ const silhouette=(dx,dy,color,pad=0)=>{
+  context.save();context.translate(car.x+dx,car.y+dy);context.rotate(car.heading);
+  context.fillStyle=color;context.beginPath();v.body.forEach(([x,y],i)=>i?context.lineTo(x,y):context.moveTo(x,y));context.closePath();context.fill();
+  if(pad){context.strokeStyle=color;context.lineWidth=pad*2;context.stroke();}
+  for(const side of [-1,1])for(const front of [false,true]){
+   context.save();context.translate(front?v.frontAxle:v.rearAxle,side*v.halfTrack);if(front)context.rotate(clamp(car.steer||0,-1,1)*v.steerAngle);
+   context.fillRect(-3-pad,-1.4-pad,6+pad*2,2.8+pad*2);context.restore();
+  }
+  context.restore();
+ };
+ silhouette(CAR_LIGHT.shadowX,CAR_LIGHT.shadowY,'#050b173d');
+ if(graphics==='high')silhouette(0,0,'#050b1752',.6);
+}
 function carVisualState(car){
  const profile=CAR_VISUALS[car.model]||CAR_VISUALS.balanced;
  return {profile,wheelAngle:clamp(car.steer||0,-1,1)*profile.steerAngle,rolling:graphics!=='lite'&&!motionPreference?.matches,
@@ -1411,7 +1434,6 @@ function drawCarBody(context,car){
  const visual=carVisualState(car),v=visual.profile,detail=graphics==='high';
  const poly=(points,color)=>{context.beginPath();points.forEach(([x,y],i)=>i?context.lineTo(x,y):context.moveTo(x,y));context.closePath();context.fillStyle=color;context.fill();};
  const rect=(x,y,w,h,color)=>{context.fillStyle=color;context.fillRect(x,y,w,h);};
- if(detail){rect(-14,-6,30,15,'#050b1740');rect(-12,-4,29,14,'#050b1740');}
  for(const side of [-1,1])for(const front of [false,true]){
   context.save();context.translate(front?v.frontAxle:v.rearAxle,side*v.halfTrack);if(front)context.rotate(visual.wheelAngle);
   rect(-3,-1.4,6,2.8,'#090f19');
@@ -1422,8 +1444,12 @@ function drawCarBody(context,car){
   context.restore();
  }
  poly(v.body,car.color);context.strokeStyle=car.flash>0?'#f1ffed':'#111c2c';context.lineWidth=car.flash>0?1.4:1;context.stroke();
- // A lit leading edge and shaded sill give depth without hiding the paint.
- if(graphics!=='lite'){rect(-11,-6,18,.8,'#ffffff52');rect(-12,5,22,1,'#07172966');}
+ // Faceted rim follows world light, preserving the paint and the small retro silhouette.
+ if(graphics!=='lite'&&!(car.flash>0))for(let i=0;i<v.body.length;i++){
+  const a=v.body[i],b=v.body[(i+1)%v.body.length],light=carEdgeLight(car.heading||0,b[0]-a[0],b[1]-a[1]);
+  context.strokeStyle=light>0?'#ffffff':'#071729';context.globalAlpha=Math.abs(light)*(light>0?.38:.42);context.lineWidth=detail?1.1:.8;
+  context.beginPath();context.moveTo(...a);context.lineTo(...b);context.stroke();
+ }context.globalAlpha=1;
  poly(v.roof,'#172c3e');
  if(car.model==='corner'){
   rect(-13,-8,2,16,'#182b3b');rect(-12.5,-7,1,14,car.color);
@@ -1449,7 +1475,7 @@ function drawCarBody(context,car){
  if(car.offroad>39){const dirt=track.surface==='ice'?'#d6ecee99':track.surface==='grass'?'#9ca47699':'#bda27b99';rect(-12,-6.5,3,1.2,dirt);rect(-12,5.3,3,1.2,dirt);if(detail)rect(-9,-2,1,2,dirt);}
 }
 function drawCar(context,car){
- context.save();context.save();context.translate(car.x,car.y);context.rotate(car.heading);drawCarBody(context,car);context.restore();
+ context.save();drawCarShadow(context,car);context.save();context.translate(car.x,car.y);context.rotate(car.heading);drawCarBody(context,car);context.restore();
  const name=carName(car),labelWidth=clamp(name.length*5.5+8,28,72);
  context.fillStyle='#10151ddd';context.fillRect(car.x-labelWidth/2,car.y-27,labelWidth,11);
  context.fillStyle=car.color;context.font='bold 9px monospace';context.textAlign='center';context.fillText(name,car.x,car.y-19);

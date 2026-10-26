@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.56
+# PIXEL GRAND PRIX — entrega 0.57
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Coches y luz en 0.57
+
+Tramo 36.2: sombra proyectada de carrocería/ruedas con dirección fija en el mundo, capa corta de contacto en detallado y bordes iluminados según orientación. Se elimina la vieja sombra rectangular que rotaba con el coche. Garaje/parrilla comunican la orientación de su dibujo. Sin filtros borrosos, nuevos recursos o cambios de simulación.
+
+Cuatro modelos/seis pinturas conservados, freno/impactos/dirección visibles y rendimiento con píxeles idénticos. Física 5, catorce pistas, CPU, audio, récords y local 2–4 se mantienen. Escenarios/luz ambiental, evaluación humana y conducción siguen abiertos. Evidencia y límites en `tests/experiments/CAR_LIGHT_057.md`.
 
 ## Conducción/lectura y comienzo gráfico en 0.56
 
