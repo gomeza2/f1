@@ -1,3 +1,4 @@
+import {assertOriginalModels} from './helpers/model-balance.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
@@ -9,7 +10,7 @@ const {game,element}=loadGame(),sunset=game.tracks[0],shape=sampleTrackShape(sun
 assert.equal(sunset.name,'SUNSET CIRCUIT');assert.equal(sunset.layoutVersion,3);assert.equal(sunset.defaultBarriers,'open');assert.equal(sunset.surface,'asphalt');
 assert.ok(sunset.length>baseline.length*1.6&&sunset.length<baseline.length*1.95,'Sunset must gain useful length without an unbounded expansion');
 assert.ok(sunset.worldWidth>baseline.worldWidth&&sunset.worldHeight>baseline.worldHeight);
-assert.equal(game.ROAD_EDGE,42);assert.equal(game.WORLD_SPEED_SCALE,.84);assert.equal(JSON.stringify(game.CAR_MODELS),JSON.stringify(baseline.models),'Expansion changed model definitions');
+assert.equal(game.ROAD_EDGE,42);assert.equal(game.WORLD_SPEED_SCALE,.84);assertOriginalModels(game.CAR_MODELS,baseline.models);
 assert.ok(normalizedShapeDistance(shape,baseline.shape)>.2,'Sunset was only enlarged, not redesigned');
 let nearest=Infinity;
 for(const other of game.tracks.slice(1)){const distance=normalizedShapeDistance(shape,sampleTrackShape(other));assert.ok(distance>.2,`Sunset resembles ${other.name}`);nearest=Math.min(nearest,distance);
@@ -17,7 +18,7 @@ for(const other of game.tracks.slice(1)){const distance=normalizedShapeDistance(
  const signature=createHash('sha256').update(JSON.stringify({points:other.points,samples:other.samples,worldScale:other.worldScale,layoutVersion:other.layoutVersion})).digest('hex');if(!['NIGHT RUN','VOLCANO RING'].includes(other.name)&&!(['FROSTBITE GP','PIXEL CITY','JUNGLE SPRINT'].includes(other.name)&&other.layoutVersion===3))assert.equal(signature,baseline.otherTracks[other.name],`${other.name} changed during the Sunset-only update`);
 }
 assert.ok(geometry.roadMargin>=32&&geometry.clearance>=32,'Sunset lost usable runoff or branch clearance');
-game.bestLapRecords['SUNSET CIRCUIT@2']=18;game.start('solo',0);assert.equal(game.lapRecordKey(),'SUNSET CIRCUIT@3:p6:r1:s1');assert.ok(game.saveBestLap(game.lapRecordKey(),35));assert.equal(game.bestLapRecords['SUNSET CIRCUIT@2'],18);
+game.bestLapRecords['SUNSET CIRCUIT@2']=18;game.start('solo',0);assert.equal(game.lapRecordKey(),'SUNSET CIRCUIT@3:p6:r1:s1:b1');assert.ok(game.saveBestLap(game.lapRecordKey(),35));assert.equal(game.bestLapRecords['SUNSET CIRCUIT@2'],18);
 assert.equal(game.checkpoints.length,9);assert.ok(game.checkpoints.every((gate,index,all)=>index===0||gate.progress>all[index-1].progress));
 const human=game.cars[0];game.placeCar(human,sunset.length-4,0);human.speed=100;game.setKeys({w:true});game.physics(human,0,.1);assert.ok(human.progress<20,'Shortcut probe did not cross the finish');assert.equal(human.lap,0,'Finish accepted a lap without all nine checkpoints');
 element('stageSelect').value='0';game.updateMenuPreview();assert.match(element('previewRouteInfo').textContent,/9 CHECKPOINTS/);assert.match(element('previewBarriers').textContent,/ABIERTO/);

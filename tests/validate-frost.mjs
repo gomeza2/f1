@@ -1,3 +1,4 @@
+import {assertOriginalModels} from './helpers/model-balance.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
@@ -8,7 +9,8 @@ const old=JSON.parse(readFileSync(new URL('./fixtures/frost-0.51.json',import.me
 const {game:g,element:e}=loadGame(),track=g.tracks[4],shape=sampleTrackShape(track);
 assert.equal(track.name,old.name);assert.equal(track.layoutVersion,3);assert.equal(track.roadVersion,1);assert.equal(track.surface,'ice');assert.equal(track.defaultBarriers,'corners');
 assert.ok(track.length>6300&&track.length<6500);assert.ok(normalizedShapeDistance(shape,old.shape)>.25,'Frost was only enlarged');
-for(const [a,b] of [[g.CAR_MODELS,old.models],[g.AI_DRIVERS,old.drivers],[g.AI_PERSONALITIES,old.personalities]])assert.deepEqual(JSON.parse(JSON.stringify(a)),b);
+assertOriginalModels(g.CAR_MODELS,old.models);
+for(const [a,b] of [[g.AI_DRIVERS,old.drivers],[g.AI_PERSONALITIES,old.personalities]])assert.deepEqual(JSON.parse(JSON.stringify(a)),b);
 assert.equal(g.PHYSICS_VERSION,old.physics+1); // p6 human countersteer only; core source frozen by validate-countersteer.
 assert.equal(g.WORLD_SPEED_SCALE,old.worldSpeed);
 for(const key of Object.keys(old.ice))assert.equal(g.TERRAIN_MATERIALS.ice[key],old.ice[key],'Material art changed ice physics');
@@ -21,7 +23,7 @@ const geometry=analyzeTrackWidth(track,d=>g.roadHalfWidthAt(d,track));assert.ok(
 g.start('solo',4);assert.equal(g.checkpoints.length,9);const gaps=[0,...g.checkpoints.map(cp=>cp.progress),track.length];assert.ok(gaps.slice(1).every((d,i)=>d-gaps[i]<=650));
 for(let d=0;d<track.length;d+=20){assert.equal(g.roadSectionAt(d).kerb,0);const p=g.sampleAt(d);assert.equal(g.terrainAt(p.x,p.y).material,'ice');}
 assert.notEqual(g.TERRAIN_MATERIALS.ice.road.body,g.TERRAIN_MATERIALS.asphalt.road.body);assert.ok(g.TERRAIN_MATERIALS.ice.mark);
-g.bestLapRecords['FROSTBITE GP@2:p5']=26;assert.equal(g.lapRecordKey(),'FROSTBITE GP@3:p6:r1:s1');g.saveBestLap(g.lapRecordKey(),36);assert.equal(g.bestLapRecords['FROSTBITE GP@2:p5'],26);
+g.bestLapRecords['FROSTBITE GP@2:p5']=26;assert.equal(g.lapRecordKey(),'FROSTBITE GP@3:p6:r1:s1:b1');g.saveBestLap(g.lapRecordKey(),36);assert.equal(g.bestLapRecords['FROSTBITE GP@2:p5'],26);
 const human=g.cars[0];g.placeCar(human,track.length-3,0);human.speed=120;g.setKeys({w:true});g.physics(human,0,.1);assert.equal(human.lap,0,'Meta accepted skipped gates');
 e('stageSelect').value='4';g.updateMenuPreview();assert.match(e('previewRouteInfo').textContent,/9 CHECKPOINTS/);
 console.log(`PASS: Frost ${track.length.toFixed(1)} units (+${((track.length/old.oldLength-1)*100).toFixed(1)}%), nearest shape ${nearest.toFixed(3)}, width margin ${geometry.roadMargin.toFixed(1)}/branch clearance ${geometry.clearance.toFixed(1)}, native ice, 9 ordered gates, preserved models/physics/old records and remaining historical route signatures (Pixel/Jungle have newer snapshots).`);

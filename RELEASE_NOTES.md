@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.61
+# PIXEL GRAND PRIX — entrega 0.62
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Speed Demon 260 en 0.62
+
+Tope real 250 → 260, con reducción progresiva de aceleración específica del modelo (0,58 frente a 0,45 de los demás). Salida 0–100 ~1,17 s, 0–260 ~4,02 s; garaje, HUD y movimiento real comprobados en Champion con teclado. Frenada normal desde 260 ~114 unidades, frente a ~105 desde 250. Se mantiene la limitación lateral y la necesidad de frenar; no se incrementa potencia, frenada ni agarre nominal.
+
+Balance `b1`: nuevos récords separados, anteriores conservados. Física 6/reloj s1, otros tres modelos y CPU Balanced, pistas, colisiones, audio y gráficos se mantienen. La curva normalizada de fuerza de Speed utiliza su nuevo máximo; no se afirma identidad de manejo a toda velocidad con el modelo anterior. Mano/coste de velocidad/recuperación comprobados, derrape lateral completo y aceptación humana aún pendientes. Evidencia en `tests/experiments/SPEED_BALANCE_062.md`.
 
 ## Vegetación en 0.61
 

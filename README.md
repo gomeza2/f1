@@ -40,6 +40,14 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## Speed Demon a 260, con aceleración progresiva — 0.62
+
+**Elegí SPEED DEMON en el garaje** para llegar a **260 km/h**. Mantiene la salida ágil, pero entrega los últimos kilómetros por hora de forma más gradual: en la recta real de Champion la prueba de teclado mide 0–100 en **1,17 s**, 0–200 en **2,73 s** y 0–260 en **4,02 s**. Requiere espacio y una buena salida de curva; no es un aumento solo del velocímetro.
+
+La frenada normal desde 260 necesita **114 unidades de pista**, frente a **105 desde 250** en esa misma referencia. El radio de giro a máxima también crece. Conservar velocidad exige elegir frenadas y trazada. Balanced/Corner/Rally conservan especificaciones y aceleración; las CPU de producción continúan con Balanced y sus reglas físicas compartidas. El freno de mano sigue pagando velocidad y recupera agarre al soltarlo; la sensación humana de conducción/derrape continúa abierta.
+
+Los récords nuevos añaden **`:b1`** por la revisión de balance; los anteriores quedan guardados aparte. Física p6 y reloj s1 se mantienen. Carreteras, gráficos, audio y local 2–4 permanecen. [Mediciones, variantes y pruebas](tests/experiments/SPEED_BALANCE_062.md).
+
 ## Vegetación con profundidad retro — 0.61
 
 Árboles y copas tienen capas de follaje y troncos/raíces más definidos; palmeras con hojas perfiladas, pinos por niveles/nieve y cactus con detalles propios. Las sombras siguen la luz fija del mundo en **DETALLADOS** y **RETRO**. Todo se dibuja en el fondo en caché, sin animación ni partículas nuevas.
@@ -527,3 +535,14 @@ SCENERY_SOURCE_BASELINE=/tmp/pixelgp-before-061.js node tests/browser-vegetation
 ```
 
 `SCENERY_SCREENSHOTS` guarda capturas antes/después. La prueba compara fondos, posiciones y carreteras en las 14 pistas y tres calidades; no mide FPS del dispositivo del jugador.
+
+Pruebas del balance 0.62:
+
+```sh
+node tests/validate-speed-balance.mjs
+node tests/validate-speed-races.mjs
+git show d7f46bc:script.js > /tmp/pixelgp-before-062.js
+SPEED_SOURCE_BASELINE=/tmp/pixelgp-before-062.js node tests/browser-speed-balance.cjs
+```
+
+La prueba de navegador usa teclado real sobre Champion, contrasta garaje/HUD/movimiento, frenada y conservación de récords al recargar. `SPEED_SCREENSHOTS` guarda capturas. Las vueltas automáticas con Speed emplean un controlador conservador y no sustituyen conducirlo humanamente.

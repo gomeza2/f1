@@ -8,7 +8,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.61**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y 2–4 jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.62**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y 2–4 jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -1184,3 +1184,10 @@ Se detectaron y corrigieron geometría de cierre y alineación de barrera en var
 Follaje/troncos/raíces/sombras más definidos para árboles/copas/palmeras/pinos/cactus en detallado/retro, sin cambiar posiciones, huellas, cantidades, carreteras ni física; rendimiento conservado. Caché de fondo y lectura retro. Pruebas en `tests/experiments/VEGETATION_061.md`.
 
 La hoja activa cuenta doce frentes abiertos (25–36), varios implementados parcialmente. Online se divide en salas autoritativas, sincronización/reconexión y despliegue/resultados validados; no existe backend online hoy. El usuario reafirma jugabilidad/derrape y objetivo ~260 km/h para el coche rápido. Se programa para la próxima revisión de manejo con pruebas de frenado/radio/CPU; no se mezcla un aumento sin comprobar con esta entrega gráfica.
+
+
+## Avance 0.62 — velocidad y balance, fase abierta 25
+
+Speed Demon alcanza 260 reales con aceleración final más gradual: 0–100 1,17 s y 0–260 4,02 s en la recta de Champion, probado con teclado/Canvas reales. Frenar desde máxima cuesta 114 unidades frente a 105 desde 250. Otros tres modelos/CPU Balanced y agarre/frenada nominal conservados. Mano y recuperación comprobados; no se presenta como un nuevo modelo de derrape lateral.
+
+Nueva serie de balance `:b1` para récords, guardando las anteriores. Física p6/reloj s1, rutas, materiales, gráficos, audio y local mantenidos. Medidas y pruebas en `tests/experiments/SPEED_BALANCE_062.md`; aceptación humana de control abierta. Siguiente propuesta: ensayo de derrape/recuperación sobre esta base, sin dejar de avanzar los frentes del plan activo.

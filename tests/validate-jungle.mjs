@@ -1,3 +1,4 @@
+import {assertOriginalModels} from './helpers/model-balance.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';import {createHash} from 'node:crypto';
 import {loadGame} from './helpers/game-harness.mjs';
@@ -7,7 +8,8 @@ const old=JSON.parse(readFileSync(new URL('./fixtures/jungle-0.59.json',import.m
 const {game:g,element:e}=loadGame(),track=g.tracks[5],shape=sampleTrackShape(track);
 assert.equal(track.name,old.name);assert.equal(track.layoutVersion,3);assert.equal(track.roadVersion,1);assert.equal(track.surface,'grass');assert.equal(track.defaultBarriers,'open');
 assert.ok(track.length>6150&&track.length<6250);assert.ok(normalizedShapeDistance(shape,old.shape)>.5,'Jungle was only enlarged');
-for(const [a,b] of [[g.CAR_MODELS,old.models],[g.AI_DRIVERS,old.drivers],[g.AI_PERSONALITIES,old.personalities]])assert.deepEqual(JSON.parse(JSON.stringify(a)),b);
+assertOriginalModels(g.CAR_MODELS,old.models);
+for(const [a,b] of [[g.AI_DRIVERS,old.drivers],[g.AI_PERSONALITIES,old.personalities]])assert.deepEqual(JSON.parse(JSON.stringify(a)),b);
 assert.equal(g.PHYSICS_VERSION,old.physics);assert.equal(g.WORLD_SPEED_SCALE,old.worldSpeed);
 const materials=JSON.parse(JSON.stringify(g.TERRAIN_MATERIALS));assert.ok(materials.grass.road);delete materials.grass.road;assert.deepEqual(materials,old.materials,'Art changed material physics');
 let nearest=Infinity;
@@ -17,7 +19,7 @@ e('barrierMode').value='open';g.start('solo',5);assert.equal(g.checkpoints.lengt
 assert.equal(Math.min(...track.roadProfile.map(p=>p[1])),36);assert.equal(Math.max(...track.roadProfile.map(p=>p[1])),58);
 for(let d=0;d<track.length;d+=20){assert.equal(g.roadSectionAt(d).kerb,0);const p=g.sampleAt(d);assert.equal(g.terrainAt(p.x,p.y).material,'grass');}
 assert.notEqual(g.TERRAIN_MATERIALS.grass.road.body,g.TERRAIN_MATERIALS.asphalt.road.body);
-g.bestLapRecords['JUNGLE SPRINT@2:p6:s1']=26;assert.equal(g.lapRecordKey(),'JUNGLE SPRINT@3:p6:r1:s1');g.saveBestLap(g.lapRecordKey(),40);assert.equal(g.bestLapRecords['JUNGLE SPRINT@2:p6:s1'],26);
+g.bestLapRecords['JUNGLE SPRINT@2:p6:s1']=26;assert.equal(g.lapRecordKey(),'JUNGLE SPRINT@3:p6:r1:s1:b1');g.saveBestLap(g.lapRecordKey(),40);assert.equal(g.bestLapRecords['JUNGLE SPRINT@2:p6:s1'],26);
 const human=g.cars[0];g.placeCar(human,track.length-1,0);human.speed=120;g.setKeys({w:true});g.physics(human,0,1/60);assert.equal(human.lap,0,'Meta accepted skipped gates');
 e('stageSelect').value='5';g.updateMenuPreview();assert.match(e('previewRouteInfo').textContent,/9 CHECKPOINTS/);
 console.log(`PASS: Jungle ${track.length.toFixed(1)} units (+${((track.length/old.oldLength-1)*100).toFixed(1)}%), nearest ${nearest.toFixed(3)}, world margin ${geometry.roadMargin.toFixed(1)}/branch gap ${geometry.clearance.toFixed(1)}, native grass/72–116 width/9 gates, thirteen unchanged routes and retained records/physics.`);

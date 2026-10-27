@@ -20,7 +20,7 @@ const original=JSON.stringify(car);assert.equal(g.advanceRaceFrame(1/120),0);vie
 g.renderPrevious.set(car,{x:car.x,y:car.y,heading:Math.PI-.02});car.heading=-Math.PI+.02;assert.ok(Math.abs(Math.abs(g.renderedCar(car).heading)-Math.PI)<1e-9);
 g.placeCar(car,900,0);assert.equal(g.renderedCar(car),car,'Placement retained stale render pose');
 g.resetSimulationClock();const before=g.elapsed;assert.equal(g.advanceRaceFrame(10),6);assert.ok(Math.abs(g.elapsed-before-.1)<1e-9,'Stall exceeded catch-up budget');assert.ok(g.simulationAccumulator<g.SIMULATION_STEP);for(const dt of [NaN,Infinity,-1,0])assert.equal(g.advanceRaceFrame(dt),0);
-g.bestLapRecords['SUNSET CIRCUIT@3:p5:r1']=30;assert.equal(g.lapRecordKey(),'SUNSET CIRCUIT@3:p6:r1:s1');g.saveBestLap(g.lapRecordKey(),32);assert.equal(g.bestLapRecords['SUNSET CIRCUIT@3:p5:r1'],30);
+g.bestLapRecords['SUNSET CIRCUIT@3:p5:r1']=30;assert.equal(g.lapRecordKey(),'SUNSET CIRCUIT@3:p6:r1:s1:b1');g.saveBestLap(g.lapRecordKey(),32);assert.equal(g.bestLapRecords['SUNSET CIRCUIT@3:p5:r1'],30);
 // Exercise the actual RAF lifecycle with a clock that advances while paused.
 let now=0,serial=0;const pending=new Map(),frameScheduler={request(fn){pending.set(++serial,fn);return serial},cancel(id){pending.delete(id)}};
 const {game:p,element:e}=loadGame({frameScheduler,clock:()=>now});e('barrierMode').value='open';p.start('solo',0);p.setCountdown(0);p.cars[1].done=true;p.setKeys({w:true});

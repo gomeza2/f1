@@ -1,11 +1,13 @@
+import {assertOriginalModels} from './helpers/model-balance.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {loadGame} from './helpers/game-harness.mjs';
 const baseline=JSON.parse(readFileSync(new URL('./fixtures/traffic-0.50.json',import.meta.url),'utf8'));
 const specifications=JSON.parse(readFileSync(new URL('./fixtures/traffic-0.49.json',import.meta.url),'utf8'));
 const {game:g,element:e}=loadGame();
-assert.equal(g.PHYSICS_VERSION,specifications.physics);assert.equal(g.WORLD_SPEED_SCALE,specifications.worldSpeed);
-for(const [actual,expected] of [[g.CAR_MODELS,specifications.models],[g.AI_DRIVERS,specifications.drivers],[g.AI_PERSONALITIES,specifications.personalities]])assert.deepEqual(JSON.parse(JSON.stringify(actual)),expected);
+assert.equal(g.PHYSICS_VERSION,specifications.physics+1);assert.equal(g.WORLD_SPEED_SCALE,specifications.worldSpeed);
+assertOriginalModels(g.CAR_MODELS,specifications.models);
+for(const [actual,expected] of [[g.AI_DRIVERS,specifications.drivers],[g.AI_PERSONALITIES,specifications.personalities]])assert.deepEqual(JSON.parse(JSON.stringify(actual)),expected);
 e('opponentCount').value=String(baseline.opponents);
 for(const previous of baseline.cases){
  e('difficulty').value=previous.level;g.start('solo',previous.stageIndex);g.cars[0].isAI=true;assert.equal(g.track.name,previous.stage);

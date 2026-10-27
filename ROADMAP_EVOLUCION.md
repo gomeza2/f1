@@ -214,13 +214,13 @@ Se descartan un cierre con solapamiento y una variante cuya valla completa se de
 Estado: ocho pistas con secciones variables, seis uniformes por desarrollar. Evidencia/resultados en `tests/experiments/JUNGLE_060.md`. Próximo tramo recomendado: 36.3, ambientación con escala e identidad por tema y legibilidad; mantener manejo 25, seis rutas uniformes 27 (Thunder candidato), timbre/escucha 26 y competición/local abiertos. Las fases siguen ampliables; esta entrega no cierra el juego.
 
 
-## Estado del plan activo — 0.61
+## Estado del plan activo — 0.62
 
 Quedan **12 frentes abiertos (25–36)**, no doce entregas restantes: varios están implementados en parte y requieren más de una revisión. No hay un techo fijo ni se da por cerrado un sistema por su primera prueba automática.
 
 | Frente | Estado real | Qué falta para consolidarlo |
 |---|---|---|
-| 25 Manejo/derrape/contacto | Base p6 y reloj s1, comparaciones y correcciones presentes | Evaluación humana; próxima revisión de aceleración, frenado, agarre y derrape. Objetivo nuevo del usuario: coche más rápido alrededor de **260 km/h**, sin subir solo el HUD ni hacer todos los modelos iguales; medir distancia de frenada/radio/CPU antes de migrar récords. |
+| 25 Manejo/derrape/contacto | Base p6 y reloj s1, comparaciones y correcciones presentes | Speed Demon **260 km/h implementado en 0.62**, balance b1 con aceleración progresiva/frenada comprobadas. Continúan evaluación humana, agarre/derrape/recuperación y diferencias entre modelos. |
 | 26 Audio | Motor separado y mezcla regulable | Timbre/escucha, fatiga a máxima, superficies/ambiente y contactos convincentes. |
 | 27 Circuitos | 14, ocho variables, Jungle propio | Seis uniformes, más ritmo/identidad y evaluación humana de las rutas nuevas. |
 | 28 CPU | 1–3 rivales, perfiles y tráfico compartido | Estrategia de grupos, doblajes/recuperación y agresividad justa comprobada. |
@@ -246,3 +246,12 @@ Son hitos de las fases 30/32/33, no promesa de tres mensajes ni una fecha. Onlin
 Vegetación más definida en detallado/retro: copas por capas, palmeras con hojas perfiladas, pinos por niveles/nieve y cactus con volumen, raíces/troncos y sombras orientadas con la luz fija del mundo. Se conservan posiciones/tamaños/huellas/presupuestos y el modo rendimiento anterior. Sin nueva física, objetos de colisión ni decoración dentro de escapatorias; carreteras/CPU/control p6/reloj s1/audio/local permanecen.
 
 Pruebas y capturas en `tests/experiments/VEGETATION_061.md`. Es un tramo de vegetación, no toda la ambientación terminada. Próxima prioridad: volver a fase 25 con aceleración/frenada/derrape y objetivo de velocidad ~260 para el modelo rápido, preservando variedad de coches y límites justos. Online continúa en sus hitos y escenarios/otras fases siguen abiertos.
+
+
+### Avance 0.62 — fase 25, velocidad y balance medidos
+
+Speed Demon llega a 260 con aceleración progresiva específica (taper 0,58), manteniendo la salida. Teclado y física reales en Champion: 0–100 1,17 s, 0–200 2,73 s, 0–260 4,02 s; frenada normal desde máxima 114 unidades frente a 105 desde 250. No se cambia el HUD para simular potencia ni se añaden ventajas a la CPU. Balanced/Corner/Rally conservan sus modelos y curva anterior; rivales de producción mantienen Balanced. El modelo más veloz conserva sus desventajas de agarre/dirección/salida de pista.
+
+Balance b1 separa récords sin borrar p6/s1 previos. Los fixtures anteriores permanecen: el helper valida únicamente máximo y taper nuevos de Speed y exige identidad del resto de campos. El núcleo p6 acepta una propiedad opcional de aceleración; el valor por defecto conserva los otros coches. Gráficos 0.61, catorce rutas, materiales, audio, colisiones y local se mantienen. Evidencia/resultados en `tests/experiments/SPEED_BALANCE_062.md`.
+
+Tramo implementado y pendiente de aceptación humana de sensaciones, no cierre de toda la física. Próxima revisión recomendada: fase 25, ensayo de derrape con componente lateral/recuperación y freno de mano, comparando variantes antes de reemplazar el modelo actual. CPU/sonido/seis pistas uniformes/escenarios y los hitos online siguen abiertos; no se reanuncia 260 como trabajo pendiente.

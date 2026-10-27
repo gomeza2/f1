@@ -1,3 +1,4 @@
+import {assertOriginalModels} from './helpers/model-balance.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {loadGame} from './helpers/game-harness.mjs';
@@ -5,7 +6,8 @@ const old=JSON.parse(readFileSync(new URL('./fixtures/traffic-0.49.json',import.
 const {game:g,element:e}=loadGame();g.start('solo',2);
 assert.equal(g.PHYSICS_VERSION,old.physics+1); // p6 human countersteer only; core source frozen by validate-countersteer.
 assert.equal(g.WORLD_SPEED_SCALE,old.worldSpeed);
-for(const [current,previous] of [[g.CAR_MODELS,old.models],[g.AI_DRIVERS,old.drivers],[g.AI_PERSONALITIES,old.personalities]])assert.deepEqual(JSON.parse(JSON.stringify(current)),previous,'Traffic change altered power or driver settings');
+assertOriginalModels(g.CAR_MODELS,old.models);
+for(const [current,previous] of [[g.AI_DRIVERS,old.drivers],[g.AI_PERSONALITIES,old.personalities]])assert.deepEqual(JSON.parse(JSON.stringify(current)),previous,'Traffic change altered power or driver settings');
 assert.ok(g.aiSpeedPlan.some(p=>p.signedCurvature>0)&&g.aiSpeedPlan.some(p=>p.signedCurvature<0));
 for(const point of g.aiSpeedPlan)assert.equal(Math.abs(point.signedCurvature),point.curvature);
 // Analytical constant-radius arc: same lateral acceleration at r=100 or an inside r=75.
@@ -36,4 +38,4 @@ for(const scenario of [old,...old.additionalRuns]){
  if(scenario.stage===old.stage){assert.equal(offroadSteps,0,'Dusty gain came from leaving the legal road');assert.ok(g.cars[3].finishTime/old.laps<old.meanLaps[3]-1,'Trapped driver failed to gain at least a second per lap');}
  console.log(`PASS: ${g.track.name}/${scenario.difficulty}, four solid cars/12 valid laps, ${scenario.contactSteps} → ${contacts} contact steps, ${offroadSteps} car-steps outside road, offset ${maxOffset.toFixed(1)}, mean laps ${g.cars.map(c=>(c.finishTime/old.laps).toFixed(2)).join('/')}.`);
 }
-console.log('PASS: signed curves, constant-radius lateral force, mirrored/straight/outside lanes, recovery crawl and seam braking. Player physics and driver specifications unchanged; human play pending.');
+console.log('PASS: signed curves, constant-radius lateral force, mirrored/straight/outside lanes, recovery crawl and seam braking. Shared handling rules and driver specifications preserved; Speed b1 checked separately, human play pending.');

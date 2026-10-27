@@ -25,11 +25,12 @@ const pointDistance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const LAPS_TO_WIN=3;
 const ROAD_EDGE=42, WALL_EDGE=66,CAR_HALF_WIDTH=10;
 const PHYSICS_VERSION=6;
+const CAR_BALANCE_VERSION=1;
 const DRIVING_TUNING={accelerationScale:.82,accelerationTaper:.45,lateralAcceleration:280,maxSpeedGripLoss:.24,speedGripLoss:.0014,inputResponse:14,handInputResponse:16,yawResponse:18,yawSpeedWeight:4,topSpeedLateralLoss:.16,liftDrag:30};
 const CAR_MODELS={
  balanced:{name:'BALANCED',maxSpeed:232,acceleration:110,braking:230,steering:1,grip:1,grass:1,description:'Equilibrado para aprender y competir.'},
  corner:{name:'CORNER KING',maxSpeed:218,acceleration:105,braking:255,steering:1.19,grip:1.15,grass:.86,description:'Más agarre y frenado; velocidad punta menor.'},
- speed:{name:'SPEED DEMON',maxSpeed:250,acceleration:123,braking:215,steering:.84,grip:.87,grass:1.12,description:'Rápido en rectas, difícil en curvas cerradas.'},
+ speed:{name:'SPEED DEMON',maxSpeed:260,accelerationTaper:.58,acceleration:123,braking:215,steering:.84,grip:.87,grass:1.12,description:'Rápido en rectas, difícil en curvas cerradas.'},
  rally:{name:'RALLY FOX',maxSpeed:222,acceleration:112,braking:245,steering:1.08,grip:1.04,grass:.57,description:'Pierde menos velocidad si toca el pasto.'}
 };
 const CAR_PAINTS={
@@ -89,7 +90,7 @@ let countdownRemaining=0,goFlashRemaining=0,countdownShown='',finishNoticeKey=''
 const BEST_LAPS_KEY='pixelGP.bestLaps.v1';
 function readBestLapRecords(){try{const value=JSON.parse(localStorage.getItem(BEST_LAPS_KEY)||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value:{};}catch(error){return {};}}
 let bestLapRecords=readBestLapRecords();
-function lapRecordKey(item=track){return (item.layoutVersion?item.name+'@'+item.layoutVersion:item.name)+':p'+PHYSICS_VERSION+(item.roadVersion?':r'+item.roadVersion:'')+':s'+SIMULATION_VERSION;}
+function lapRecordKey(item=track){return (item.layoutVersion?item.name+'@'+item.layoutVersion:item.name)+':p'+PHYSICS_VERSION+(item.roadVersion?':r'+item.roadVersion:'')+':s'+SIMULATION_VERSION+':b'+CAR_BALANCE_VERSION;}
 function saveBestLap(trackName,time){if(!Number.isFinite(time)||time<=0)return false;const previous=bestLapRecords[trackName];if(Number.isFinite(previous)&&previous<=time)return false;bestLapRecords[trackName]=time;try{localStorage.setItem(BEST_LAPS_KEY,JSON.stringify(bestLapRecords));}catch(error){}return true;}
 let keys=Object.create(null),cars=[],graphics='high',difficulty='normal',decorations=[],tireBarriers=[],checkpoints=[];
 let guardrailPaths=[],physicalBarriers=[],barrierBuckets=new Map();
@@ -1011,7 +1012,7 @@ function driverFor(car){
  return {...base,pace:Math.min(1,base.pace+style.pace),brakingMargin:Math.min(1,base.brakingMargin+style.braking),response:base.response+style.response,laneSpeed:base.laneSpeed+style.lane,attackGap:style.attackGap,closing:style.closing};
 }
 const WORLD_SPEED_SCALE=.84;
-function accelerationAtSpeed(speed,model){return model.acceleration*DRIVING_TUNING.accelerationScale*(1-DRIVING_TUNING.accelerationTaper*clamp(speed/model.maxSpeed,0,1));}
+function accelerationAtSpeed(speed,model){return model.acceleration*DRIVING_TUNING.accelerationScale*(1-(model.accelerationTaper??DRIVING_TUNING.accelerationTaper)*clamp(speed/model.maxSpeed,0,1));}
 function vehicleHandling(speed,model,surface,safeSpeed,drift=0,hand=false){
  const excess=Math.max(0,speed-safeSpeed);
  const speedLoss=Math.min(DRIVING_TUNING.maxSpeedGripLoss,excess*DRIVING_TUNING.speedGripLoss);
