@@ -1202,3 +1202,14 @@ Sí se integra una corrección real de tráfico: cierre radial inminente ignorad
 Próximo tramo recomendado: fase 27, Thunder Valley con recorrido/secciones propios, alternando después con una revisión de planificación/control antes de retomar derrape lateral. Mantener timbre/escucha 26, local 29, escenarios 36 y los hitos online abiertos. Doce frentes (25–36), ampliables; no son doce mensajes ni entregas restantes.
 
 Verificación estable 0.63: 120 vueltas válidas de tráfico con límites anteriores conservados y cero salidas; caso CPU antes/ahora y Chromium, 14 pistas/70 perfiles, reloj/contravolante/Speed 260, local 2–4 y entrega local bajo `/f1/` superados. El candidato lateral fallido queda fuera de estos resultados. Evaluación humana y sitio público (403 del proxy) pendientes.
+
+
+## Avance 0.64 — variedad, superficies y lectura visual, fase 27
+
+Thunder Valley conserva nombre/posición, con nuevo recorrido 7.081,60 (+101,6 %), mundo 2100×1344, ancho 76–116, sectores con/sin pianos, dos tramos de tierra y diez gates. Referencia Normal libre 40,80/39,80 s, sin retocar velocidad ni conducción. Abierto por defecto; cinco perfiles válidos y sin salto de valla al cambiar material. Raster de tierra compartiendo definiciones físicas, caché, preview/minimapa mixtos y pintura solo en asfalto. Las otras trece rutas/imágenes y el núcleo de CPU/conducción se conservan. Récord Thunder @3/r1 guarda @2; p6/b1/s1 permanecen.
+
+Nueve pistas variables y cinco uniformes: Champion, Coastline, Rally, Meadow e Industrial. La fase 27 sigue abierta; variedad no se limita a hacer más larga cada pista. Evidencia y límites en `tests/experiments/THUNDER_064.md`. Evaluación humana de diversión/curvas y hardware pendiente.
+
+El usuario pide alternar los frentes y no concentrar cada entrega en CPU. En 0.64 no se modifica IA: solo se valida el trazado. **Siguiente tramo recomendado: fase 26, motor/feedback audible**, comparando crucero a máxima, aceleración, retención y cambios. Continuar después escenarios 36 y manejo 25 con planificación estable antes de retomar el ensayo lateral rechazado. Doce frentes abiertos, online según sus hitos, sin presentar salas inexistentes.
+
+Verificación de 0.64: 34 vueltas de la matriz Thunder, tres más en Chromium a reloj fijo; 40.886 probes de secciones y 7.462 de píxel/borde, color/material en tres calidades, 39 imágenes idénticas de las otras trece carreteras, local 2–4 en Thunder, sintaxis/integración/geometría y entrega local superados. Sensación humana y Pages público (proxy 403) pendientes.

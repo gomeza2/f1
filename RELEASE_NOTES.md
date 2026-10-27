@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.63
+# PIXEL GRAND PRIX — entrega 0.64
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Thunder Valley en 0.64
+
+Recorrido propio 7.082 unidades (+101,6 %), ancho 76–116, pianos por sector, dos caminos de tierra con ancho/agarre coherentes y diez checkpoints. Referencia automática 40,80/39,80 s; automático abierto y cinco perfiles verificados. Preview/minimapa mixtos y pintura vial solo sobre asfalto; raster de terreno cacheado.
+
+Corregido un salto de seis unidades en la referencia de vallas al cambiar de material mixto. Las otras trece carreteras conservan su imagen en tres calidades. Conducción/CPU/modelos/audio intactos; récord Thunder @3/r1 separado de @2 conservado. Evidencia y límites en `tests/experiments/THUNDER_064.md`. Nueve perfiles variables, cinco pistas uniformes restantes; siguiente foco audio 26.
 
 ## Convergencia lateral CPU y ensayo de derrape en 0.63
 

@@ -11,7 +11,7 @@ const trackDefs=[
 {name:'JUNGLE SPRINT',worldScale:2,layoutVersion:3,roadVersion:1,roadProfile:[[0,50,0],[0.12,58,0],[0.24,42,0],[0.35,36,0],[0.46,42,0],[0.56,52,0],[0.66,40,0],[0.76,36,0],[0.86,46,0],[1,50,0]],sky:'#72b987',grass:'#205a3d',accent:'#a8e77e',points:[[190,100],[300,90],[470,100],[560,140],[600,210],[550,270],[440,260],[350,310],[380,380],[500,390],[570,350],[650,280],[760,220],[850,230],[900,300],[880,400],[780,440],[700,420],[650,460],[670,530],[580,570],[420,550],[290,560],[170,520],[100,440],[100,340],[90,240],[100,160]]},
 {name:'VOLCANO RING',worldScale:1.8,layoutVersion:3,roadVersion:1,roadProfile:[[0,48,0],[0.14,56,0],[0.26,44,0],[0.35,38,0],[0.45,34,0],[0.56,44,0],[0.66,50,0],[0.77,40,0],[0.88,36,0],[1,48,0]],sky:'#9e645d',grass:'#4c4349',accent:'#ff704e',points:[[160,400],[320,360],[490,245],[670,125],[800,90],[885,130],[920,205],[885,270],[800,290],[740,265],[675,275],[650,325],[690,370],[780,375],[860,425],[860,500],[790,555],[670,560],[580,520],[500,465],[420,470],[340,525],[240,560],[145,545],[85,500],[80,450],[105,415]]},
 {name:'PIXEL CITY',worldScale:1.6,layoutVersion:3,roadVersion:1,roadProfile:[[0,52,0],[0.12,48,6],[0.22,34,6],[0.32,38,0],[0.43,50,0],[0.56,56,0],[0.65,42,6],[0.75,36,6],[0.85,40,0],[0.94,50,0],[1,52,0]],sky:'#c67bb2',grass:'#356c5d',accent:'#5bf4ec',points:[[160,100],[340,100],[415,120],[460,170],[460,250],[530,290],[650,290],[720,250],[750,170],[790,110],[860,110],[905,180],[905,360],[880,440],[800,480],[660,480],[600,530],[490,550],[410,485],[310,470],[255,520],[165,540],[100,485],[90,360],[90,200],[110,135]]},
-{name:'THUNDER VALLEY',worldScale:1.4,layoutVersion:2,sky:'#a4b4d3',grass:'#406d5a',accent:'#e8f6ff',points:[[130,125],[280,85],[405,115],[450,185],[540,160],[680,110],[785,145],[860,215],[810,285],[705,270],[650,345],[720,425],[670,510],[550,535],[470,465],[380,485],[325,550],[215,520],[170,435],[100,405],[80,310],[135,250],[100,185]]},
+{name:'THUNDER VALLEY',worldScale:2.1,layoutVersion:3,roadVersion:1,roadProfile:[[0,52,0],[0.1,58,0],[0.18,48,6],[0.23,44,0],[0.24,44,0],[0.28,38,0],[0.33,42,0],[0.34,42,0],[0.42,52,6],[0.52,56,0],[0.62,48,0],[0.66,44,0],[0.72,38,0],[0.75,40,0],[0.76,42,0],[0.84,50,6],[0.92,48,0],[1,52,0]],sky:'#a4b4d3',grass:'#406d5a',accent:'#e8f6ff',points:[[100,120],[350,95],[600,95],[780,110],[920,200],[880,280],[760,290],[650,260],[530,300],[510,350],[620,400],[760,440],[820,520],[760,570],[600,570],[450,520],[370,430],[300,390],[250,430],[190,520],[130,550],[80,500],[80,400],[130,300],[190,260],[160,210],[80,190]]},
 {name:'CHAMPION ROAD',worldScale:1.4,layoutVersion:2,sky:'#f3dc7e',grass:'#397653',accent:'#ffffff',points:[[140,100],[400,100],[680,100],[850,100],[910,150],[910,260],[850,300],[750,270],[690,290],[690,380],[790,410],[890,400],[920,460],[890,520],[790,550],[650,530],[580,470],[500,460],[430,520],[320,550],[210,540],[120,500],[90,430],[110,365],[190,350],[270,380],[350,350],[360,270],[290,240],[210,270],[130,250],[90,180]]}
 ,
 {name:'COASTLINE RUN',worldScale:1.3,layoutVersion:2,sky:'#76c6db',grass:'#347f68',accent:'#cfff9d',environment:'coast',points:[[105,135],[165,95],[255,82],[340,105],[405,150],[485,138],[545,92],[625,86],[710,108],[800,91],[875,125],[905,180],[890,226],[825,246],[755,220],[700,252],[706,318],[770,338],[840,317],[895,356],[908,411],[875,466],[808,485],[735,456],[685,418],[608,436],[553,493],[485,535],[410,548],[334,520],[270,541],[198,519],[132,480],[95,422],[116,372],[178,349],[237,370],[293,344],[284,277],[221,254],[157,275],[108,237],[84,184]]},
@@ -240,7 +240,7 @@ function roadHalfWidthAt(progress,item=track){const section=roadSectionAt(progre
 function roadMaxHalfWidth(item=track){return item.roadProfile?Math.max(...item.roadProfile.map(p=>p[1]+p[2])):ROAD_SHOULDER;}
 function barrierRadiusAt(progress,item=track){
  if(!item.roadProfile)return 55;
- const surface=surfaceAtProgress(progress,item),legacy=surface==='asphalt'||surface==='coastal'?ROAD_SHOULDER:ROAD_EDGE;
+ const surface=surfaceAtProgress(progress,item),legacy=item.surface==='mixed'||surface==='asphalt'||surface==='coastal'?ROAD_SHOULDER:ROAD_EDGE;
  return 55+roadHalfWidthAt(progress,item)-legacy;
 }
 // One world-material query drives handling, resistance, particles, audio and the gravel raster.
@@ -263,16 +263,16 @@ function buildRunoffZones(){
  const corners=[...new Map(trackFeatures.braking.map(corner=>[corner.cornerProgress,corner])).values()];
  return corners.map(corner=>({center:corner.cornerProgress,halfLength:150,side:-Math.sign(corner.turn),width:GRAVEL_WIDTH}));
 }
-function runoffBuckets(){
- if(runoffBucketsCache.has(track))return runoffBucketsCache.get(track);
- const buckets=new Map(),pad=roadMaxHalfWidth()+GRAVEL_WIDTH+12,s=track.samples;
+function runoffBuckets(item=track){
+ if(runoffBucketsCache.has(item))return runoffBucketsCache.get(item);
+ const buckets=new Map(),pad=roadMaxHalfWidth(item)+GRAVEL_WIDTH+12,s=item.samples;
  for(let i=0;i<s.length;i++){
   const a=s[i],b=s[(i+1)%s.length];
   for(let row=Math.floor((Math.min(a.y,b.y)-pad)/128);row<=Math.floor((Math.max(a.y,b.y)+pad)/128);row++)for(let column=Math.floor((Math.min(a.x,b.x)-pad)/128);column<=Math.floor((Math.max(a.x,b.x)+pad)/128);column++){
    const key=column+','+row;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(i);
   }
  }
- runoffBucketsCache.set(track,buckets);return buckets;
+ runoffBucketsCache.set(item,buckets);return buckets;
 }
 function runoffRaster(){
  let profiles=runoffRasterCache.get(track);if(!profiles){profiles=new Map();runoffRasterCache.set(track,profiles);}
@@ -308,8 +308,8 @@ function sampleAt(distance,item=track){
  const t=clamp((d-a.d)/seg,0,1);
  return {x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,angle:Math.atan2(b.y-a.y,b.x-a.x)};
 }
-function nearestOnTrack(x,y,indices=null){
- const s=track.samples;let best=Infinity,found=null;
+function nearestOnTrack(x,y,indices=null,item=track){
+ const s=item.samples;let best=Infinity,found=null;
  for(let step=0;step<(indices?indices.length:s.length);step++){
   const i=indices?indices[step]:step;
   const a=s[i],b=s[(i+1)%s.length],vx=b.x-a.x,vy=b.y-a.y,len2=vx*vx+vy*vy||1;
@@ -590,6 +590,7 @@ function updateMenuPreview(){
  context.save();context.translate((width-item.worldWidth*scale)/2,(height-item.worldHeight*scale)/2);context.scale(scale,scale);context.lineJoin='round';context.lineCap='round';
  context.beginPath();context.moveTo(item.samples[0].x,item.samples[0].y);for(const point of item.samples.slice(1))context.lineTo(point.x,point.y);context.closePath();
  if(item.roadProfile){fillRoadRibbon(context,'#1d3447',d=>roadHalfWidthAt(d,item)+2,item);fillRoadRibbon(context,'#667f8e',d=>roadSectionAt(d,item).halfWidth,item);}else{context.strokeStyle='#1d3447';context.lineWidth=ROAD_EDGE*2+10;context.stroke();context.strokeStyle='#667f8e';context.lineWidth=ROAD_EDGE*2-10;context.stroke();}
+ if(item.surface==='mixed'&&item.roadProfile)drawMixedRoad(context,item);
  context.beginPath();context.moveTo(item.samples[0].x,item.samples[0].y);for(const point of item.samples.slice(1))context.lineTo(point.x,point.y);context.closePath();
  context.strokeStyle=item.accent;context.lineWidth=3;context.setLineDash([14,20]);context.stroke();context.setLineDash([]);
  const gates=checkpointsForTrack(item);for(const gate of gates){context.fillStyle='#d7ff38';context.beginPath();context.arc(gate.x,gate.y,7/scale,0,Math.PI*2);context.fill();}
@@ -791,7 +792,7 @@ function drawVariableRoad(context){
  const style=TERRAIN_MATERIALS[track.surface]?.road||TERRAIN_MATERIALS.asphalt.road;
  fillRoadRibbon(context,style.edge,d=>roadHalfWidthAt(d)+1);
  fillRoadRibbon(context,style.kerb,d=>roadHalfWidthAt(d));
- if(track.surface==='asphalt'||track.surface==='coastal'){
+ if(['asphalt','coastal','mixed'].includes(track.surface)){
   // Kerbs are optional by sector. Draw both bands before filling the asphalt.
   context.fillStyle='#d84b59';context.beginPath();
   for(let d=0;d<track.length;d+=18){
@@ -820,6 +821,35 @@ function drawVariableRoad(context){
     if(style.grainKind==='ice'){const length=5+seed%9,angle=p.angle+((seed%11)-5)*.04;context.strokeStyle=style.grain[seed%style.grain.length];context.lineWidth=1;context.beginPath();context.moveTo(x-Math.cos(angle)*length/2,y-Math.sin(angle)*length/2);context.lineTo(x+Math.cos(angle)*length/2,y+Math.sin(angle)*length/2);context.stroke();}else{context.fillStyle=style.grain[seed%style.grain.length];context.fillRect(x-1,y-1,2+(seed%2),2);}
    }
   }
+ }
+}
+// Only variable mixed roads use this raster. Material/width use shared surface/section queries;
+// legacy mixed/coastal drawing stays intact. Geometry is cached across quality/barrier changes.
+const MIXED_ROAD_CELL=2,mixedRoadCache=new WeakMap();
+function mixedRoadRaster(item=track){
+ if(!item.roadProfile||item.surface!=='mixed')return [];
+ if(mixedRoadCache.has(item))return mixedRoadCache.get(item);
+ const cells=[],columns=Math.ceil(item.worldWidth/MIXED_ROAD_CELL),rows=Math.ceil(item.worldHeight/MIXED_ROAD_CELL);
+ const seen=new Uint8Array(columns*rows),pad=roadMaxHalfWidth(item)+MIXED_ROAD_CELL,buckets=runoffBuckets(item);
+ for(const [start,end] of item.dirtRanges)for(let d=start;d<=end+10;d+=10){
+  const p=sampleAt(Math.min(d,end),item),left=Math.max(0,Math.floor((p.x-pad)/MIXED_ROAD_CELL)),right=Math.min(columns-1,Math.ceil((p.x+pad)/MIXED_ROAD_CELL));
+  const top=Math.max(0,Math.floor((p.y-pad)/MIXED_ROAD_CELL)),bottom=Math.min(rows-1,Math.ceil((p.y+pad)/MIXED_ROAD_CELL));
+  for(let row=top;row<=bottom;row++)for(let column=left;column<=right;column++){
+   const key=row*columns+column;if(seen[key])continue;seen[key]=1;
+   const x=column*MIXED_ROAD_CELL,y=row*MIXED_ROAD_CELL,cx=x+MIXED_ROAD_CELL/2,cy=y+MIXED_ROAD_CELL/2;
+   const indices=buckets.get(Math.floor(cx/128)+','+Math.floor(cy/128))||[],loc=nearestOnTrack(cx,cy,indices,item);
+   if(!loc||loc.distance>roadHalfWidthAt(loc.progress,item)||surfaceAtProgress(loc.progress,item)!=='dirt')continue;
+   const seed=(Math.imul(column,374761393)^Math.imul(row,668265263))>>>0;
+   cells.push({x,y,tone:loc.distance>roadSectionAt(loc.progress,item).halfWidth-3?0:1+seed%3});
+  }
+ }
+ mixedRoadCache.set(item,cells);return cells;
+}
+function drawMixedRoad(context,item=track){
+ const palette=['#76563c','#ad8258','#b08960','#a98058'],cells=mixedRoadRaster(item);
+ for(let tone=0;tone<palette.length;tone++){
+  context.fillStyle=graphics==='lite'&&tone>0?palette[1]:palette[tone];
+  for(const cell of cells)if(cell.tone===tone)context.fillRect(cell.x,cell.y,MIXED_ROAD_CELL,MIXED_ROAD_CELL);
  }
 }
 const asphaltTextures=new Map();
@@ -859,7 +889,11 @@ function drawTrackSurface(context){
    strokeTrack(sc,'#11171c',96);strokeTrack(sc,'#cdd1d3',94,[18,18],0);strokeTrack(sc,'#d84b59',90,[12,24],0);strokeTrack(sc,'#282d37',84);strokeTrack(sc,'#e74b5d',82,[23,23],0);strokeTrack(sc,'#f5f0dc',82,[23,23],23);strokeTrack(sc,'#3c414c',74);strokeTrack(sc,graphics==='high'?'#707783':'#646873',68);strokeTrack(sc,'#2c313b',61);
   }
   drawAsphaltTexture(sc);
-  if(track.surface==='mixed'){for(const [start,end] of track.dirtRanges){strokeTrackRange(sc,start,end,'#76563c',76);strokeTrackRange(sc,start,end,'#ad8258',66,[14,11]);}}
+  if(track.surface==='mixed'&&track.roadProfile){
+   // Paint belongs to the asphalt: cache it before dirt covers the unpaved sectors.
+   strokeTrack(sc,'#eef0d85c',2.5,[18,22]);drawMixedRoad(sc);
+  }
+  else if(track.surface==='mixed'){for(const [start,end] of track.dirtRanges){strokeTrackRange(sc,start,end,'#76563c',76);strokeTrackRange(sc,start,end,'#ad8258',66,[14,11]);}}
   if(track.surface==='coastal'){strokeTrackRange(sc,track.length*.31,track.length*.37,'#846b47',74);strokeTrackRange(sc,track.length*.31,track.length*.37,'#c2a06b',63,[9,12]);}
   trackSurfaceCache=surface;trackSurfaceKey=key;
  }
@@ -1558,7 +1592,7 @@ function drawMiniMap(){
  m.save();m.setTransform(scale,0,0,scale,ox,oy);
  if(track.roadProfile&&trackSurfaceCache){m.drawImage(trackSurfaceCache,0,0);}
  else{strokeTrack(m,'#02060c',116);strokeTrack(m,track.surface==='dirt'?'#b28b61':track.surface==='grass'?'#74a94e':track.surface==='ice'?'#dffaff':'#5e6875',82);}
- if(track.surface==='mixed')for(const [start,end] of track.dirtRanges)strokeTrackRange(m,start,end,'#ad8258',68);
+ if(track.surface==='mixed'&&!(track.roadProfile&&trackSurfaceCache))for(const [start,end] of track.dirtRanges)strokeTrackRange(m,start,end,'#ad8258',68);
  if(track.surface==='coastal')strokeTrackRange(m,track.length*.31,track.length*.37,'#c2a06b',68);
  for(const viewport of drivingViewports()){const {player,width,height}=viewport,view=raceCamera(player,width,height);if(view.zoom>overviewZoom()){m.strokeStyle=cars[player]?.color||'#39e8e8';m.lineWidth=1.2/scale;m.strokeRect(view.x-width/2/view.zoom,view.y-height/2/view.zoom,width/view.zoom,height/view.zoom);}}
  cars.forEach(car=>{m.fillStyle=car.color;m.beginPath();m.arc(car.x,car.y,Math.max(17,2.6/scale),0,Math.PI*2);m.fill();});
@@ -1627,7 +1661,7 @@ function drawDrivingView(left,width,player,top=0,height=640){
  const view=raceCamera(player,width,height);ctx.save();ctx.beginPath();ctx.rect(left,top,width,height);ctx.clip();
  ctx.translate(left+width/2,top+height/2);ctx.scale(view.zoom,view.zoom);ctx.translate(-view.x,-view.y);drawBackground(ctx);
  const centerLineColor=track.surface==='dirt'?'#ead0a3':track.surface==='grass'?'#cce88d':track.surface==='ice'?'#f4ffff':track.surface==='volcanic'?'#df8060':'#eef0d85c';
- strokeTrack(ctx,centerLineColor,2.5,[18,22],-elapsed*13);
+ if(!(track.surface==='mixed'&&track.roadProfile))strokeTrack(ctx,centerLineColor,2.5,[18,22],-elapsed*13);
  drawGroundEffects(ctx);cars.map(renderedCar).sort((a,b)=>a.speed-b.speed).forEach(car=>drawCar(ctx,car));ctx.restore();
 }
 function drawFrame(){

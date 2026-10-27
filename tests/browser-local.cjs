@@ -1,7 +1,7 @@
 // Real Chromium keyboard/layout checks. Game state and standard-pad hardware are test-only probes.
 const {chromium}=require('playwright');
 const fs=require('node:fs'),http=require('node:http'),path=require('node:path'),assert=require('node:assert/strict');
-const root=path.resolve(__dirname,'..');
+const root=path.resolve(__dirname,'..'),localStage=Number(process.env.LOCAL_STAGE??3);assert.ok(Number.isInteger(localStage)&&localStage>=0&&localStage<14,'Invalid LOCAL_STAGE');
 const bridge=`window.localTest={get cars(){return cars.map(c=>({player:c.player,model:c.model,color:c.color,speed:c.speed,lap:c.lap}))},get paused(){return paused},get running(){return running},get audio(){return audioChannels.map(c=>c.gain.gain.value)},get views(){return drivingViewports()},get cameras(){return cars.map((c,i)=>raceCamera(i))},skipCountdown(){countdownRemaining=0},freeze(){cancelAnimationFrame(raf)},separate(){cancelAnimationFrame(raf);countdownRemaining=0;cars.forEach((car,i)=>{placeCar(car,track.length*(i+.1)/cars.length,0);car.speed=100+i*20;car.lapTimes=[30+i];car.lap=1;car.lapStartTime=i+3});elapsed=25;drawFrame();updateTelemetry()},finish(){cancelAnimationFrame(raf);cars.forEach((car,i)=>{car.done=true;car.finishTime=60+i;car.lap=3;car.lapTimes=[20,20,20+i]});elapsed=64;finishRace()}};`;
 const server=http.createServer((req,res)=>{
  const name=new URL(req.url,'http://localhost').pathname.slice(1)||'index.html';
@@ -19,7 +19,7 @@ const server=http.createServer((req,res)=>{
   await page.addInitScript(()=>{window.testPads=Array(4).fill(null);Object.defineProperty(navigator,'getGamepads',{value:()=>window.testPads});});
   await page.goto('http://127.0.0.1:'+server.address().port);
   await page.click('#localSetupBtn');assert.equal(await page.evaluate(()=>document.activeElement.id),'localPlayerCount');
-  await page.selectOption('#stageSelect','3');await page.selectOption('#localPlayerCount','4');
+  await page.selectOption('#stageSelect',String(localStage));await page.selectOption('#localPlayerCount','4');
   await page.selectOption('#playerModel2','corner');await page.selectOption('#playerModel3','speed');await page.selectOption('#playerModel4','rally');
   assert.match(await page.getAttribute('#playerPreview2','aria-label'),/CORNER KING.*NEON CYAN/);
   for(const count of [2,3,4]){

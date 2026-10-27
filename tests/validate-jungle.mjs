@@ -13,7 +13,7 @@ for(const [a,b] of [[g.AI_DRIVERS,old.drivers],[g.AI_PERSONALITIES,old.personali
 assert.equal(g.PHYSICS_VERSION,old.physics);assert.equal(g.WORLD_SPEED_SCALE,old.worldSpeed);
 const materials=JSON.parse(JSON.stringify(g.TERRAIN_MATERIALS));assert.ok(materials.grass.road);delete materials.grass.road;assert.deepEqual(materials,old.materials,'Art changed material physics');
 let nearest=Infinity;
-for(const t of g.tracks.filter(t=>t!==track)){const hash=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');assert.equal(hash,old.otherTracks[t.name],t.name+' changed');const d=normalizedShapeDistance(shape,sampleTrackShape(t));nearest=Math.min(nearest,d);assert.ok(d>.35,'Jungle resembles '+t.name);}
+for(const t of g.tracks.filter(t=>t!==track)){const hash=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');if(!(t.name==='THUNDER VALLEY'&&t.layoutVersion===3))assert.equal(hash,old.otherTracks[t.name],t.name+' changed');const d=normalizedShapeDistance(shape,sampleTrackShape(t));nearest=Math.min(nearest,d);assert.ok(d>.35,'Jungle resembles '+t.name);}
 const geometry=analyzeTrackWidth(track,d=>g.roadHalfWidthAt(d,track));assert.ok(geometry.roadMargin>70&&geometry.clearance>45);
 e('barrierMode').value='open';g.start('solo',5);assert.equal(g.checkpoints.length,9);const gaps=[0,...g.checkpoints.map(c=>c.progress),track.length];assert.ok(gaps.slice(1).every((d,i)=>d-gaps[i]<=650));
 assert.equal(Math.min(...track.roadProfile.map(p=>p[1])),36);assert.equal(Math.max(...track.roadProfile.map(p=>p[1])),58);
@@ -22,7 +22,7 @@ assert.notEqual(g.TERRAIN_MATERIALS.grass.road.body,g.TERRAIN_MATERIALS.asphalt.
 g.bestLapRecords['JUNGLE SPRINT@2:p6:s1']=26;assert.equal(g.lapRecordKey(),'JUNGLE SPRINT@3:p6:r1:s1:b1');g.saveBestLap(g.lapRecordKey(),40);assert.equal(g.bestLapRecords['JUNGLE SPRINT@2:p6:s1'],26);
 const human=g.cars[0];g.placeCar(human,track.length-1,0);human.speed=120;g.setKeys({w:true});g.physics(human,0,1/60);assert.equal(human.lap,0,'Meta accepted skipped gates');
 e('stageSelect').value='5';g.updateMenuPreview();assert.match(e('previewRouteInfo').textContent,/9 CHECKPOINTS/);
-console.log(`PASS: Jungle ${track.length.toFixed(1)} units (+${((track.length/old.oldLength-1)*100).toFixed(1)}%), nearest ${nearest.toFixed(3)}, world margin ${geometry.roadMargin.toFixed(1)}/branch gap ${geometry.clearance.toFixed(1)}, native grass/72–116 width/9 gates, thirteen unchanged routes and retained records/physics.`);
+console.log(`PASS: Jungle ${track.length.toFixed(1)} units (+${((track.length/old.oldLength-1)*100).toFixed(1)}%), nearest ${nearest.toFixed(3)}, world margin ${geometry.roadMargin.toFixed(1)}/branch gap ${geometry.clearance.toFixed(1)}, native grass/72–116 width/9 gates, twelve historical other routes preserved, Thunder has its own snapshot, retained records/physics.`);
 if(process.argv.includes('--geometry'))process.exit(0);
 let races=0,laps=0;
 for(const profile of ['auto','open','full','half','corners']){

@@ -8,7 +8,7 @@ assert.equal(game.PHYSICS_VERSION,old.physics+1); // p6 human countersteer only;
 assert.equal(game.WORLD_SPEED_SCALE,old.worldSpeed);assertOriginalModels(game.CAR_MODELS,old.models);
 let comparisons=0;
 // Later route migrations have dedicated snapshots/races; old lap times cannot benchmark a different course.
-for(const t of game.tracks){if(['FROSTBITE GP','PIXEL CITY','JUNGLE SPRINT'].includes(t.name)&&t.layoutVersion===3)continue;const hash=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');assert.equal(hash,old.tracks[t.name],t.name+': route changed during CPU work');}
+for(const t of game.tracks){if(['FROSTBITE GP','PIXEL CITY','JUNGLE SPRINT','THUNDER VALLEY'].includes(t.name)&&t.layoutVersion===3)continue;const hash=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');assert.equal(hash,old.tracks[t.name],t.name+': route changed during CPU work');}
 for(const previous of old.runs){
  if(previous.stage===4&&game.tracks[4].layoutVersion===3)continue;comparisons++;
  game.start('solo',previous.stage);game.cars[0].done=true;const car=game.cars[1];let offroad=0,hand=0;

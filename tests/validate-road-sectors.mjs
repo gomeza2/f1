@@ -3,7 +3,7 @@ import {loadGame} from './helpers/game-harness.mjs';
 import {analyzeTrackWidth} from './helpers/track-geometry.mjs';
 const {game,element}=loadGame();
 let checks=0;
-for(const stage of [0,1,2,3,4,5,6,7]){
+for(const stage of [0,1,2,3,4,5,6,7,8]){
  element('barrierMode').value='open';game.start('solo',stage);const track=game.track;
  const geometry=analyzeTrackWidth(track,d=>game.roadHalfWidthAt(d));
  assert.ok(geometry.roadMargin>12,`${track.name}: road/world margin ${geometry.roadMargin}`);
@@ -16,7 +16,7 @@ for(const stage of [0,1,2,3,4,5,6,7]){
  let narrow=Infinity,wide=0,kerbs=0,bare=0;
  for(let d=0;d<track.length;d+=5){
   const a=game.roadSectionAt(d),b=game.roadSectionAt(d+5),width=game.roadHalfWidthAt(d);
-  assert.ok(a.halfWidth>=34&&a.halfWidth<=(stage===5?58:56));assert.ok(a.kerb>=0&&a.kerb<=6);
+  assert.ok(a.halfWidth>=34&&a.halfWidth<=([5,8].includes(stage)?58:56));assert.ok(a.kerb>=0&&a.kerb<=6);
   assert.ok(Math.abs(width-game.roadHalfWidthAt(d+5))<1,'Abrupt narrowing');
   narrow=Math.min(narrow,width);wide=Math.max(wide,width);if(a.kerb>3)kerbs++;if(a.kerb<.1)bare++;
   assert.deepEqual(game.roadSectionAt(d+track.length),a,'Cross-section is not periodic');
@@ -30,14 +30,14 @@ for(const stage of [0,1,2,3,4,5,6,7]){
    assert.equal(game.terrainAt(x,y,loc).offroad,delta>0,`${track.name}: visual/legal edge at ${d}/${offset}`);checks++;
   }
  }
- assert.ok(wide-narrow>15,'Profile does not change usable width');assert.ok(bare>0);if([0,1,3,7].includes(stage))assert.ok(kerbs>0);
+ assert.ok(wide-narrow>15,'Profile does not change usable width');assert.ok(bare>0);if([0,1,3,7,8].includes(stage))assert.ok(kerbs>0);
  for(const gate of game.checkpoints)assert.equal(gate.halfWidth,game.roadHalfWidthAt(gate.progress));
  const legacy=track.name+'@'+track.layoutVersion+':p4';game.bestLapRecords[legacy]=18;
  assert.equal(game.lapRecordKey(),legacy.replace(':p4',':p6')+':r1:s1:b1');assert.ok(game.saveBestLap(game.lapRecordKey(),30));assert.equal(game.bestLapRecords[legacy],18);
  console.log(`SECTORS: ${track.name}, full width ${(2*narrow).toFixed(1)}–${(2*wide).toFixed(1)}, margin ${geometry.roadMargin.toFixed(1)}, clearance ${geometry.clearance.toFixed(1)}.`);
 }
 for(const item of game.tracks.filter(t=>!t.roadProfile))for(let d=0;d<item.length;d+=100){const paved=['asphalt','coastal'].includes(game.surfaceAtProgress(d,item));assert.equal(game.roadHalfWidthAt(d,item),paved?48:42);}
-console.log(`PASS: eight distinct width profiles, smooth loop transitions, legal materials at ${checks} real edge probes, kerb/bare sectors, variable road geometry, ordered gate widths, separate records and six unchanged cross-sections. Render agreement is checked in Chromium.`);
+console.log(`PASS: nine distinct width profiles, smooth loop transitions, legal materials at ${checks} real edge probes, kerb/bare sectors, variable road geometry, ordered gate widths, separate records and five unchanged cross-sections. Render agreement is checked in Chromium.`);
 
 // A localized widening can overlap while the old constant-width corridor still passes.
 const points=[[60,60],[240,60],[240,180],[60,180]],samples=[];let length=0;

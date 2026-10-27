@@ -15,7 +15,7 @@ assert.ok(normalizedShapeDistance(shape,baseline.shape)>.2,'Sunset was only enla
 let nearest=Infinity;
 for(const other of game.tracks.slice(1)){const distance=normalizedShapeDistance(shape,sampleTrackShape(other));assert.ok(distance>.2,`Sunset resembles ${other.name}`);nearest=Math.min(nearest,distance);
  // Night is covered by its own 0.45 snapshot and thirteen-track preservation test.
- const signature=createHash('sha256').update(JSON.stringify({points:other.points,samples:other.samples,worldScale:other.worldScale,layoutVersion:other.layoutVersion})).digest('hex');if(!['NIGHT RUN','VOLCANO RING'].includes(other.name)&&!(['FROSTBITE GP','PIXEL CITY','JUNGLE SPRINT'].includes(other.name)&&other.layoutVersion===3))assert.equal(signature,baseline.otherTracks[other.name],`${other.name} changed during the Sunset-only update`);
+ const signature=createHash('sha256').update(JSON.stringify({points:other.points,samples:other.samples,worldScale:other.worldScale,layoutVersion:other.layoutVersion})).digest('hex');if(!['NIGHT RUN','VOLCANO RING'].includes(other.name)&&!(['FROSTBITE GP','PIXEL CITY','JUNGLE SPRINT','THUNDER VALLEY'].includes(other.name)&&other.layoutVersion===3))assert.equal(signature,baseline.otherTracks[other.name],`${other.name} changed during the Sunset-only update`);
 }
 assert.ok(geometry.roadMargin>=32&&geometry.clearance>=32,'Sunset lost usable runoff or branch clearance');
 game.bestLapRecords['SUNSET CIRCUIT@2']=18;game.start('solo',0);assert.equal(game.lapRecordKey(),'SUNSET CIRCUIT@3:p6:r1:s1:b1');assert.ok(game.saveBestLap(game.lapRecordKey(),35));assert.equal(game.bestLapRecords['SUNSET CIRCUIT@2'],18);

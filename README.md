@@ -40,6 +40,14 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## Thunder Valley más largo y variado — 0.64
+
+**Elegí Thunder Valley, pista 9.** Nuevo recorrido de **7.082 unidades**, con recta larga, retorno interior y horquilla; ancho útil de **76–116**, sectores con/sin pianos y dos tramos de tierra de ancho real. Referencia automática Normal: **40,80/39,80 s** por vuelta; otros circuitos conservan sus duraciones. La vista cercana mantiene el tamaño del coche.
+
+Tierra con grano propio y agarre diferente, sin pianos ni pintura vial de asfalto encima; preview y minimapa muestran las superficies. Barreras **abiertas en automático**, con los demás perfiles disponibles y colisiones alineadas. **Diez checkpoints** y récord nuevo por recorrido, guardando el anterior. Las otras trece pistas, conducción, CPU, Speed 260 y audio se mantienen.
+
+Ya hay **nueve pistas con secciones variables y cinco uniformes**. [Geometría, capturas comprobadas y pruebas](tests/experiments/THUNDER_064.md). Jugabilidad humana pendiente; próximo foco: audio y feedback del motor.
+
 ## Cierre lateral de rivales — 0.63
 
 La CPU ahora detecta un cruce lateral peligroso aunque el otro coche sea más rápido hacia delante. Antes podía predecir el contacto y aun así seguir acelerando. La corrección solicita el freno normal; no cambia fuerzas, velocidad máxima, colisiones ni la libertad de correr en paralelo.
@@ -563,3 +571,15 @@ TRAFFIC_SOURCE_BASELINE=/tmp/pixelgp-before-063.js node tests/browser-angled-tra
 ```
 
 `TRAFFIC_SCREENSHOTS` guarda capturas. El caso reproduce el defecto y comprueba la CPU/frenada real; no demuestra que todas las situaciones de tráfico estén resueltas.
+
+Pruebas de Thunder 0.64:
+
+```sh
+node tests/validate-thunder.mjs
+TEST_TRACKS=8 node tests/validate-barriers.mjs
+ROAD_STAGES=8 node tests/browser-road-sectors.cjs
+node tests/browser-thunder-material.cjs
+LOCAL_STAGE=8 node tests/browser-local.cjs
+```
+
+`validate-thunder --geometry` comprueba conservación sin repetir carreras. `THUNDER_SCREENSHOTS` guarda capturas de materiales/paddock. `LOCAL_STAGE` permite revisar otro circuito con la batería local existente. La comparación de las otras trece carreteras usa `PARITY_STAGES=0,1,2,3,4,5,6,7,9,10,11,12,13` y `ROAD_SOURCE_BASELINE` apuntando al script de 0.63.
