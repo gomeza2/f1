@@ -212,3 +212,37 @@ Jungle pasa de la forma uniforme a un enlace en S, horquilla y retorno rápido: 
 Se descartan un cierre con solapamiento y una variante cuya valla completa se desviaba >2 unidades del contorno. La elegida separa ramales (53,1), conserva margen al mundo 75,4 y pasa barreras con error máximo ~0,34. CPU Normal libre 36,12/35,03 s frente a 25,50/24,53. No equivale a diversión o equilibrio humano. Nuevo récord @3:p6:r1:s1 y @2 conservado. Física 6, reloj s1, CPU, audio, gráficos de coches y local se mantienen.
 
 Estado: ocho pistas con secciones variables, seis uniformes por desarrollar. Evidencia/resultados en `tests/experiments/JUNGLE_060.md`. Próximo tramo recomendado: 36.3, ambientación con escala e identidad por tema y legibilidad; mantener manejo 25, seis rutas uniformes 27 (Thunder candidato), timbre/escucha 26 y competición/local abiertos. Las fases siguen ampliables; esta entrega no cierra el juego.
+
+
+## Estado del plan activo — 0.61
+
+Quedan **12 frentes abiertos (25–36)**, no doce entregas restantes: varios están implementados en parte y requieren más de una revisión. No hay un techo fijo ni se da por cerrado un sistema por su primera prueba automática.
+
+| Frente | Estado real | Qué falta para consolidarlo |
+|---|---|---|
+| 25 Manejo/derrape/contacto | Base p6 y reloj s1, comparaciones y correcciones presentes | Evaluación humana; próxima revisión de aceleración, frenado, agarre y derrape. Objetivo nuevo del usuario: coche más rápido alrededor de **260 km/h**, sin subir solo el HUD ni hacer todos los modelos iguales; medir distancia de frenada/radio/CPU antes de migrar récords. |
+| 26 Audio | Motor separado y mezcla regulable | Timbre/escucha, fatiga a máxima, superficies/ambiente y contactos convincentes. |
+| 27 Circuitos | 14, ocho variables, Jungle propio | Seis uniformes, más ritmo/identidad y evaluación humana de las rutas nuevas. |
+| 28 CPU | 1–3 rivales, perfiles y tráfico compartido | Estrategia de grupos, doblajes/recuperación y agresividad justa comprobada. |
+| 29 Local | 2–4, previa, coches/mandos/HUD/cámaras propios | Hardware y comodidad reales, remapeo/acceso según evidencia. |
+| 30 Simulación | Paso fijo e interpolación implementados | Separar núcleo y eventos de DOM/audio/persistencia para replay/servidor. |
+| 31 Contrarreloj/fantasma/repetición | Pendiente de producto completo | Vuelta válida, grabación/guardado/reproducción y límites. |
+| 32 Online jugable | Diseño, sin servidor ni salas | Servidor autoritativo, salas, inicio/final coordinados y clientes reales. |
+| 33 Online desplegado | Pendiente | Latencia/reconexión probadas, TLS/alojamiento/costes medidos y resultados validados por servidor. |
+| 34 Progresión/editor | Puntos/récords locales presentes | Objetivos, estadísticas/editor/importación segura y pruebas de recorridos. |
+| 35 Rendimiento/acceso/entrega | Presupuestos, cachés y pruebas presentes | Medición en dispositivos reales, accesibilidad/controles y publicación comprobada. |
+| 36 Gráficos | Materiales/coches/luz y vegetación en evolución | Escenarios completos, edificios/ambiente/luz, escala y presupuestos medidos manteniendo lectura retro. |
+
+### Hitos para llegar al online
+
+1. **Salas y carrera bajo autoridad de servidor.** Extraer simulación compartida de fase 30, crear/unirse y correr 2–4 clientes; el frontend no decide posiciones/resultados válidos.
+2. **Sincronización jugable.** Predicción/reconciliación, interpolación, retraso/jitter y desconexión/reconexión, con pruebas completas. Abrir dos pestañas no aprueba este hito.
+3. **Servicio desplegado y competición validada.** Elegir alojamiento con precios vigentes/carga medida, TLS/límites/limpieza y clasificación confirmada por servidor. Pages sirve el frontend; no aloja un servidor persistente por sí mismo.
+
+Son hitos de las fases 30/32/33, no promesa de tres mensajes ni una fecha. Online puede avanzar cuando esté el núcleo compartido y la base de carrera sea estable, mientras gráficos, editor y progresión continúan en paralelo. No hay online disponible hoy. El usuario reafirma terminar bien las fases y priorizar conducción divertida, derrape y variedad; la velocidad ~260 se medirá junto a frenado/curva en la próxima revisión de manejo.
+
+### Avance 0.61 — primer tramo de escenarios 36.3
+
+Vegetación más definida en detallado/retro: copas por capas, palmeras con hojas perfiladas, pinos por niveles/nieve y cactus con volumen, raíces/troncos y sombras orientadas con la luz fija del mundo. Se conservan posiciones/tamaños/huellas/presupuestos y el modo rendimiento anterior. Sin nueva física, objetos de colisión ni decoración dentro de escapatorias; carreteras/CPU/control p6/reloj s1/audio/local permanecen.
+
+Pruebas y capturas en `tests/experiments/VEGETATION_061.md`. Es un tramo de vegetación, no toda la ambientación terminada. Próxima prioridad: volver a fase 25 con aceleración/frenada/derrape y objetivo de velocidad ~260 para el modelo rápido, preservando variedad de coches y límites justos. Online continúa en sus hitos y escenarios/otras fases siguen abiertos.

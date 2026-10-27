@@ -8,7 +8,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.60**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y 2–4 jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.61**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y 2–4 jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -1177,3 +1177,10 @@ Doce maniobras de comparación sobre cuatro modelos/asfalto/tierra/hielo, compro
 Trazado nuevo de 6.178 unidades, ancho 72–116, S/horquilla/regreso rápido, nueve gates y mundo 2000×1280. Pasto nativo con estilo propio y perfil automático abierto; se conservan cinco barreras, otros trece recorridos y física 6/reloj s1/CPU/audio/local. Récord @3:p6:r1:s1 separado de @2 retenido.
 
 Se detectaron y corrigieron geometría de cierre y alineación de barrera en variantes rechazadas. Referencia CPU Normal libre 36,12/35,03 s; capturas/Canvas y pruebas en `tests/experiments/JUNGLE_060.md`. Ocho pistas variables, seis uniformes pendientes. Aceptación humana de trazado/manejo abierta; siguiente propuesta gráfica: escenarios de fase 36.3 del plan abierto.
+
+
+## Avance 0.61 — vegetación, tramo gráfico 36.3 del plan abierto
+
+Follaje/troncos/raíces/sombras más definidos para árboles/copas/palmeras/pinos/cactus en detallado/retro, sin cambiar posiciones, huellas, cantidades, carreteras ni física; rendimiento conservado. Caché de fondo y lectura retro. Pruebas en `tests/experiments/VEGETATION_061.md`.
+
+La hoja activa cuenta doce frentes abiertos (25–36), varios implementados parcialmente. Online se divide en salas autoritativas, sincronización/reconexión y despliegue/resultados validados; no existe backend online hoy. El usuario reafirma jugabilidad/derrape y objetivo ~260 km/h para el coche rápido. Se programa para la próxima revisión de manejo con pruebas de frenado/radio/CPU; no se mezcla un aumento sin comprobar con esta entrega gráfica.

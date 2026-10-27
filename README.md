@@ -40,6 +40,14 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## Vegetación con profundidad retro — 0.61
+
+Árboles y copas tienen capas de follaje y troncos/raíces más definidos; palmeras con hojas perfiladas, pinos por niveles/nieve y cactus con detalles propios. Las sombras siguen la luz fija del mundo en **DETALLADOS** y **RETRO**. Todo se dibuja en el fondo en caché, sin animación ni partículas nuevas.
+
+Se conservan posiciones, cantidades y espacios reservados: la vegetación no invade pista/escapatorias ni añade colisiones. **RENDIMIENTO** mantiene el dibujo anterior. No cambia fuerza, velocidad, rutas, CPU, audio ni controles. Es el primer tramo de escenarios 36.3; edificios, ambiente y medición completa siguen abiertos. [Pruebas y límites](tests/experiments/VEGETATION_061.md).
+
+El plan activo tiene **12 frentes abiertos**, varios avanzados, no doce actualizaciones para terminar todo. Online requiere salas con autoridad de servidor, sincronización/reconexión y despliegue/resultados validados; todavía no existe servidor ni opción online funcional. Estado y dependencias en [hoja de evolución](ROADMAP_EVOLUCION.md). Próxima revisión de manejo: objetivo del coche rápido alrededor de **260 km/h**, junto con frenado/curva/derrape; esa velocidad aún no está implementada en esta entrega gráfica.
+
 ## Jungle Sprint: enlace en S y regreso rápido — 0.60
 
 Jungle tiene ahora un trazado propio de **6.178 unidades** (+77,2 %), mundo **2000×1280**, un enlace en S, horquilla interior y regreso rápido. El ancho cambia suavemente entre **72 y 116**, con recta amplia y sectores más estrechos; nueve checkpoints ordenados controlan el recorrido. Mantiene pasto nativo y **sin barreras** como opción automática, con los otros cuatro perfiles disponibles.
@@ -509,3 +517,13 @@ ROAD_STAGES=5 node tests/browser-road-sectors.cjs
 ```
 
 `validate-jungle --geometry` permite revisar forma, anchuras, gates y conservación sin repetir las carreras. La comparación de otras carreteras admite `PARITY_STAGES=0,1,2,3,4,6,7,8,9,10,11,12,13` con `ROAD_SOURCE_BASELINE` apuntando al script conservado de 0.59.
+
+Comparación de escenarios 0.61 (Playwright/Chromium):
+
+```sh
+node tests/validate-scenery.mjs
+git show d77285f:script.js > /tmp/pixelgp-before-061.js
+SCENERY_SOURCE_BASELINE=/tmp/pixelgp-before-061.js node tests/browser-vegetation.cjs
+```
+
+`SCENERY_SCREENSHOTS` guarda capturas antes/después. La prueba compara fondos, posiciones y carreteras en las 14 pistas y tres calidades; no mide FPS del dispositivo del jugador.

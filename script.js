@@ -652,17 +652,61 @@ function decorationsForTrack(){
  if(list.length>budget){const spread=Array.from({length:budget},(_,i)=>list[Math.floor((i+.5)*list.length/budget)]);list.length=0;list.push(...spread);}
  list.sort((a,b)=>a.y-b.y);cached.set(graphics,list);return list;
 }
+// Static crowns use the same upper-left world light as cars. All geometry stays
+// within the placement footprint; lite keeps the original low-cost silhouettes.
+function drawVegetation(d,palette,detail,{rect,poly,oval}){
+ const shift=(d.variant-.5)*.14,shadowX=-CAR_LIGHT.x*.8,shadowY=-CAR_LIGHT.y*.8;
+ if(detail)oval(0,.15,1.55,.72,palette.ground);
+ oval(shadowX,shadowY,d.kind==='canopy'?1.4:1.1,.52,'#081b2840');
+ oval(.08,.62,.46,.22,'#08182048');
+ rect(-.13,-.8,.27,1.65,'#614b36');
+ if(detail){rect(-.1,-.7,.07,1.4,'#aa8653');poly([[-.12,.5],[-.42,.88],[-.1,.74],[.06,.85],[.28,.88],[.12,.48]],'#584936');}
+ if(d.kind==='palm'){
+  poly([[-.1,.65],[.16,.65],[.36,-.94],[.16,-1]],'#997341');
+  const cx=.25,cy=-.95;
+  for(let i=0;i<6;i++){
+   const a=i*Math.PI/3+d.variant*.8,dx=Math.cos(a),dy=Math.sin(a),length=1.4+((i+Math.floor(d.variant*5))%3)*.16;
+   const bright=dx*CAR_LIGHT.x+dy*CAR_LIGHT.y>0;
+   poly([[cx,cy],[cx+dx*length*.52-dy*.24,cy+dy*length*.46+dx*.17],[cx+dx*length,cy+dy*length*.72],[cx+dx*length*.45+dy*.12,cy+dy*length*.38-dx*.1]],bright?palette.light:palette.leaf);
+   if(detail)poly([[cx,cy],[cx+dx*length*.85,cy+dy*length*.62],[cx+dx*length*.5,cy+dy*length*.42]],'#a3bd6d40');
+  }
+  oval(cx,cy,.2,.16,'#bdd078');
+ }else if(d.kind==='pine'){
+  poly([[0,-1.9],[-1.15,.55],[1.1,.55]],palette.leaf);
+  for(let tier=0;tier<3;tier++){
+   const top=-1.9+tier*.6,bottom=top+1.2,width=.6+tier*.25;
+   poly([[0,top],[-width,bottom],[.12,bottom-.16]],palette.light);
+   if(detail)poly([[.04,top+.1],[width*.88,bottom],[.12,bottom-.16]],'#153e3540');
+   if(d.theme==='snow')poly([[0,top],[-width*.48,top+.62],[.04,top+.5],[width*.32,top+.64]],'#e4f2e9');
+  }
+ }else if(d.kind==='cactus'){
+  rect(-.23,-1.5,.46,2.1,palette.leaf);rect(-.88,-.65,.7,.3,palette.leaf);rect(-.88,-1.1,.28,.65,palette.leaf);rect(.18,-.2,.65,.3,palette.leaf);rect(.55,-.75,.28,.7,palette.leaf);
+  rect(-.16,-1.4,.1,1.85,palette.light);rect(-.81,-1.01,.07,.5,palette.light);rect(.59,-.65,.07,.55,palette.light);
+  if(detail){for(let i=0;i<5;i++){rect(.03,-1.25+i*.35,.06,.09,'#cccf8b');rect(-.24,-1.15+i*.35,.07,.05,'#b6c07d');}oval(-.65,.67,.36,.14,palette.stone);rect(.02,-1.6,.14,.18,'#e6c16d');}
+ }else{
+  const canopy=d.kind==='canopy';
+  oval(shift,-.6,canopy?1.4:1.13,canopy?1.05:.94,palette.leaf);
+  const lobes=canopy?[[-.7,-.78,.72,.66],[.65,-.82,.7,.68],[-.12,-1.4,.86,.58],[.05,-.65,.8,.67]]:[[-.5,-.98,.68,.6],[.5,-.82,.64,.59],[.03,-1.35,.68,.48]];
+  for(const [x,y,rx,ry] of lobes){oval(x+shift,y,rx,ry,palette.leaf);oval(x+shift-.14,y-.13,rx*.73,ry*.68,palette.light);}
+  poly([[-.9,-.1],[-.25,.36],[.45,.28],[1.05,-.12],[.5,.06],[-.1,.1]],'#102e2d45');
+  if(detail){for(const [x,y] of [[-.5,-1.35],[.15,-1.62],[.6,-.98]]){oval(x+shift,y,.19,.09,'#b2ca8055');rect(x+shift-.05,y+.17,.12,.04,palette.light);}}
+ }
+}
 function drawSceneryObject(context,d){
  const palette=SCENERY_THEMES[d.theme],s=d.size,detail=graphics==='high';
  context.save();context.translate(d.x,d.y);
  const rect=(x,y,w,h,color)=>{context.fillStyle=color;context.fillRect(x*s,y*s,w*s,h*s);};
  const poly=(points,color)=>{context.fillStyle=color;context.beginPath();points.forEach(([x,y],i)=>i?context.lineTo(x*s,y*s):context.moveTo(x*s,y*s));context.closePath();context.fill();};
  const oval=(x,y,rx,ry,color)=>{context.fillStyle=color;context.beginPath();context.ellipse(x*s,y*s,rx*s,ry*s,0,0,Math.PI*2);context.fill();};
+ if(graphics!=='lite'&&['tree','canopy','palm','pine','cactus'].includes(d.kind)){
+  drawVegetation(d,palette,detail,{rect,poly,oval});context.restore();return;
+ }
  // All scenery is static, cached and beyond the recovery strip; shadows stay bounded.
  if(graphics!=='lite'){
   if(detail)oval(0,0,1.65,.8,palette.ground);
   oval(.3,.35,1.35,.52,'#08132030');
  }
+ // Original lite silhouettes; detailed vegetation returned above.
  if(['tree','canopy','palm','pine','cactus'].includes(d.kind)){
   rect(-.12,-.3,.24,1.05,'#5b4936');
   if(d.kind==='palm'){
@@ -671,14 +715,11 @@ function drawSceneryObject(context,d){
   }else if(d.kind==='pine'){
    poly([[0,-1.75],[-1.05,.55],[1.05,.55]],palette.leaf);
    poly([[0,-1.75],[-.8,-.1],[.65,-.2]],palette.light);
-   if(detail)poly([[-.6,.1],[-.86,.5],[.8,.5],[.5,.15]],d.theme==='snow'?'#d3e8e5':palette.light);
   }else if(d.kind==='cactus'){
    rect(-.2,-1.4,.4,2,palette.leaf);rect(-.85,-.65,.7,.25,palette.leaf);rect(-.85,-1,.25,.5,palette.leaf);rect(.15,-.2,.6,.25,palette.leaf);rect(.5,-.6,.25,.6,palette.leaf);rect(-.1,-1.3,.1,1.7,palette.light);
-   if(detail){oval(-.65,.65,.4,.15,palette.stone);rect(.02,-1.55,.16,.2,'#e6c16d');}
   }else{
    oval(0,-.55,1.1,1,palette.leaf);oval(-.43,-.9,.72,.7,palette.light);oval(.6,-.5,.65,.72,palette.leaf);
    if(d.kind==='canopy'){oval(.1,-1.3,.68,.52,palette.light);rect(-.04,-1.45,.09,.7,'#75a865');}
-   if(detail){oval(-.55,-1.1,.22,.15,'#a5c87555');rect(.1,-.15,.1,.25,'#b3c38855');}
   }
  }else if(['rock','mesa','basalt'].includes(d.kind)){
   poly([[-1.15,.4],[-.9,-.6],[-.25,-1.05],[.65,-.9],[1.2,.1],[.8,.6]],palette.stone);

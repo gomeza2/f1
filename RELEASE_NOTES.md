@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.60
+# PIXEL GRAND PRIX — entrega 0.61
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Vegetación en 0.61
+
+Primer tramo 36.3: follaje por capas, troncos/raíces y sombras de luz fija para árboles/copas, palmeras, pinos y cactus, en detallado/retro. Sin alterar posiciones/huellas/presupuestos; rendimiento y geometría de pista se conservan. Fondos estáticos en caché, sin dependencias ni física nueva.
+
+No completa toda la fase gráfica ni aprueba el manejo humano. Estado de doce frentes abiertos e hitos online en `ROADMAP_EVOLUCION.md`; online aún sin backend/salas. Próxima revisión de manejo incorpora el objetivo ~260 para el coche más rápido, con frenado/curva/derrape medidos. No se anuncia esa velocidad como implementada en 0.61. Evidencia en `tests/experiments/VEGETATION_061.md`.
 
 ## Jungle Sprint en 0.60
 
