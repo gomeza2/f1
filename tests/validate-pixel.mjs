@@ -9,7 +9,8 @@ const {game:g,element:e}=loadGame(),track=g.tracks[7],shape=sampleTrackShape(tra
 assert.equal(track.name,old.name);assert.equal(track.layoutVersion,3);assert.equal(track.roadVersion,1);assert.equal(track.surface,'asphalt');assert.equal(track.defaultBarriers,'half');
 assert.ok(track.length>4300&&track.length<4500);assert.ok(normalizedShapeDistance(shape,old.shape)>.25,'Pixel was only enlarged');
 for(const [a,b] of [[g.CAR_MODELS,old.models],[g.AI_DRIVERS,old.drivers],[g.AI_PERSONALITIES,old.personalities]])assert.deepEqual(JSON.parse(JSON.stringify(a)),b);
-assert.equal(g.PHYSICS_VERSION,old.physics);assert.equal(g.WORLD_SPEED_SCALE,old.worldSpeed);
+assert.equal(g.PHYSICS_VERSION,old.physics+1); // p6 human countersteer only; core source frozen by validate-countersteer.
+assert.equal(g.WORLD_SPEED_SCALE,old.worldSpeed);
 assert.deepEqual(JSON.parse(JSON.stringify(g.TERRAIN_MATERIALS)),old.materials,'Layout changed terrain physics or art');
 let nearest=Infinity;
 for(const t of g.tracks.filter(t=>t!==track)){
@@ -21,7 +22,7 @@ g.start('solo',7);assert.equal(g.checkpoints.length,6);const gaps=[0,...g.checkp
 assert.equal(Math.min(...track.roadProfile.map(p=>p[1]+p[2])),38);assert.equal(Math.max(...track.roadProfile.map(p=>p[1]+p[2])),56);
 let bare=0,kerbed=0;for(let d=0;d<track.length;d+=20){const section=g.roadSectionAt(d);if(section.kerb<.1)bare++;if(section.kerb>5)kerbed++;const p=g.sampleAt(d);assert.equal(g.terrainAt(p.x,p.y).material,'asphalt');}assert.ok(bare>30&&kerbed>15,'Missing bare/kerbed sectors');
 
-g.bestLapRecords['PIXEL CITY@2:p5']=26;assert.equal(g.lapRecordKey(),'PIXEL CITY@3:p5:r1:s1');g.saveBestLap(g.lapRecordKey(),36);assert.equal(g.bestLapRecords['PIXEL CITY@2:p5'],26);
+g.bestLapRecords['PIXEL CITY@2:p5']=26;assert.equal(g.lapRecordKey(),'PIXEL CITY@3:p6:r1:s1');g.saveBestLap(g.lapRecordKey(),36);assert.equal(g.bestLapRecords['PIXEL CITY@2:p5'],26);
 const human=g.cars[0];g.placeCar(human,track.length-3,0);human.speed=120;g.setKeys({w:true});g.physics(human,0,.1);assert.equal(human.lap,0,'Meta accepted skipped gates');
 e('stageSelect').value='7';g.updateMenuPreview();assert.match(e('previewRouteInfo').textContent,/6 CHECKPOINTS/);
 console.log(`PASS: Pixel ${track.length.toFixed(1)} units (+${((track.length/old.oldLength-1)*100).toFixed(1)}%), nearest shape ${nearest.toFixed(3)}, width margin ${geometry.roadMargin.toFixed(1)}/branch clearance ${geometry.clearance.toFixed(1)}, asphalt with optional kerbs, 6 ordered gates, preserved models/physics/old records and thirteen unchanged routes.`);

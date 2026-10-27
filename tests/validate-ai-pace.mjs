@@ -3,7 +3,8 @@ import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {loadGame} from './helpers/game-harness.mjs';
 const old=JSON.parse(readFileSync(new URL('./fixtures/cpu-0.47.json',import.meta.url),'utf8')),{game}=loadGame();
-assert.equal(game.PHYSICS_VERSION,old.physics);assert.equal(game.WORLD_SPEED_SCALE,old.worldSpeed);assert.deepEqual(JSON.parse(JSON.stringify(game.CAR_MODELS)),old.models);
+assert.equal(game.PHYSICS_VERSION,old.physics+1); // p6 human countersteer only; remaining p5 source is frozen by validate-countersteer.
+assert.equal(game.WORLD_SPEED_SCALE,old.worldSpeed);assert.deepEqual(JSON.parse(JSON.stringify(game.CAR_MODELS)),old.models);
 let comparisons=0;
 // Later route migrations have dedicated snapshots/races; old lap times cannot benchmark a different course.
 for(const t of game.tracks){if(['FROSTBITE GP','PIXEL CITY'].includes(t.name)&&t.layoutVersion===3)continue;const hash=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');assert.equal(hash,old.tracks[t.name],t.name+': route changed during CPU work');}

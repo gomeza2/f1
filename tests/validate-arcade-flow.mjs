@@ -10,5 +10,5 @@ const fast=turn(232),braked=turn(232,true);assert.ok(fast.angle>old.fast.turn*1.
 const model=game.CAR_MODELS.balanced,maxHandling=game.vehicleHandling(model.maxSpeed,model,'asphalt',80);assert.ok(model.maxSpeed*game.WORLD_SPEED_SCALE/maxHandling.turnRate>110,'At maximum speed tight hairpins no longer require slowing');
 function steer(fps){game.start('solo',0);game.cars[1].done=true;game.setKeys({d:true});for(let i=0;i<fps/2;i++)game.physics(game.cars[0],0,1/fps);return game.cars[0].steer;}
 assert.ok(Math.abs(steer(30)-steer(120))<1e-10,'Human steering response depends on the frame rate');
-game.bestLapRecords['SUNSET CIRCUIT@3:p3']=40;assert.equal(game.lapRecordKey(),'SUNSET CIRCUIT@3:p5:r1:s1');assert.ok(game.saveBestLap(game.lapRecordKey(),37));assert.equal(game.bestLapRecords['SUNSET CIRCUIT@3:p3'],40);
+game.bestLapRecords['SUNSET CIRCUIT@3:p3']=40;assert.equal(game.lapRecordKey(),'SUNSET CIRCUIT@3:p6:r1:s1');assert.ok(game.saveBestLap(game.lapRecordKey(),37));assert.equal(game.bestLapRecords['SUNSET CIRCUIT@3:p3'],40);
 console.log('PASS: measured response improves against frozen 0.41, acceleration stays progressive, braking tightens corners, fast hairpins retain a limit, steering input agrees at 30/120 Hz and previous-physics records survive. Acceptance of driving feel still requires the user.');

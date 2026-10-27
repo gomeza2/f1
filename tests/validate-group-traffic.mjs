@@ -4,7 +4,8 @@ import {createHash} from 'node:crypto';
 import {loadGame} from './helpers/game-harness.mjs';
 const baseline=JSON.parse(readFileSync(new URL('./fixtures/groups-0.53.json',import.meta.url),'utf8'));
 const {game:g,element:e}=loadGame();e('opponentCount').value='3';
-assert.equal(g.PHYSICS_VERSION,baseline.physics);assert.equal(g.WORLD_SPEED_SCALE,baseline.worldSpeed);
+assert.equal(g.PHYSICS_VERSION,baseline.physics+1); // p6 human countersteer only; core source frozen by validate-countersteer.
+assert.equal(g.WORLD_SPEED_SCALE,baseline.worldSpeed);
 for(const [current,previous] of [[g.CAR_MODELS,baseline.models],[g.AI_DRIVERS,baseline.drivers],[g.AI_PERSONALITIES,baseline.personalities],[g.TERRAIN_MATERIALS,baseline.materials]])assert.deepEqual(JSON.parse(JSON.stringify(current)),previous);
 for(const t of g.tracks){const signature=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion,surface:t.surface,defaultBarriers:t.defaultBarriers})).digest('hex');assert.equal(signature,baseline.tracks[t.name],t.name+': CPU work changed a course');}
 function decision(c){return g.aiTraffic(c,g.nearestOnTrack(c.x,c.y),g.driverFor(c),1/30);}

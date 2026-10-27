@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.58
+# PIXEL GRAND PRIX — entrega 0.59
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Contravolante en 0.59
+
+Descarga más rápida del volante al pedir dirección contraria; vuelve a la respuesta normal al cruzar el centro. Se mantiene entrada inicial, neutral, corrección fina de stick, inercia del chasis y límite físico de curva. Se aplica a los humanos de teclado/mandos, sin modificar conducción CPU.
+
+Doce maniobras reproducibles (cuatro coches, asfalto/tierra/hielo): inversión de yaw 117 → 100 ms, aproximadamente 17 % menos giro residual anterior, misma velocidad. Se comparan intensidades 1/1,35/1,5/1,8 y se elige 1,5 solo al descargar dirección opuesta. Cruce exacto del centro sin dependencia de subdivisión 30/120 Hz. Física 6 separa récords nuevos de p5 conservados; reloj s1 se mantiene. Pruebas y límites en `tests/experiments/COUNTERSTEER_059.md`. Sensación humana de curvas, audio y otros frentes siguen abiertos.
 
 ## Conducción/reloj consistente en 0.58
 

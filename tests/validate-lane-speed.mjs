@@ -3,7 +3,8 @@ import {readFileSync} from 'node:fs';
 import {loadGame} from './helpers/game-harness.mjs';
 const old=JSON.parse(readFileSync(new URL('./fixtures/traffic-0.49.json',import.meta.url),'utf8'));
 const {game:g,element:e}=loadGame();g.start('solo',2);
-assert.equal(g.PHYSICS_VERSION,old.physics);assert.equal(g.WORLD_SPEED_SCALE,old.worldSpeed);
+assert.equal(g.PHYSICS_VERSION,old.physics+1); // p6 human countersteer only; core source frozen by validate-countersteer.
+assert.equal(g.WORLD_SPEED_SCALE,old.worldSpeed);
 for(const [current,previous] of [[g.CAR_MODELS,old.models],[g.AI_DRIVERS,old.drivers],[g.AI_PERSONALITIES,old.personalities]])assert.deepEqual(JSON.parse(JSON.stringify(current)),previous,'Traffic change altered power or driver settings');
 assert.ok(g.aiSpeedPlan.some(p=>p.signedCurvature>0)&&g.aiSpeedPlan.some(p=>p.signedCurvature<0));
 for(const point of g.aiSpeedPlan)assert.equal(Math.abs(point.signedCurvature),point.curvature);

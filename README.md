@@ -40,6 +40,14 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## Contravolante más recuperable — 0.59
+
+Cuando pedís el giro contrario, el volante descarga antes la dirección que llevaba; al cruzar el centro vuelve al peso normal. No acelera la entrada inicial de curva ni elimina la inercia del chasis. Teclados de los cuatro pilotos y mandos comparten el ajuste; las correcciones pequeñas de stick mantienen su respuesta fina.
+
+Comparación con la misma maniobra a 150 km/h en cuatro modelos y asfalto/tierra/hielo: la inversión del giro pasa de **117 a 100 ms** y el giro residual hacia el lado anterior baja aproximadamente **17 %**, con la misma velocidad. Es una maniobra reproducible, no una medida universal de tiempo de reacción ni una aprobación humana del manejo.
+
+Agarre máximo, necesidad de frenar, aceleración, giro sostenido, CPU, rutas, gráficos y audio se mantienen. El controlador cambia la conducción humana: los nuevos récords usan **física 6** (`:p6:…:s1`) y se conservan los de física 5. El reloj fijo/interpolación de 0.58 continúa. Detalle en [comparación 0.59](tests/experiments/COUNTERSTEER_059.md).
+
 ## Conducción consistente entre pantallas — 0.58
 
 La simulación avanza ahora a **60 pasos por segundo**, separada del dibujo. Antes cada fotograma admitía como máximo 30 ms: a 20 FPS, tres segundos reales solo avanzaban 1,8 s de carrera; a 30 FPS, 2,7 s. Esto cambiaba aceleración, dirección, contactos y tiempos según el equipo. Con el nuevo bucle, las referencias de 20/30/60/120/144 FPS producen tres segundos y el mismo estado físico con la misma secuencia de controles.
@@ -473,3 +481,13 @@ STEP_SOURCE_BASELINE=/tmp/pixelgp-before-058.js node tests/browser-fixed-step.cj
 ```
 
 La prueba de navegador usa timestamps controlados con el bucle/dibujo reales. No mide la tasa de fotogramas de un dispositivo físico.
+
+Prueba de recuperación de dirección 0.59:
+
+```sh
+node tests/validate-countersteer.mjs
+git show b4b2908:script.js > /tmp/pixelgp-before-059.js
+CONTROL_SOURCE_BASELINE=/tmp/pixelgp-before-059.js node tests/browser-countersteer.cjs
+```
+
+La prueba de navegador utiliza teclado real, física a paso fijo y Canvas; `CONTROL_SCREENSHOTS` guarda capturas antes/después.

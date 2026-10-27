@@ -24,7 +24,7 @@ const wrapAngle=a=>Math.atan2(Math.sin(a),Math.cos(a));
 const pointDistance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const LAPS_TO_WIN=3;
 const ROAD_EDGE=42, WALL_EDGE=66,CAR_HALF_WIDTH=10;
-const PHYSICS_VERSION=5;
+const PHYSICS_VERSION=6;
 const DRIVING_TUNING={accelerationScale:.82,accelerationTaper:.45,lateralAcceleration:280,maxSpeedGripLoss:.24,speedGripLoss:.0014,inputResponse:14,handInputResponse:16,yawResponse:18,yawSpeedWeight:4,topSpeedLateralLoss:.16,liftDrag:30};
 const CAR_MODELS={
  balanced:{name:'BALANCED',maxSpeed:232,acceleration:110,braking:230,steering:1,grip:1,grass:1,description:'Equilibrado para aprender y competir.'},
@@ -1223,6 +1223,16 @@ function updateSteeringInertia(car,turnRate,maxSpeed,dt){
  car.yawRate=target+(previous-target)*decay;
  car.heading=wrapAngle(car.heading+target*dt+(previous-target)*(1-decay)/response);
 }
+function humanSteeringInput(current,target,hand,dt){
+ const response=hand?DRIVING_TUNING.handInputResponse:DRIVING_TUNING.inputResponse;
+ // Unwind opposed lock sooner, then build the new turn with normal weight.
+ if(current*target<0&&Math.abs(target)>.15){
+  const unwind=response*1.5,crossing=Math.log1p(-current/target)/unwind;
+  if(dt<=crossing)return target+(current-target)*Math.exp(-unwind*dt);
+  return target*(1-Math.exp(-response*(dt-crossing)));
+ }
+ return target+(current-target)*Math.exp(-response*dt);
+}
 function physics(car,i,dt){
  const before=nearestOnTrack(car.x,car.y),localBend=curvatureAt(before.progress);
  const model=CAR_MODELS[car.model]||CAR_MODELS.balanced;
@@ -1231,7 +1241,7 @@ function physics(car,i,dt){
   controls=driveAI(car,before,model,dt);
  }else{
   const input=controlsFor(i),{hand,steering}=input;
-  car.steer+=(steering-car.steer)*(1-Math.exp(-dt*(hand?DRIVING_TUNING.handInputResponse:DRIVING_TUNING.inputResponse)));
+  car.steer=humanSteeringInput(car.steer,steering,hand,dt);
   controls={throttle:input.throttle,brake:input.brake,hand};
  }
  const {throttle,brake,hand}=controls;car.handbrake=hand;car.braking=brake>0||hand;

@@ -33,7 +33,7 @@ for(const stage of [0,1,2,3,4,6,7]){
  assert.ok(wide-narrow>15,'Profile does not change usable width');assert.ok(bare>0);if([0,1,3,7].includes(stage))assert.ok(kerbs>0);
  for(const gate of game.checkpoints)assert.equal(gate.halfWidth,game.roadHalfWidthAt(gate.progress));
  const legacy=track.name+'@'+track.layoutVersion+':p4';game.bestLapRecords[legacy]=18;
- assert.equal(game.lapRecordKey(),legacy.replace(':p4',':p5')+':r1:s1');assert.ok(game.saveBestLap(game.lapRecordKey(),30));assert.equal(game.bestLapRecords[legacy],18);
+ assert.equal(game.lapRecordKey(),legacy.replace(':p4',':p6')+':r1:s1');assert.ok(game.saveBestLap(game.lapRecordKey(),30));assert.equal(game.bestLapRecords[legacy],18);
  console.log(`SECTORS: ${track.name}, full width ${(2*narrow).toFixed(1)}–${(2*wide).toFixed(1)}, margin ${geometry.roadMargin.toFixed(1)}, clearance ${geometry.clearance.toFixed(1)}.`);
 }
 for(const item of game.tracks.filter(t=>!t.roadProfile))for(let d=0;d<item.length;d+=100){const paved=['asphalt','coastal'].includes(game.surfaceAtProgress(d,item));assert.equal(game.roadHalfWidthAt(d,item),paved?48:42);}
