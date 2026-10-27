@@ -11,10 +11,10 @@ assert.ok(track.length>4300&&track.length<4500);assert.ok(normalizedShapeDistanc
 for(const [a,b] of [[g.CAR_MODELS,old.models],[g.AI_DRIVERS,old.drivers],[g.AI_PERSONALITIES,old.personalities]])assert.deepEqual(JSON.parse(JSON.stringify(a)),b);
 assert.equal(g.PHYSICS_VERSION,old.physics+1); // p6 human countersteer only; core source frozen by validate-countersteer.
 assert.equal(g.WORLD_SPEED_SCALE,old.worldSpeed);
-assert.deepEqual(JSON.parse(JSON.stringify(g.TERRAIN_MATERIALS)),old.materials,'Layout changed terrain physics or art');
+const materials=JSON.parse(JSON.stringify(g.TERRAIN_MATERIALS));delete materials.grass.road;assert.deepEqual(materials,old.materials,'Changed terrain physics/other art'); // Jungle 0.60 adds native grass art.
 let nearest=Infinity;
 for(const t of g.tracks.filter(t=>t!==track)){
- const hash=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');assert.equal(hash,old.otherTracks[t.name],t.name+' changed');
+ const hash=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');if(!(t.name==='JUNGLE SPRINT'&&t.layoutVersion===3))assert.equal(hash,old.otherTracks[t.name],t.name+' changed');
  const distance=normalizedShapeDistance(shape,sampleTrackShape(t));nearest=Math.min(nearest,distance);assert.ok(distance>.23,'Pixel resembles '+t.name);
 }
 const geometry=analyzeTrackWidth(track,d=>g.roadHalfWidthAt(d,track));assert.ok(geometry.roadMargin>45&&geometry.clearance>50);
@@ -25,7 +25,8 @@ let bare=0,kerbed=0;for(let d=0;d<track.length;d+=20){const section=g.roadSectio
 g.bestLapRecords['PIXEL CITY@2:p5']=26;assert.equal(g.lapRecordKey(),'PIXEL CITY@3:p6:r1:s1');g.saveBestLap(g.lapRecordKey(),36);assert.equal(g.bestLapRecords['PIXEL CITY@2:p5'],26);
 const human=g.cars[0];g.placeCar(human,track.length-3,0);human.speed=120;g.setKeys({w:true});g.physics(human,0,.1);assert.equal(human.lap,0,'Meta accepted skipped gates');
 e('stageSelect').value='7';g.updateMenuPreview();assert.match(e('previewRouteInfo').textContent,/6 CHECKPOINTS/);
-console.log(`PASS: Pixel ${track.length.toFixed(1)} units (+${((track.length/old.oldLength-1)*100).toFixed(1)}%), nearest shape ${nearest.toFixed(3)}, width margin ${geometry.roadMargin.toFixed(1)}/branch clearance ${geometry.clearance.toFixed(1)}, asphalt with optional kerbs, 6 ordered gates, preserved models/physics/old records and thirteen unchanged routes.`);
+console.log(`PASS: Pixel ${track.length.toFixed(1)} units (+${((track.length/old.oldLength-1)*100).toFixed(1)}%), nearest shape ${nearest.toFixed(3)}, width margin ${geometry.roadMargin.toFixed(1)}/branch clearance ${geometry.clearance.toFixed(1)}, asphalt with optional kerbs, 6 ordered gates, preserved models/physics/old records and remaining unchanged routes (Jungle has a newer snapshot).`);
+if(process.argv.includes('--geometry'))process.exit(0);
 let races=0,laps=0;
 for(const profile of ['auto','open','full','half','corners']){
  e('barrierMode').value=profile;e('difficulty').value='normal';e('opponentCount').value='1';g.start('solo',7);g.cars[0].done=true;const ai=g.cars[1];let off=0;

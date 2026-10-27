@@ -40,6 +40,14 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## Jungle Sprint: enlace en S y regreso rápido — 0.60
+
+Jungle tiene ahora un trazado propio de **6.178 unidades** (+77,2 %), mundo **2000×1280**, un enlace en S, horquilla interior y regreso rápido. El ancho cambia suavemente entre **72 y 116**, con recta amplia y sectores más estrechos; nueve checkpoints ordenados controlan el recorrido. Mantiene pasto nativo y **sin barreras** como opción automática, con los otros cuatro perfiles disponibles.
+
+La carretera usa tonos de vegetación pisada, borde claro y grano propio en caché, con menos detalle en rendimiento. No dibuja asfalto ni pianos rojos sobre el pasto. Apariencia y agarre siguen el material común; no se modifica su física. Los otros trece trazados se conservan y sus imágenes de carretera se comparan byte a byte en tres calidades.
+
+Referencia CPU Normal libre: **36,12 / 35,03 s** en las dos primeras vueltas, frente a **25,50 / 24,53 s** anteriores. Son tiempos de prueba, no una duración garantizada para cualquier jugador. Continúan física 6/contravolante y reloj s1; los récords nuevos son `JUNGLE SPRINT@3:p6:r1:s1`, manteniendo los de @2. **Ocho pistas con secciones variables y seis uniformes pendientes.** Geometría, iteraciones y pruebas en [Jungle 0.60](tests/experiments/JUNGLE_060.md).
+
 ## Contravolante más recuperable — 0.59
 
 Cuando pedís el giro contrario, el volante descarga antes la dirección que llevaba; al cruzar el centro vuelve al peso normal. No acelera la entrada inicial de curva ni elimina la inercia del chasis. Teclados de los cuatro pilotos y mandos comparten el ajuste; las correcciones pequeñas de stick mantienen su respuesta fina.
@@ -491,3 +499,13 @@ CONTROL_SOURCE_BASELINE=/tmp/pixelgp-before-059.js node tests/browser-counterste
 ```
 
 La prueba de navegador utiliza teclado real, física a paso fijo y Canvas; `CONTROL_SCREENSHOTS` guarda capturas antes/después.
+
+Pruebas dedicadas de Jungle 0.60:
+
+```sh
+node tests/validate-jungle.mjs
+TEST_TRACKS=5 node tests/validate-barriers.mjs
+ROAD_STAGES=5 node tests/browser-road-sectors.cjs
+```
+
+`validate-jungle --geometry` permite revisar forma, anchuras, gates y conservación sin repetir las carreras. La comparación de otras carreteras admite `PARITY_STAGES=0,1,2,3,4,6,7,8,9,10,11,12,13` con `ROAD_SOURCE_BASELINE` apuntando al script conservado de 0.59.

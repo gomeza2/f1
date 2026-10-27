@@ -14,7 +14,7 @@ assert.equal(g.WORLD_SPEED_SCALE,old.worldSpeed);
 for(const key of Object.keys(old.ice))assert.equal(g.TERRAIN_MATERIALS.ice[key],old.ice[key],'Material art changed ice physics');
 let nearest=Infinity;
 for(const t of g.tracks.filter(t=>t!==track)){
- const hash=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');if(!(t.name==='PIXEL CITY'&&t.layoutVersion===3))assert.equal(hash,old.otherTracks[t.name],t.name+' changed');
+ const hash=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');if(!(['PIXEL CITY','JUNGLE SPRINT'].includes(t.name)&&t.layoutVersion===3))assert.equal(hash,old.otherTracks[t.name],t.name+' changed');
  const distance=normalizedShapeDistance(shape,sampleTrackShape(t));nearest=Math.min(nearest,distance);assert.ok(distance>.25,'Frost resembles '+t.name);
 }
 const geometry=analyzeTrackWidth(track,d=>g.roadHalfWidthAt(d,track));assert.ok(geometry.roadMargin>70&&geometry.clearance>40);
@@ -24,7 +24,8 @@ assert.notEqual(g.TERRAIN_MATERIALS.ice.road.body,g.TERRAIN_MATERIALS.asphalt.ro
 g.bestLapRecords['FROSTBITE GP@2:p5']=26;assert.equal(g.lapRecordKey(),'FROSTBITE GP@3:p6:r1:s1');g.saveBestLap(g.lapRecordKey(),36);assert.equal(g.bestLapRecords['FROSTBITE GP@2:p5'],26);
 const human=g.cars[0];g.placeCar(human,track.length-3,0);human.speed=120;g.setKeys({w:true});g.physics(human,0,.1);assert.equal(human.lap,0,'Meta accepted skipped gates');
 e('stageSelect').value='4';g.updateMenuPreview();assert.match(e('previewRouteInfo').textContent,/9 CHECKPOINTS/);
-console.log(`PASS: Frost ${track.length.toFixed(1)} units (+${((track.length/old.oldLength-1)*100).toFixed(1)}%), nearest shape ${nearest.toFixed(3)}, width margin ${geometry.roadMargin.toFixed(1)}/branch clearance ${geometry.clearance.toFixed(1)}, native ice, 9 ordered gates, preserved models/physics/old records and twelve historical route signatures (Pixel migration has its own newer snapshot).`);
+console.log(`PASS: Frost ${track.length.toFixed(1)} units (+${((track.length/old.oldLength-1)*100).toFixed(1)}%), nearest shape ${nearest.toFixed(3)}, width margin ${geometry.roadMargin.toFixed(1)}/branch clearance ${geometry.clearance.toFixed(1)}, native ice, 9 ordered gates, preserved models/physics/old records and remaining historical route signatures (Pixel/Jungle have newer snapshots).`);
+if(process.argv.includes('--geometry'))process.exit(0);
 let races=0,laps=0;
 for(const profile of ['auto','open','full','half','corners']){
  e('barrierMode').value=profile;e('difficulty').value='normal';e('opponentCount').value='1';g.start('solo',4);g.cars[0].done=true;const ai=g.cars[1];let off=0;

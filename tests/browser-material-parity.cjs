@@ -9,13 +9,13 @@ const server=http.createServer((req,res)=>{const name=req.url.split('?')[0]==='/
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
  try{
-  const results={};
+  const results={},stages=process.env.PARITY_STAGES?process.env.PARITY_STAGES.split(',').map(Number):[0,1,2,3,4,6];assert.ok(stages.length>0&&new Set(stages).size===stages.length&&stages.every(s=>Number.isInteger(s)&&s>=0&&s<14),'Invalid PARITY_STAGES');
   for(const [version,source] of Object.entries(sources)){
    const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.route(/\/script\.js(?:\?.*)?$/,r=>r.fulfill({contentType:'text/javascript',body:source.replace(/\}\)\(\);\s*$/,bridge+'})();')}));await page.goto('http://127.0.0.1:'+server.address().port);results[version]={};
-   for(const stage of [0,1,2,3,4,6])for(const quality of ['high','retro','lite'])results[version][stage+quality]=await page.evaluate(([stage,quality])=>window.roadParity(stage,quality),[stage,quality]);
+   for(const stage of stages)for(const quality of ['high','retro','lite'])results[version][stage+quality]=await page.evaluate(([stage,quality])=>window.roadParity(stage,quality),[stage,quality]);
    assert.deepEqual(errors,[]);await page.close();
   }
-  assert.deepEqual(results.current,results.before,'Material extraction changed an existing road image');console.log('PASS: eighteen actual Canvas road images are byte-identical before/after material extraction (six existing variable roads × three qualities), no JavaScript errors. The redesigned Pixel City is tested separately.');
+  assert.deepEqual(results.current,results.before,'Material extraction changed an existing road image');console.log(`PASS: ${stages.length*3} actual Canvas road images are byte-identical on ${stages.length} selected roads/three qualities, no JavaScript errors. Changed routes must be tested separately.`);
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(()=>server.close());

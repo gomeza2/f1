@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.59
+# PIXEL GRAND PRIX — entrega 0.60
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Jungle Sprint en 0.60
+
+Nuevo trazado 6.178 unidades (+77,2 %), enlace en S/horquilla/regreso rápido, ancho 72–116, mundo 2000×1280 y nueve gates. Pasto nativo con paleta/grano propios para el corredor variable; sin pianos de asfalto. Automático abierto, cinco perfiles disponibles. Otros trece trazados, fuerzas/materiales físicos, CPU, control p6, reloj s1, audio y local 2–4 conservados.
+
+El primer cierre tenía bordes solapados y se descartó. Una variante posterior falló la precisión de barreras completas; se separaron los ramales sin ampliar la tolerancia. La elegida tiene margen al mundo 75,4, separación de carretera 53,1 y discrepancia máxima de contorno ~0,34 frente al radio compartido. Referencia Normal libre 36,12/35,03 s; récord @3/p6/r1/s1 separado de @2 conservado. Ocho pistas variables y seis uniformes restantes; no se anuncia equilibrio humano por geometría o vueltas de CPU. Evidencia en `tests/experiments/JUNGLE_060.md`.
 
 ## Contravolante en 0.59
 

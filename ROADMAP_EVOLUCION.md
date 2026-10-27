@@ -203,3 +203,12 @@ Con reloj estable, se comparan cuatro intensidades de descarga de volante opuest
 Física 6 por cambio del controlador humano, con p5 conservado y reloj s1 sin migrar. Doce maniobras de cuatro modelos/asfalto/tierra/hielo, también con teclado real en Chromium, invierten yaw 117 → 100 ms y reducen ~17 % el giro residual anterior sin dar más velocidad. Se comprueba el resto del núcleo de conducción/IA/colisión contra el snapshot 0.58; no se congelan gráficos/interfaz ni se limita la evolución futura. Fixture versionado documenta la migración, no se reescriben tiempos históricos para aprobarla.
 
 Tramo implementado y comprobado automáticamente/en Chromium: doce maniobras, 316 vueltas válidas de regresión, local 2–4 y 70 perfiles de superficies/barreras. Evidencia y límites en `tests/experiments/COUNTERSTEER_059.md`. No cierra la conducción humana ni convierte la maniobra en una vuelta humana equilibrada. Próximo: fase 27, Jungle Sprint con trazado/secciones propios (todavía uniforme), conservando esta respuesta; después escenarios 36.3 y escucha/revisión de timbre según pruebas humanas. Siguen abiertos el tacto de frenada/curva/derrape y los demás frentes del plan.
+
+
+### Avance 0.60 — fase 27, Jungle Sprint propio
+
+Jungle pasa de la forma uniforme a un enlace en S, horquilla y retorno rápido: 6.178 unidades, ancho 72–116, nueve gates y mundo 2000×1280. Pasto nativo, sin pianos asfaltados y perfil abierto automático, con alternativas conservadas. Paleta/grano del corredor variable definidos en el material, sin alterar grip/resistencia/partículas; Meadow uniforme conserva sus píxeles. El resto de trece rutas se congela en fixture 0.59; no se reescriben tiempos antiguos para la nueva ruta.
+
+Se descartan un cierre con solapamiento y una variante cuya valla completa se desviaba >2 unidades del contorno. La elegida separa ramales (53,1), conserva margen al mundo 75,4 y pasa barreras con error máximo ~0,34. CPU Normal libre 36,12/35,03 s frente a 25,50/24,53. No equivale a diversión o equilibrio humano. Nuevo récord @3:p6:r1:s1 y @2 conservado. Física 6, reloj s1, CPU, audio, gráficos de coches y local se mantienen.
+
+Estado: ocho pistas con secciones variables, seis uniformes por desarrollar. Evidencia/resultados en `tests/experiments/JUNGLE_060.md`. Próximo tramo recomendado: 36.3, ambientación con escala e identidad por tema y legibilidad; mantener manejo 25, seis rutas uniformes 27 (Thunder candidato), timbre/escucha 26 y competición/local abiertos. Las fases siguen ampliables; esta entrega no cierra el juego.

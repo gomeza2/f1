@@ -8,7 +8,7 @@ Crear un arcade de carreras 2D con circuitos originales, recorridos más variado
 
 ## Estado real de la versión
 
-La interfaz identifica la build como **0.59**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y 2–4 jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
+La interfaz identifica la build como **0.60**, continuando la base 0.17 del commit `a19be4bd82a5715a54d7f37f753ec468a91518a3` en `main`. El código registra **14 circuitos**, tiene modos de un jugador y 2–4 jugadores local, perfiles de barreras, una primera capa de superficies, derrapes, checkpoints, récords locales, telemetría exterior y reglas de ataque/defensa para CPU.
 
 **Importante:** “Implementado” significa presente en el código; no implica que se haya comprobado visualmente una carrera en navegador. Las fases que afectan la sensación de manejo siguen necesitando pruebas de juego reales.
 
@@ -1170,3 +1170,10 @@ Pruebas de entrada/curvas/frenado/mano, varios ritmos y carreras completas en `t
 El volante descarga dirección opuesta más deprisa hasta el centro y después vuelve al peso normal; no cambia giro sostenido, neutral, fuerza lateral ni yaw. Teclado/mandos de 1–4 humanos; CPU/pistas/colisiones/audio/gráficos conservados. Física 6 migra los récords del controlador, manteniendo p5 y reloj s1.
 
 Doce maniobras de comparación sobre cuatro modelos/asfalto/tierra/hielo, comprobadas también con teclado real en Chromium: yaw contrario 117 → 100 ms y ~17 % menos giro residual, misma velocidad. Evidencia y pruebas en `tests/experiments/COUNTERSTEER_059.md`. Aceptación humana pendiente; próxima pista candidata a fase 27: Jungle Sprint, sin reiniciar lo ya completado ni cerrar todas las fases.
+
+
+## Avance 0.60 — Jungle Sprint, fase abierta 27
+
+Trazado nuevo de 6.178 unidades, ancho 72–116, S/horquilla/regreso rápido, nueve gates y mundo 2000×1280. Pasto nativo con estilo propio y perfil automático abierto; se conservan cinco barreras, otros trece recorridos y física 6/reloj s1/CPU/audio/local. Récord @3:p6:r1:s1 separado de @2 retenido.
+
+Se detectaron y corrigieron geometría de cierre y alineación de barrera en variantes rechazadas. Referencia CPU Normal libre 36,12/35,03 s; capturas/Canvas y pruebas en `tests/experiments/JUNGLE_060.md`. Ocho pistas variables, seis uniformes pendientes. Aceptación humana de trazado/manejo abierta; siguiente propuesta gráfica: escenarios de fase 36.3 del plan abierto.

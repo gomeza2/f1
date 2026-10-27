@@ -11,7 +11,7 @@ assert.ok(track.length>4800&&track.length<5200);assert.ok(normalizedShapeDistanc
 assert.deepEqual(JSON.parse(JSON.stringify(game.CAR_MODELS)),old.models);assert.equal(game.PHYSICS_VERSION,6); /* Controller migration; validate-countersteer freezes the remaining p5 driving core. */assert.equal(game.WORLD_SPEED_SCALE,.84);
 let nearest=Infinity;
 for(const item of game.tracks.filter(t=>t!==track)){
- const hash=createHash('sha256').update(JSON.stringify({points:item.points,samples:item.samples,worldScale:item.worldScale,layoutVersion:item.layoutVersion,roadProfile:item.roadProfile,roadVersion:item.roadVersion})).digest('hex');if(!(['FROSTBITE GP','PIXEL CITY'].includes(item.name)&&item.layoutVersion===3))assert.equal(hash,old.otherTracks[item.name],item.name+' changed');
+ const hash=createHash('sha256').update(JSON.stringify({points:item.points,samples:item.samples,worldScale:item.worldScale,layoutVersion:item.layoutVersion,roadProfile:item.roadProfile,roadVersion:item.roadVersion})).digest('hex');if(!(['FROSTBITE GP','PIXEL CITY','JUNGLE SPRINT'].includes(item.name)&&item.layoutVersion===3))assert.equal(hash,old.otherTracks[item.name],item.name+' changed');
  const distance=normalizedShapeDistance(shape,sampleTrackShape(item));nearest=Math.min(nearest,distance);assert.ok(distance>.2,item.name+' resembles Volcano');
 }
 const geometry=analyzeTrackWidth(track,d=>game.roadHalfWidthAt(d,track));assert.ok(geometry.roadMargin>40&&geometry.clearance>50);
@@ -19,8 +19,9 @@ game.start('solo',6);assert.equal(game.checkpoints.length,7);for(let d=0;d<track
 game.bestLapRecords['VOLCANO RING@2:p5']=25;assert.equal(game.lapRecordKey(),'VOLCANO RING@3:p6:r1:s1');game.saveBestLap(game.lapRecordKey(),29);assert.equal(game.bestLapRecords['VOLCANO RING@2:p5'],25);
 const human=game.cars[0];game.placeCar(human,track.length-3,0);human.speed=120;game.setKeys({w:true});game.physics(human,0,.1);assert.equal(human.lap,0,'Finish accepted skipped checkpoints');
 element('stageSelect').value='6';game.updateMenuPreview();assert.match(element('previewRouteInfo').textContent,/7 CHECKPOINTS/);
-console.log(`PASS: Volcano ${track.length.toFixed(1)} units, nearest shape ${nearest.toFixed(3)}, legal width margin ${geometry.roadMargin.toFixed(1)}/branch gap ${geometry.clearance.toFixed(1)}, native volcanic corridor, seven gates, preserved records/models and eleven unchanged historical routes; Frost and Pixel have newer dedicated fixtures.`);
+console.log(`PASS: Volcano ${track.length.toFixed(1)} units, nearest shape ${nearest.toFixed(3)}, legal width margin ${geometry.roadMargin.toFixed(1)}/branch gap ${geometry.clearance.toFixed(1)}, native volcanic corridor, seven gates, preserved records/models and remaining unchanged historical routes; Frost, Pixel and Jungle have newer dedicated fixtures.`);
 // Race the actual controller/physics, independently of render/asset checks.
+if(process.argv.includes('--geometry'))process.exit(0);
 let races=0,validLaps=0;
 for(const profile of ['auto','open','full','half','corners']){
  element('barrierMode').value=profile;element('difficulty').value='normal';element('opponentCount').value='1';game.start('solo',6);game.cars[0].done=true;const ai=game.cars[1];
