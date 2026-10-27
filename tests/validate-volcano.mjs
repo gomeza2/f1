@@ -16,7 +16,7 @@ for(const item of game.tracks.filter(t=>t!==track)){
 }
 const geometry=analyzeTrackWidth(track,d=>game.roadHalfWidthAt(d,track));assert.ok(geometry.roadMargin>40&&geometry.clearance>50);
 game.start('solo',6);assert.equal(game.checkpoints.length,7);for(let d=0;d<track.length;d+=20){assert.equal(game.roadSectionAt(d).kerb,0);const p=game.sampleAt(d);assert.equal(game.terrainAt(p.x,p.y).material,'volcanic');}
-game.bestLapRecords['VOLCANO RING@2:p5']=25;assert.equal(game.lapRecordKey(),'VOLCANO RING@3:p5:r1');game.saveBestLap(game.lapRecordKey(),29);assert.equal(game.bestLapRecords['VOLCANO RING@2:p5'],25);
+game.bestLapRecords['VOLCANO RING@2:p5']=25;assert.equal(game.lapRecordKey(),'VOLCANO RING@3:p5:r1:s1');game.saveBestLap(game.lapRecordKey(),29);assert.equal(game.bestLapRecords['VOLCANO RING@2:p5'],25);
 const human=game.cars[0];game.placeCar(human,track.length-3,0);human.speed=120;game.setKeys({w:true});game.physics(human,0,.1);assert.equal(human.lap,0,'Finish accepted skipped checkpoints');
 element('stageSelect').value='6';game.updateMenuPreview();assert.match(element('previewRouteInfo').textContent,/7 CHECKPOINTS/);
 console.log(`PASS: Volcano ${track.length.toFixed(1)} units, nearest shape ${nearest.toFixed(3)}, legal width margin ${geometry.roadMargin.toFixed(1)}/branch gap ${geometry.clearance.toFixed(1)}, native volcanic corridor, seven gates, preserved records/models and eleven unchanged historical routes; Frost and Pixel have newer dedicated fixtures.`);

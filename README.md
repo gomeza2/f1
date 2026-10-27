@@ -40,6 +40,14 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## Conducción consistente entre pantallas — 0.58
+
+La simulación avanza ahora a **60 pasos por segundo**, separada del dibujo. Antes cada fotograma admitía como máximo 30 ms: a 20 FPS, tres segundos reales solo avanzaban 1,8 s de carrera; a 30 FPS, 2,7 s. Esto cambiaba aceleración, dirección, contactos y tiempos según el equipo. Con el nuevo bucle, las referencias de 20/30/60/120/144 FPS producen tres segundos y el mismo estado físico con la misma secuencia de controles.
+
+La posición y el rumbo de coches/cámaras se interpolan al dibujar, sin modificar la simulación. La presentación queda hasta un paso (16,7 ms) detrás; pausa, reinicio, cambio de pista y recolocación limpian poses anteriores. El arranque sigue usando tres segundos de tiempo real. Ante un bloqueo largo se recuperan como máximo **100 ms/seis pasos** por fotograma para evitar una cadena de saltos; equipos sostenidamente por debajo de 10 FPS aún pueden perder tiempo de juego. No es una promesa de FPS.
+
+Los récords nuevos agregan **`:s1`** a su clave. Los anteriores permanecen guardados y no se usan como referencia del nuevo reloj. Se mantienen física 5, potencia, agarre, frenado, modelos, pistas, gráficos 0.57, audio y controles locales. **No se declara aceptado el tacto de curvas**: se corrige primero una base que impedía compararlo de manera consistente. Ver [pruebas y límites 0.58](tests/experiments/FIXED_STEP_058.md).
+
 ## Coches, sombras y luz — 0.57
 
 Continúa el tramo **36.2**, con profundidad de carrocería y lectura retro. La sombra proyectada utiliza la silueta y las ruedas del modelo, con desplazamiento fijo hacia abajo/derecha del mundo; ya no gira su dirección al girar el coche. En detallado se añade una sombra de contacto de borde corto. Los bordes de carrocería reciben luz desde arriba/izquierda según su orientación real. Las vistas de garaje y parrilla utilizan también esa orientación.
@@ -454,3 +462,14 @@ CAR_SOURCE_BASELINE=/tmp/pixelgp-before-057.js node tests/browser-car-light.cjs
 ```
 
 `CAR_SCREENSHOTS` guarda las planchas antes/después. Compara cuatro modelos, seis pinturas, cuatro orientaciones y tres calidades; el microbenchmark de dibujo no mide FPS del juego completo.
+
+Pruebas de simulación fija:
+
+```sh
+node tests/validate-fixed-step.mjs
+node tests/validate-step-races.mjs
+git show 4697d06:script.js > /tmp/pixelgp-before-058.js
+STEP_SOURCE_BASELINE=/tmp/pixelgp-before-058.js node tests/browser-fixed-step.cjs
+```
+
+La prueba de navegador usa timestamps controlados con el bucle/dibujo reales. No mide la tasa de fotogramas de un dispositivo físico.

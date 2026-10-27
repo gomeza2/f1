@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.57
+# PIXEL GRAND PRIX — entrega 0.58
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Conducción/reloj consistente en 0.58
+
+Simulación fija de 60 Hz con acumulador, seis pasos máximos por frame e interpolación de posición/rumbo de coches y cámaras. Corrige la pérdida de tiempo por el antiguo límite de 30 ms: en la referencia de tres segundos, 20/30 FPS pasaban 1,8/2,7 s; ahora todos los ritmos comprobados avanzan tres segundos con el mismo estado físico. Pausa/reinicio/recolocación limpian reloj/poses; cuenta regresiva sigue siendo real.
+
+Nuevos récords `:s1`, anteriores conservados. Fuerzas físicas/modelos/materiales/CPU/trazados, gráficos 0.57 y audio se mantienen. Retraso visual máximo de un paso y recuperación limitada de bloqueos largos; no se promete rendimiento de hardware ni manejo humano aprobado. Es la primera parte de fase 30 para poder continuar fase 25 con comparaciones fiables. Evidencia en `tests/experiments/FIXED_STEP_058.md`.
 
 ## Coches y luz en 0.57
 
