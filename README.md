@@ -40,6 +40,12 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## Cierre lateral de rivales — 0.63
+
+La CPU ahora detecta un cruce lateral peligroso aunque el otro coche sea más rápido hacia delante. Antes podía predecir el contacto y aun así seguir acelerando. La corrección solicita el freno normal; no cambia fuerzas, velocidad máxima, colisiones ni la libertad de correr en paralelo.
+
+Se comparó también un derrape lateral nuevo. **No se activa en esta versión**: las pruebas amplias mostraron más contactos y pérdida de ritmo en algunos circuitos. Se conserva la conducción actual y Speed Demon a 260 mientras se replantea ese modelo. Física p6, reloj s1, balance b1 y récords continúan. [Experimento, corrección y pruebas](tests/experiments/HANDBRAKE_SLIP_063.md).
+
 ## Speed Demon a 260, con aceleración progresiva — 0.62
 
 **Elegí SPEED DEMON en el garaje** para llegar a **260 km/h**. Mantiene la salida ágil, pero entrega los últimos kilómetros por hora de forma más gradual: en la recta real de Champion la prueba de teclado mide 0–100 en **1,17 s**, 0–200 en **2,73 s** y 0–260 en **4,02 s**. Requiere espacio y una buena salida de curva; no es un aumento solo del velocímetro.
@@ -546,3 +552,14 @@ SPEED_SOURCE_BASELINE=/tmp/pixelgp-before-062.js node tests/browser-speed-balanc
 ```
 
 La prueba de navegador usa teclado real sobre Champion, contrasta garaje/HUD/movimiento, frenada y conservación de récords al recargar. `SPEED_SCREENSHOTS` guarda capturas. Las vueltas automáticas con Speed emplean un controlador conservador y no sustituyen conducirlo humanamente.
+
+Pruebas de cierre lateral 0.63:
+
+```sh
+node tests/validate-angled-traffic.mjs
+node tests/validate-group-traffic.mjs
+git show 874fba2:script.js > /tmp/pixelgp-before-063.js
+TRAFFIC_SOURCE_BASELINE=/tmp/pixelgp-before-063.js node tests/browser-angled-traffic.cjs
+```
+
+`TRAFFIC_SCREENSHOTS` guarda capturas. El caso reproduce el defecto y comprueba la CPU/frenada real; no demuestra que todas las situaciones de tráfico estén resueltas.

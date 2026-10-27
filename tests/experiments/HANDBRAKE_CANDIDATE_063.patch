@@ -1,0 +1,149 @@
+diff --git a/script.js b/script.js
+index bd99d62..fc3b001 100644
+--- a/script.js
++++ b/script.js
+@@ -24,7 +24,7 @@ const wrapAngle=a=>Math.atan2(Math.sin(a),Math.cos(a));
+ const pointDistance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+ const LAPS_TO_WIN=3;
+ const ROAD_EDGE=42, WALL_EDGE=66,CAR_HALF_WIDTH=10;
+-const PHYSICS_VERSION=6;
++const PHYSICS_VERSION=7;
+ const CAR_BALANCE_VERSION=1;
+ const DRIVING_TUNING={accelerationScale:.82,accelerationTaper:.45,lateralAcceleration:280,maxSpeedGripLoss:.24,speedGripLoss:.0014,inputResponse:14,handInputResponse:16,yawResponse:18,yawSpeedWeight:4,topSpeedLateralLoss:.16,liftDrag:30};
+ const CAR_MODELS={
+@@ -138,7 +138,7 @@ function ensureAudioChannels(){
+ }
+ function drivingSlip(car){
+  const turning=Math.abs(car.steer)>.12||Math.abs(car.yawRate||0)>.25;
+- return Math.max(car.handbrake?1:0,turning&&car.drift>.4?car.drift:0,car.braking&&Math.abs(car.steer)>.3?.4:0);
++ return Math.max(car.handbrake?1:0,Math.min(1,Math.abs(car.motionSlip||0)/.1),turning&&car.drift>.4?car.drift:0,car.braking&&Math.abs(car.steer)>.3?.4:0);
+ }
+ function updateAudio(){
+  if(!audioContext||!audioMaster)return;
+@@ -542,13 +542,15 @@ function resolveBarrierContact(car,previousX,previousY){
+   if(deepest.distance<1e-6){nx=previousX-deepest.wall.x;ny=previousY-deepest.wall.y;}
+   const length=Math.hypot(nx,ny)||1;nx/=length;ny/=length;
+   car.x+=nx*(deepest.depth+.05);car.y+=ny*(deepest.depth+.05);hit=true;
+-  const vx=Math.cos(car.heading),vy=Math.sin(car.heading),inward=vx*nx+vy*ny;
++  const vx=Math.cos(car.heading+(car.motionSlip||0)),vy=Math.sin(car.heading+(car.motionSlip||0)),inward=vx*nx+vy*ny;
+   if(inward<-.02){
+    const reflectedX=vx-1.15*inward*nx,reflectedY=vy-1.15*inward*ny;
+    car.heading=Math.atan2(reflectedY,reflectedX);
++   car.motionSlip=0;
+    impactFactor=Math.min(impactFactor,Math.hypot(reflectedX,reflectedY)*.94);
+   }
+  }
++ if(hit)car.motionSlip=0;
+  if(impactFactor<1){car.speed*=clamp(impactFactor,.05,1);car.steer*=.65;car.yawRate=(car.yawRate||0)*.3;}
+  if(hit&&car.flash<=0){if(incomingSpeed>8&&impactFactor<.99)playRaceCue('impact',car,clamp(incomingSpeed*(1-impactFactor)/150,.15,1));car.flash=.12;}
+  return hit;
+@@ -870,13 +872,13 @@ function setupCar(player,isAI=false){
+  const paint=CAR_PAINTS[choice.color];
+  const personality=isAI?['racer','attacker','precise'][player-1]||'racer':null;
+  return {player,isAI,model,personality,color:isAI?AI_PERSONALITIES[personality].color:paint.hex,
+-  x:0,y:0,heading:0,yawRate:0,speed:0,steer:0,drift:0,handbrake:false,braking:false,wheelTravel:0,done:false,finishTime:null,newBestLap:false,
++  x:0,y:0,heading:0,yawRate:0,motionSlip:0,speed:0,steer:0,drift:0,handbrake:false,braking:false,wheelTravel:0,done:false,finishTime:null,newBestLap:false,
+   progress:0,previousProgress:0,lap:0,lapTimes:[],lapStartTime:0,raceProgress:0,offroad:0,roadOffset:0,particles:[],flash:0};
+ }
+ function placeCar(car,progress,lateral){
+  renderPrevious.delete(car);
+  const p=sampleAt(progress),nx=-Math.sin(p.angle),ny=Math.cos(p.angle);
+- car.x=p.x+nx*lateral;car.y=p.y+ny*lateral;car.heading=p.angle;car.yawRate=0;car.braking=false;car.wheelTravel=0;
++ car.x=p.x+nx*lateral;car.y=p.y+ny*lateral;car.heading=p.angle;car.motionSlip=0;car.yawRate=0;car.braking=false;car.wheelTravel=0;
+  car.progress=wrapDistance(progress);car.previousProgress=car.progress;car.raceProgress=car.progress;
+  car.nextCheckpoint=0;car.checkpointPasses=0;car.lastCheckpointTime=0;car.aiManeuver=null;car.aiTrafficStates={};car.aiLane=lateral;
+ }
+@@ -1069,10 +1071,10 @@ function aiTargetSpeed(progress,model,driver,allowHandbrake=false,lane=0){
+ }
+ // Continue the current world velocity and yaw along a circular arc.
+ function projectVehicle(vehicle,time){
+-  const yaw=vehicle.yawRate||0,travel=vehicle.speed*WORLD_SPEED_SCALE;
+-  if(Math.abs(yaw)<.01)return {x:vehicle.x+Math.cos(vehicle.heading)*travel*time,y:vehicle.y+Math.sin(vehicle.heading)*travel*time};
+-  const heading=vehicle.heading+yaw*time;
+-  return {x:vehicle.x+travel/yaw*(Math.sin(heading)-Math.sin(vehicle.heading)),y:vehicle.y+travel/yaw*(Math.cos(vehicle.heading)-Math.cos(heading))};
++  const yaw=vehicle.yawRate||0,travel=vehicle.speed*WORLD_SPEED_SCALE,direction=vehicle.heading+(vehicle.motionSlip||0);
++  if(Math.abs(yaw)<.01)return {x:vehicle.x+Math.cos(direction)*travel*time,y:vehicle.y+Math.sin(direction)*travel*time};
++  const heading=direction+yaw*time;
++  return {x:vehicle.x+travel/yaw*(Math.sin(heading)-Math.sin(direction)),y:vehicle.y+travel/yaw*(Math.cos(direction)-Math.cos(heading))};
+ }
+ // Predict short-term contact from the same motion used by road-edge anticipation.
+ function trafficApproach(car,other){
+@@ -1142,6 +1144,9 @@ function aiTrafficAgainst(car,before,driver,dt,other,maneuver){
+  const converging=approach.time>0&&approach.clearance<(difficulty==='easy'?28:24);
+  const otherForwardSpeed=Math.max(0,other.speed*Math.cos(other.heading-car.heading));
+  const closing=Math.max(0,car.speed-otherForwardSpeed);
++ // Angled cars can close sideways even when the rival is faster along our heading.
++ const direction=car.heading+(car.motionSlip||0),otherDirection=other.heading+(other.motionSlip||0);
++ const approachClosing=((Math.cos(direction)*car.speed-Math.cos(otherDirection)*other.speed)*(other.x-car.x)+(Math.sin(direction)*car.speed-Math.sin(otherDirection)*other.speed)*(other.y-car.y))/Math.max(1,separation);
+  // Door-to-door brushes are playable contacts. Brake for a blocked path or a strong cut-in.
+  const gentleOverlap=alongside&&Math.abs(before.offset-otherLoc.offset)>=20&&closing<18&&Math.cos(other.heading-car.heading)>.99;
+  if(ahead&&!gentleOverlap&&(Math.abs(before.offset-otherLoc.offset)<27||converging)){
+@@ -1151,6 +1156,7 @@ function aiTrafficAgainst(car,before,driver,dt,other,maneuver){
+   speedLimit=Math.sqrt(otherForwardSpeed*otherForwardSpeed+2*CAR_MODELS[car.model].braking*driver.brakingMargin*available/WORLD_SPEED_SCALE);
+   // Yield longitudinal room if the other car cuts into the reserved lane.
+   if(converging&&approach.time<.55&&closing>18)speedLimit=Math.min(speedLimit,otherForwardSpeed*.9);
++  if(closing===0&&converging&&approach.time<.55&&approachClosing>18)speedLimit=Math.min(speedLimit,Math.max(0,car.speed-approachClosing*.75));
+   // A stopped obstacle must not deadlock steering: creep only along a clear ray.
+   const dx=other.x-car.x,dy=other.y-car.y;
+   const forward=dx*Math.cos(car.heading)+dy*Math.sin(car.heading);
+@@ -1243,11 +1249,11 @@ function driveAI(car,before,model,dt){
+  car.aiLane=clamp(car.aiLane,-room,room);
+  const targetBase=sampleAt(before.progress+lookAhead);
+  const target={x:targetBase.x-Math.sin(targetBase.angle)*car.aiLane,y:targetBase.y+Math.cos(targetBase.angle)*car.aiLane};
+- const error=wrapAngle(Math.atan2(target.y-car.y,target.x-car.x)-car.heading);
++ const error=wrapAngle(Math.atan2(target.y-car.y,target.x-car.x)-car.heading-(car.motionSlip||0));
+  const handling=vehicleHandling(car.speed,model,ground.material,curvatureAt(before.progress).safeSpeed,car.drift);
+  const targetDistance=Math.max(10,Math.hypot(target.x-car.x,target.y-car.y));
+  const requiredYaw=2*car.speed*WORLD_SPEED_SCALE*Math.sin(error)/targetDistance;
+- const hand=allowHandbrake&&car.speed>90&&Math.abs(car.steer)>.3&&Math.abs(requiredYaw)>handling.turnRate*(car.handbrake?.72:.9);
++ const hand=allowHandbrake&&Math.abs(car.motionSlip||0)<(car.handbrake?.075:.02)&&car.speed>90&&Math.abs(car.steer)>.3&&Math.abs(requiredYaw)>handling.turnRate*(car.handbrake?.72:.9);
+  const turnRate=hand?vehicleHandling(car.speed,model,ground.material,curvatureAt(before.progress).safeSpeed,clamp(Math.abs(car.steer)*car.speed/200,0,1),true).turnRate:handling.turnRate;
+  const steerTarget=car.speed<60?error*2.6:requiredYaw/turnRate+error*.2;
+  car.steer+=(clamp(steerTarget,-1,1)-car.steer)*Math.min(1,dt*driver.response);
+@@ -1265,6 +1271,15 @@ function updateSteeringInertia(car,turnRate,maxSpeed,dt){
+  car.yawRate=target+(previous-target)*decay;
+  car.heading=wrapAngle(car.heading+target*dt+(previous-target)*(1-decay)/response);
+ }
++// Bounded kinematic sideslip: handbrake rotates the body ahead of its travel direction.
++// Exponential recovery uses the same material/model grip for every driver.
++function updateMotionSlip(car,model,surface,dt){
++ const grip=(SURFACE_GRIP[surface]||1)*model.grip;
++ const target=car.handbrake?-car.steer*.1*clamp((car.speed-45)/100,0,1)/Math.max(.7,grip):0;
++ const response=car.handbrake?9:12*Math.max(.6,grip);
++ car.motionSlip=target+((car.motionSlip||0)-target)*Math.exp(-response*dt);
++ if(car.speed<20||Math.abs(car.motionSlip)<.00001)car.motionSlip=0;
++}
+ function humanSteeringInput(current,target,hand,dt){
+  const response=hand?DRIVING_TUNING.handInputResponse:DRIVING_TUNING.inputResponse;
+  // Unwind opposed lock sooner, then build the new turn with normal weight.
+@@ -1298,10 +1313,11 @@ function physics(car,i,dt){
+  const handling=vehicleHandling(car.speed,model,drivingSurface,localBend.safeSpeed,car.drift,car.handbrake);
+  updateSteeringInertia(car,handling.turnRate,model.maxSpeed,dt);
+  car.drift=clamp(Math.max(car.drift*Math.exp(-4.5*dt),tooFast/160),0,1);
++ updateMotionSlip(car,model,drivingSurface,dt);
+  const oldProgress=car.progress,previousX=car.x,previousY=car.y;
+  const move=car.speed*WORLD_SPEED_SCALE*dt;
+  car.wheelTravel=(car.wheelTravel+move)%12;
+- car.x+=Math.cos(car.heading)*move;car.y+=Math.sin(car.heading)*move;
++ car.x+=Math.cos(car.heading+(car.motionSlip||0))*move;car.y+=Math.sin(car.heading+(car.motionSlip||0))*move;
+  let after=nearestOnTrack(car.x,car.y);
+  // Resistance uses the same material sampled by the visible runoff layer.
+  let ground=terrainAt(car.x,car.y,after),roadEdge=ground.offroad?ground.depth:0;
+@@ -1325,7 +1341,7 @@ function physics(car,i,dt){
+  car.skidTimer=Math.max(0,(car.skidTimer||0)-dt);
+  const skidding=car.speed>58&&drivingSlip(car)>.43;
+  if(skidding&&car.skidTimer<=0){const wheels=(CAR_VISUALS[car.model]||CAR_VISUALS.balanced),rearX=car.x+Math.cos(car.heading)*wheels.rearAxle,rearY=car.y+Math.sin(car.heading)*wheels.rearAxle;
+-  for(const wheelSide of [-1,1]){const wx=rearX-Math.sin(car.heading)*wheelSide*wheels.halfTrack,wy=rearY+Math.cos(car.heading)*wheelSide*wheels.halfTrack;skidMarks.push({x:wx,y:wy,angle:car.heading,life:10,maxLife:10,color:TERRAIN_MATERIALS[terrainAt(wx,wy).material].mark||'#101419'});}
++  for(const wheelSide of [-1,1]){const wx=rearX-Math.sin(car.heading)*wheelSide*wheels.halfTrack,wy=rearY+Math.cos(car.heading)*wheelSide*wheels.halfTrack;skidMarks.push({x:wx,y:wy,angle:car.heading+(car.motionSlip||0),life:10,maxLife:10,color:TERRAIN_MATERIALS[terrainAt(wx,wy).material].mark||'#101419'});}
+   car.skidTimer=.045;if(skidMarks.length>1400)skidMarks.splice(0,skidMarks.length-1400);
+  }
+  if((skidding||roadEdge>3)&&car.speed>38&&Math.random()<dt*(roadEdge>3?34:20)&&terrainParticles.length<360){
+@@ -1349,7 +1365,7 @@ function resolveCollisions(dt){
+    const nx=d>.001?dx/d:Math.cos(a.heading),ny=d>.001?dy/d:Math.sin(a.heading);
+    const key=i+','+j;
+    if(!impacted.has(key)){
+-    const av=Math.cos(a.heading)*nx+Math.sin(a.heading)*ny,bv=Math.cos(b.heading)*nx+Math.sin(b.heading)*ny;
++    const av=Math.cos(a.heading+(a.motionSlip||0))*nx+Math.sin(a.heading+(a.motionSlip||0))*ny,bv=Math.cos(b.heading+(b.motionSlip||0))*nx+Math.sin(b.heading+(b.motionSlip||0))*ny;
+     const closing=Math.max(0,a.speed*av-b.speed*bv);
+     // Dissipate closing motion only; no artificial acceleration or rebound.
+     a.speed=Math.max(0,a.speed-closing*.65*Math.max(0,av));

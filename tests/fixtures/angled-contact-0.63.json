@@ -1,0 +1,22 @@
+{
+  "source": "Night Run crossing captured during the rejected 0.63 lateral-motion experiment; not an assertion that the same encounter occurs in every 0.62 race.",
+  "stage": 3,
+  "cars": [
+    {
+      "x": 1936.5594705125673,
+      "y": 879.8738045605958,
+      "speed": 134.04699226619047,
+      "heading": 0.5707636984077374,
+      "yawRate": -1.8750471586768551,
+      "steer": -0.8756413265348882
+    },
+    {
+      "x": 1943.8125787603767,
+      "y": 902.4436102878966,
+      "speed": 180.59036664024194,
+      "heading": 0.01233762669616786,
+      "yawRate": 0.6848538955358012,
+      "steer": 0.6751054782090385
+    }
+  ]
+}

@@ -1142,6 +1142,8 @@ function aiTrafficAgainst(car,before,driver,dt,other,maneuver){
  const converging=approach.time>0&&approach.clearance<(difficulty==='easy'?28:24);
  const otherForwardSpeed=Math.max(0,other.speed*Math.cos(other.heading-car.heading));
  const closing=Math.max(0,car.speed-otherForwardSpeed);
+ // Angled cars can close sideways even when the rival is faster along our heading.
+ const approachClosing=((Math.cos(car.heading)*car.speed-Math.cos(other.heading)*other.speed)*(other.x-car.x)+(Math.sin(car.heading)*car.speed-Math.sin(other.heading)*other.speed)*(other.y-car.y))/Math.max(1,separation);
  // Door-to-door brushes are playable contacts. Brake for a blocked path or a strong cut-in.
  const gentleOverlap=alongside&&Math.abs(before.offset-otherLoc.offset)>=20&&closing<18&&Math.cos(other.heading-car.heading)>.99;
  if(ahead&&!gentleOverlap&&(Math.abs(before.offset-otherLoc.offset)<27||converging)){
@@ -1151,6 +1153,7 @@ function aiTrafficAgainst(car,before,driver,dt,other,maneuver){
   speedLimit=Math.sqrt(otherForwardSpeed*otherForwardSpeed+2*CAR_MODELS[car.model].braking*driver.brakingMargin*available/WORLD_SPEED_SCALE);
   // Yield longitudinal room if the other car cuts into the reserved lane.
   if(converging&&approach.time<.55&&closing>18)speedLimit=Math.min(speedLimit,otherForwardSpeed*.9);
+  if(closing===0&&converging&&approach.time<.55&&approachClosing>18)speedLimit=Math.min(speedLimit,Math.max(0,car.speed-approachClosing*.75));
   // A stopped obstacle must not deadlock steering: creep only along a clear ray.
   const dx=other.x-car.x,dy=other.y-car.y;
   const forward=dx*Math.cos(car.heading)+dy*Math.sin(car.heading);

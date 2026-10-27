@@ -255,3 +255,14 @@ Speed Demon llega a 260 con aceleración progresiva específica (taper 0,58), ma
 Balance b1 separa récords sin borrar p6/s1 previos. Los fixtures anteriores permanecen: el helper valida únicamente máximo y taper nuevos de Speed y exige identidad del resto de campos. El núcleo p6 acepta una propiedad opcional de aceleración; el valor por defecto conserva los otros coches. Gráficos 0.61, catorce rutas, materiales, audio, colisiones y local se mantienen. Evidencia/resultados en `tests/experiments/SPEED_BALANCE_062.md`.
 
 Tramo implementado y pendiente de aceptación humana de sensaciones, no cierre de toda la física. Próxima revisión recomendada: fase 25, ensayo de derrape con componente lateral/recuperación y freno de mano, comparando variantes antes de reemplazar el modelo actual. CPU/sonido/seis pistas uniformes/escenarios y los hitos online siguen abiertos; no se reanuncia 260 como trabajo pendiente.
+
+
+## Avance 0.63 — ensayo de fase 25 y corrección integrada de fase 28
+
+Se comparó deslizamiento lateral 0/0,10/0,18/0,28, recuperación por agarre y compensación de dirección CPU. **No se publica el prototipo**: la matriz amplia detectó pérdida de ritmo y contactos nuevos en Meadow/Industrial, incluso al probar pulsos. El diff experimental se conserva en `tests/experiments/HANDBRAKE_CANDIDATE_063.patch`, aplicado exclusivamente sobre 0.62; no lo carga el juego. No volver a anunciar este ensayo como derrape integrado ni repetir su ajuste aislado sin resolver planificación/control compartidos.
+
+Sí se integra una corrección real de tráfico: cierre radial inminente ignorado cuando el rival era longitudinalmente más rápido. La CPU solicita su freno normal ante esa convergencia; se conservan contactos físicos y roce paralelo. Física p6, b1, s1, Speed 260, conducción, modelos, rutas y récords existentes permanecen. Evidencia en `tests/experiments/HANDBRAKE_SLIP_063.md`; no se cierra toda la fase 25/28 por este caso.
+
+Próximo tramo recomendado: fase 27, Thunder Valley con recorrido/secciones propios, alternando después con una revisión de planificación/control antes de retomar derrape lateral. Mantener timbre/escucha 26, local 29, escenarios 36 y los hitos online abiertos. Doce frentes (25–36), ampliables; no son doce mensajes ni entregas restantes.
+
+Verificación estable 0.63: 120 vueltas válidas de tráfico con límites anteriores conservados y cero salidas; caso CPU antes/ahora y Chromium, 14 pistas/70 perfiles, reloj/contravolante/Speed 260, local 2–4 y entrega local bajo `/f1/` superados. El candidato lateral fallido queda fuera de estos resultados. Evaluación humana y sitio público (403 del proxy) pendientes.

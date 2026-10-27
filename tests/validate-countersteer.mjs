@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
+import {withoutAngledTraffic} from './helpers/without-angled-traffic.mjs';
 import {loadGame} from './helpers/game-harness.mjs';
 const source=readFileSync(new URL('../script.js',import.meta.url),'utf8'),frozen=JSON.parse(readFileSync(new URL('./fixtures/controls-0.58.json',import.meta.url),'utf8'));
-// Undo only this controller migration; freeze the driving/AI/collision core, not unrelated graphics/UI.
-const previous=source.replace('const PHYSICS_VERSION=6;','const PHYSICS_VERSION=5;').replace(/function humanSteeringInput[\s\S]*?\n}\n(?=function physics)/,'').replace('car.steer=humanSteeringInput(car.steer,steering,hand,dt);','car.steer+=(steering-car.steer)*(1-Math.exp(-dt*(hand?DRIVING_TUNING.handInputResponse:DRIVING_TUNING.inputResponse)));');
+// Reverse the declared traffic correction and controller migration; retain the historical core hash.
+const previous=withoutAngledTraffic(source).replace('const PHYSICS_VERSION=6;','const PHYSICS_VERSION=5;').replace(/function humanSteeringInput[\s\S]*?\n}\n(?=function physics)/,'').replace('car.steer=humanSteeringInput(car.steer,steering,hand,dt);','car.steer+=(steering-car.steer)*(1-Math.exp(-dt*(hand?DRIVING_TUNING.handInputResponse:DRIVING_TUNING.inputResponse)));');
 const core=previous.slice(previous.indexOf('const AI_DRIVERS='),previous.indexOf('function getTrackPath')).replace('(model.accelerationTaper??DRIVING_TUNING.accelerationTaper)*','DRIVING_TUNING.accelerationTaper*'); // b1 adds a model-specific taper; other shared rules remain frozen.
 assert.equal(createHash('sha256').update(core).digest('hex'),frozen.coreSha256,'The shared driving/AI/collision core changed during a human-controller adjustment');
 assert.equal(createHash('sha256').update(source.split('\n').find(line=>line.startsWith('const DRIVING_TUNING='))).digest('hex'),frozen.tuningSha256,'Shared handling tuning changed');
@@ -20,4 +21,4 @@ for(const hand of [false,true])for(const sign of [-1,1])for(const duration of [.
 for(const target of [0,1,.1,-.1]){const expected=target+(1-target)*Math.exp(-14*.05);assert.ok(Math.abs(g.humanSteeringInput(1,target,false,.05)-expected)<1e-12,'Neutral/build-up/fine analog input was changed');}
 assert.equal(g.humanSteeringInput(1,-1,false,0),1);
 g.bestLapRecords['SUNSET CIRCUIT@3:p5:r1:s1']=30;g.start('solo',0);assert.equal(g.lapRecordKey(),'SUNSET CIRCUIT@3:p6:r1:s1:b1');g.saveBestLap(g.lapRecordKey(),31);assert.equal(g.bestLapRecords['SUNSET CIRCUIT@3:p5:r1:s1'],30);
-console.log('PASS: 12 actual-physics countersteer cases improve reversal/overshoot, no added straight speed; exact sign crossing at 30/120 Hz, unchanged neutral/build/fine analog, p5 records retained, remaining driving/AI/collision core byte-identical. Human comfort remains unverified.');
+console.log('PASS: 12 actual-physics countersteer cases improve reversal/overshoot, no added straight speed; exact sign crossing at 30/120 Hz, unchanged neutral/build/fine analog, p5 records retained, historical core hash preserved after declared AI/controller/b1 migration reversal. Human comfort remains unverified.');

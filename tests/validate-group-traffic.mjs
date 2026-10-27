@@ -31,7 +31,7 @@ for(const width of [34,26]){
 }
 console.log('PASS: mirrored overlap priority despite leader-distance jitter, braking for every rival, finished/reset cleanup, feasible opposing lanes and boxed-in hold/yield using shared physical braking; thirteen other routes/material physics/other model fields/driver settings preserved (Speed b1 checked); Jungle has a newer snapshot.');
 if(!process.argv.includes('--focused')){
- let laps=0;const cases=process.argv.includes('--high-rate')?baseline.cases.filter(c=>c.dt):baseline.cases;
+ let laps=0;const regressions=[];const cases=process.argv.includes('--high-rate')?baseline.cases.filter(c=>c.dt):baseline.cases;
  for(const old of cases){
   const dt=old.dt||baseline.dt;
   e('difficulty').value=old.level;g.start('solo',old.stage);g.cars[0].isAI=true;let contacts=0,off=0;
@@ -40,9 +40,10 @@ if(!process.argv.includes('--focused')){
   }
   assert.ok(g.cars.every(c=>c.lap===3&&c.lapTimes.length===3&&Number.isFinite(c.finishTime)),old.name+': invalid finish');
   assert.ok(Math.max(...g.cars.map(c=>c.finishTime))-Math.min(...g.cars.map(c=>c.finishTime))<18,'Grid misses normal finish deadline');
-  assert.ok(contacts<=(old.stage===0&&dt===baseline.dt?Math.floor(old.contacts/2):old.contacts),old.name+': contacts regressed');assert.ok(off<=old.off,old.name+': contact gain came from leaving road');
-  const times=g.cars.map(c=>c.finishTime/3),mean=a=>a.reduce((x,y)=>x+y,0)/a.length;assert.ok(mean(times)<=mean(old.times)*1.02,old.name+': improvement broadly slowed the grid');laps+=12;
+  const budget=old.stage===0&&dt===baseline.dt?Math.floor(old.contacts/2):old.contacts;if(contacts>budget)regressions.push(`${old.name}/${1/dt}Hz: contacts ${contacts} > ${budget}`);if(off>old.off)regressions.push(`${old.name}: off-road ${off} > ${old.off}`);
+  const times=g.cars.map(c=>c.finishTime/3),mean=a=>a.reduce((x,y)=>x+y,0)/a.length;if(mean(times)>mean(old.times)*1.02)regressions.push(`${old.name}: mean ${mean(times).toFixed(3)} > ${(mean(old.times)*1.02).toFixed(3)} pace limit`);laps+=12;
   console.log(`GROUP ${old.name}/${old.level}/${Math.round(1/dt)}Hz: contact ${old.contacts} → ${contacts}, off-road ${old.off} → ${off}, mean laps ${times.map(t=>t.toFixed(2)).join('/')}.`);
  }
+ assert.deepEqual(regressions,[],'Traffic regressions; original contact/off-road/pace budgets preserved');
  console.log(`PASS: ${cases.length} fixed four-car scenarios/${laps} valid laps, frozen contact bounds including Sunset reduction at 30 Hz and unchanged 60 Hz reference, shared speed caps and <=2% aggregate pace loss per grid. Human competition remains unverified.`);
 }

@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.62
+# PIXEL GRAND PRIX — entrega 0.63
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Convergencia lateral CPU y ensayo de derrape en 0.63
+
+La CPU ya no ignora un cierre lateral inminente solo porque el rival sea longitudinalmente más rápido: pide frenada física normal. El contacto sigue activo y la conducción paralela conserva libertad. Sin cambios de velocidad/fuerza, geometría, audio o interfaz.
+
+El ensayo de deslizamiento lateral se descarta para publicación por regresiones de tráfico/ritmo; queda conservado para revisión, sin activarlo. Se mantiene la física p6, balance b1, reloj s1 y los récords existentes. Evidencia y límites en `tests/experiments/HANDBRAKE_SLIP_063.md`. Manejo/derrape humano, timbre, seis pistas uniformes y online siguen abiertos.
 
 ## Speed Demon 260 en 0.62
 
