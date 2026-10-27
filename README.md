@@ -40,6 +40,12 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## Motor y portada más cómodos — 0.65
+
+El motor tiene una voz más grave, cuerpo una octava por debajo y una transición suave al sostener velocidad. Conserva cambios de marcha, aceleración, retención y controles de mezcla; no cambia la conducción. Se comprueban los cuatro modelos y hasta cuatro motores humanos. [Comparaciones y límites de escucha](tests/experiments/MOTOR_PADDOCK_065.md).
+
+La portada muestra primero **la pista/coche elegidos y el inicio rápido**. **CAMBIAR PISTA Y COCHE** lleva a la configuración. **PREPARAR MULTIJUGADOR · 2–4** abre la parrilla; podés cerrarla con **VOLVER A UN JUGADOR** y reabrir sin perder tus elecciones. La bandera a cuadros y el diseño compacto mantienen la identidad retro. El motor nuevo sigue pendiente de tu evaluación al jugar.
+
 ## Thunder Valley más largo y variado — 0.64
 
 **Elegí Thunder Valley, pista 9.** Nuevo recorrido de **7.082 unidades**, con recta larga, retorno interior y horquilla; ancho útil de **76–116**, sectores con/sin pianos y dos tramos de tierra de ancho real. Referencia automática Normal: **40,80/39,80 s** por vuelta; otros circuitos conservan sus duraciones. La vista cercana mantiene el tamaño del coche.
@@ -583,3 +589,14 @@ LOCAL_STAGE=8 node tests/browser-local.cjs
 ```
 
 `validate-thunder --geometry` comprueba conservación sin repetir carreras. `THUNDER_SCREENSHOTS` guarda capturas de materiales/paddock. `LOCAL_STAGE` permite revisar otro circuito con la batería local existente. La comparación de las otras trece carreteras usa `PARITY_STAGES=0,1,2,3,4,5,6,7,9,10,11,12,13` y `ROAD_SOURCE_BASELINE` apuntando al script de 0.63.
+
+Pruebas de motor/portada 0.65:
+
+```sh
+node tests/validate-engine-timbre.mjs
+node tests/browser-paddock.cjs
+git show 9654867:engine-audio.js > /tmp/pixelgp-engine-before-065.js
+ENGINE_AUDIO_BASELINE=/tmp/pixelgp-engine-before-065.js ENGINE_AUDIO_DIR=/tmp/pixelgp-audio-review node tests/browser-engine-tone.cjs
+```
+
+Los WAV exportados reproducen primero el motor anterior y después el nuevo, con pausa y nivel RMS igualado; el juego no los descarga. `PADDOCK_SCREENSHOTS` guarda capturas de cinco resoluciones. `PADDOCK_BASELINE` admite un directorio conservado de la versión anterior (HTML/CSS/scripts) para capturar antes/después.

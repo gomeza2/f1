@@ -1,12 +1,14 @@
 <!doctype html>
 <html lang="es">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="application-version" content="0.64"><title>PIXEL GRAND PRIX</title><link rel="stylesheet" href="style.css?v=0.64"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="application-version" content="0.65"><title>PIXEL GRAND PRIX</title><link rel="stylesheet" href="style.css?v=0.65"></head>
 <body><main class="shell">
 <header><div class="brand">PIXEL<span>GP</span></div><div class="topnote">ARCADE RACING SYSTEM // 1994</div><div class="header-actions"><button id="soundBtn" class="small" aria-pressed="true">♫ SONIDO: ON</button><button id="audioSettingsBtn" aria-label="Ajustar mezcla de sonido" title="Mezcla de sonido" class="small" aria-haspopup="dialog">MEZCLA</button><button id="fullscreenBtn" class="small" aria-label="Pantalla completa">⛶ PANTALLA COMPLETA</button></div></header>
 <section id="menu" class="panel">
-<div class="paddock-heading"><div><p class="eyebrow">EL PADDOCK</p><h1 id="menuTitle" tabindex="-1">PIXEL GRAND<br><span>PRIX</span></h1><p class="intro">Elegí tu coche. Aprendé la pista. Ganá la carrera.</p></div><p class="paddock-badge"><strong id="menuTrackCount">14</strong> CIRCUITOS<br><span>ARCADE · LOCAL 1–4</span></p></div>
+<div class="paddock-heading"><div><p class="eyebrow">EL PADDOCK</p><h1 id="menuTitle" tabindex="-1">PIXEL GRAND<br><span>PRIX</span></h1><p class="intro">Elegí tu coche. Aprendé la pista. Ganá la carrera.</p></div><p class="paddock-badge"><span class="paddock-flag checkered-pattern" aria-hidden="true"></span><strong id="menuTrackCount">14</strong> CIRCUITOS<br><span>ARCADE · LOCAL 1–4</span></p></div>
 <div class="paddock-layout">
-<div class="race-setup">
+<div class="race-ready"><p class="preview-label">LISTO PARA CORRER</p><p id="readySelection" class="ready-selection"></p><p id="raceSummary" role="status" aria-live="polite">3 VUELTAS · 3 RIVALES CPU</p><div class="menu-actions"><button id="soloStart" data-mode="solo" class="primary"><span id="soloStartLabel">CORRER VS CPU</span><small>UN JUGADOR</small></button><button id="localSetupBtn" class="small" aria-expanded="false" aria-controls="localLobby">PREPARAR MULTIJUGADOR · 2–4</button></div><button id="customizeBtn" class="small customize-button" aria-controls="raceSetup">CAMBIAR PISTA Y COCHE ↓</button><p class="input-note">WASD para manejar · ESPACIO para derrapar. En celular necesitás un teclado.</p></div>
+
+<div id="raceSetup" class="race-setup">
 <fieldset class="setup-card"><legend><span>01</span> PREPARÁ LA CARRERA</legend>
 <div class="setup-grid">
 <label class="wide-field">CIRCUITO<select id="stageSelect"></select></label>
@@ -21,9 +23,9 @@
 <aside class="paddock-previews" aria-label="Vista previa de tu configuración">
 <div class="track-card"><p class="preview-label">TU PRÓXIMA PISTA</p><h2 id="previewTrackName">SUNSET CIRCUIT</h2><canvas id="trackPreview" width="640" height="360" role="img" aria-label="Vista previa del circuito seleccionado"></canvas><div class="track-facts"><span id="previewRouteInfo">3 VUELTAS · 5 CP</span><span id="previewBarriers">ABIERTO</span></div><p class="preview-record">TU MEJOR VUELTA <b id="previewRecord">--:--.-</b></p></div>
 
-<div class="race-ready"><p id="raceSummary" role="status" aria-live="polite">3 VUELTAS · 3 RIVALES CPU</p><div class="menu-actions"><button id="soloStart" data-mode="solo" class="primary"><span id="soloStartLabel">CORRER VS CPU</span><small>UN JUGADOR</small></button><button id="localSetupBtn" class="small">PREPARAR MULTIJUGADOR · 2–4</button></div><p id="opponentSummary" class="opponent-summary"></p><p class="input-note">WASD para manejar · ESPACIO para derrapar. En celular necesitás un teclado.</p></div>
-<details class="controls-help"><summary>CONTROLES Y ATAJOS</summary><div class="keys"><span>JUGADOR 1 <b>W A S D + ESPACIO</b></span><span>JUGADOR 2 <b>↑ ← ↓ → + ENTER</b></span><span>JUGADOR 3 <b>I J K L + U</b></span><span>JUGADOR 4 <b>T F G H + Y</b></span><span>REINICIAR <b>R</b></span><span>PAUSA <b>ESC</b></span><span>VISTA <b>C</b></span></div><p>W / ↑ acelera · S / ↓ frena · A/D o ←/→ gira. P3 usa I/K para acelerar/frenar, J/L para girar y U para derrapar. P4 usa T/G, F/H e Y. Podés elegir mandos en la parrilla local.</p></details></aside>
-<fieldset class="setup-card local-lobby"><legend><span>03</span> PARRILLA LOCAL</legend>
+<details class="controls-help"><summary>CONTROLES Y RIVALES</summary><p id="opponentSummary" class="opponent-summary"></p><div class="keys"><span>JUGADOR 1 <b>W A S D + ESPACIO</b></span><span>JUGADOR 2 <b>↑ ← ↓ → + ENTER</b></span><span>JUGADOR 3 <b>I J K L + U</b></span><span>JUGADOR 4 <b>T F G H + Y</b></span><span>REINICIAR <b>R</b></span><span>PAUSA <b>ESC</b></span><span>VISTA <b>C</b></span></div><p>W / ↑ acelera · S / ↓ frena · A/D o ←/→ gira. P3 usa I/K para acelerar/frenar, J/L para girar y U para derrapar. P4 usa T/G, F/H e Y. Podés elegir mandos en la parrilla local.</p></details></aside>
+<fieldset id="localLobby" class="setup-card local-lobby hidden"><legend><span>03</span> PARRILLA LOCAL</legend>
+<button id="localClose" class="small lobby-close" type="button">VOLVER A UN JUGADOR ↑</button>
 <label>JUGADORES LOCALES<select id="localPlayerCount"><option value="2">2 JUGADORES</option><option value="3">3 JUGADORES</option><option value="4">4 JUGADORES</option></select></label>
 <p class="lobby-note">P1 usa el coche elegido arriba. Cada piloto elige su coche y control antes de largar. Sin CPU.</p>
 <div id="localSeats" class="local-seats">
@@ -47,4 +49,4 @@
 <label for="volumeEffects">EFECTOS Y AVISOS <output id="volumeEffectsValue" for="volumeEffects">85 %</output></label><input id="volumeEffects" type="range" min="0" max="100" step="1" value="85">
 <p id="audioMixStatus" role="status" aria-live="polite"></p><p id="audioPauseNotice"></p><div class="audio-actions"><button id="audioReset" class="small">RESTABLECER</button><button id="audioClose" class="primary" autofocus>CERRAR</button></div>
 </dialog>
-<footer><span>PIXELGP © ARCADE DIVISION</span><span>BUILD 0.64 // THUNDER CROSS</span></footer></main><script src="engine-audio.js?v=0.64"></script><script src="script.js?v=0.64"></script></body></html>
+<footer><span>PIXELGP © ARCADE DIVISION</span><span>BUILD 0.65 // IGNITION &amp; PADDOCK</span></footer></main><script src="engine-audio.js?v=0.65"></script><script src="script.js?v=0.65"></script></body></html>

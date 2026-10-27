@@ -277,3 +277,14 @@ Nueve pistas variables y cinco uniformes: Champion, Coastline, Rally, Meadow e I
 El usuario pide alternar los frentes y no concentrar cada entrega en CPU. En 0.64 no se modifica IA: solo se valida el trazado. **Siguiente tramo recomendado: fase 26, motor/feedback audible**, comparando crucero a máxima, aceleración, retención y cambios. Continuar después escenarios 36 y manejo 25 con planificación estable antes de retomar el ensayo lateral rechazado. Doce frentes abiertos, online según sus hitos, sin presentar salas inexistentes.
 
 Verificación de 0.64: 34 vueltas de la matriz Thunder, tres más en Chromium a reloj fijo; 40.886 probes de secciones y 7.462 de píxel/borde, color/material en tres calidades, 39 imágenes idénticas de las otras trece carreteras, local 2–4 en Thunder, sintaxis/integración/geometría y entrega local superados. Sensación humana y Pages público (proxy 403) pendientes.
+
+
+## Avance 0.65 — fase 26 y portada/paddock local
+
+Motor con pulsos revisados, registro una octava más grave, cuerpo triangular y crucero suave detectado por velocidad real; se filtran muestras repetidas de física de 60 Hz para conservar respuesta a 20–144 Hz. Se comparan alternativas y máximos de los cuatro modelos en Web Audio, manteniendo marchas/carga, volúmenes, contexto y presupuesto de nodos. La voz cambia; no se cambian aceleración, velocidad, fuerzas ni CPU. Escucha humana pendiente, fase 26 sigue abierta.
+
+Por pedido adicional del usuario se mejora la portada: bandera e identidad retro, inicio/resumen de pista-coche primero, personalización directa y local 2–4 desplegable con foco/ARIA/valores retenidos. Controles/pistas/modos existentes conservados. Evidencia y pruebas en `tests/experiments/MOTOR_PADDOCK_065.md`; no volver a tratar el motor ni la nueva portada como solo planificados.
+
+Siguiente tramo recomendado: **36.3, escenarios/referencias visuales y ambientación**, alternando con cinco rutas uniformes y manejo; mantener el motor abierto a feedback audible. Se respeta alternar áreas y no centrar cada entrega en IA. Online permanece en sus hitos, sin opciones vacías ni plazo artificial.
+
+Verificación 0.65: cuatro modelos a sus máximos reales, cinco cambios de marcha/sexta estable, audio real/mezcla/mute/ciclo de vida y hasta cuatro humanos; portada nativa en cinco resoluciones con foco/ARIA/selecciones retenidas, menú de 14 pistas/24 combinaciones, integración y entrega local superados. Quedan escucha humana/dispositivos y Pages público (proxy 403) pendientes.

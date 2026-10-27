@@ -145,7 +145,7 @@ const server=http.createServer((req,res)=>{
   await page.evaluate(()=>window.testGame.finishRace());assert.ok(await page.locator('#result').isVisible());
   assert.equal(await page.evaluate(()=>document.body.classList.contains('racing')),false);
   await page.click('#nextBtn');assert.equal(await page.locator('#trackName').textContent(),'JUNGLE SPRINT');
-  await page.click('#backBtn');await page.click('[data-mode="duo"]');
+  await page.click('#backBtn');await page.click('#localSetupBtn');await page.click('[data-mode="duo"]');
   assert.equal(await page.evaluate(()=>window.testGame.cars.some(c=>c.isAI)),false);
   assert.equal(await page.evaluate(()=>window.testGame.camera.zoom),1.1);assert.equal(await page.evaluate(()=>window.testGame.split),true);
   assert.ok(await page.locator('#cameraBtn').isDisabled());
@@ -168,7 +168,7 @@ const server=http.createServer((req,res)=>{
   await page.click('#backBtn');await page.selectOption('#stageSelect','2');await page.click('[data-mode="solo"]');await page.evaluate(()=>window.testGame.skipCountdown());
   await page.click('#cameraBtn');assert.equal(await page.evaluate(()=>window.testGame.camera.zoom),await page.evaluate(()=>window.testGame.overview));
   if(process.env.SCREENSHOT_PATH)await page.screenshot({path:process.env.SCREENSHOT_PATH,fullPage:true});
-  await page.click('#backBtn');await page.click('[data-mode="duo"]');await page.evaluate(()=>window.testGame.skipCountdown());
+  await page.click('#backBtn');await page.click('#localSetupBtn');await page.click('[data-mode="duo"]');await page.evaluate(()=>window.testGame.skipCountdown());
   assert.equal(await page.evaluate(()=>window.testGame.split),true);
   assert.ok(await page.evaluate(()=>window.testGame.separateViews()>50));
   if(process.env.SCREENSHOT_PATH)await page.screenshot({path:process.env.SCREENSHOT_PATH.replace('.png','-duo.png'),fullPage:true});
@@ -223,7 +223,7 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.locator('#seasonRows .total-points').first().textContent(),'25');
   for(const name of ['P1','TRAZO','FURIA','ÁPICE'])assert.ok(gridResult.includes(name));
   await page.click('#nextBtn');assert.equal(await page.evaluate(()=>window.testGame.cars.length),4);
-  await page.click('#backBtn');await page.click('[data-mode="duo"]');assert.equal(await page.evaluate(()=>window.testGame.cars.length),2);
+  await page.click('#backBtn');await page.click('#localSetupBtn');await page.click('[data-mode="duo"]');assert.equal(await page.evaluate(()=>window.testGame.cars.length),2);
   for(const quality of ['high','retro','lite']){
    await page.evaluate(q=>window.testGame.spriteAtlas(q),quality);
    if(process.env.SCREENSHOT_PATH)await page.locator('#spriteAtlas').screenshot({path:process.env.SCREENSHOT_PATH.replace('.png','-cars-'+quality+'.png')});

@@ -571,6 +571,10 @@ function drawCheckpoints(context){
   context.fillStyle='#d7ff38';context.font='bold 10px monospace';context.textAlign='center';context.fillText('CP'+gate.id,p.x,p.y-halfWidth-8);
  }
 }
+function updateReadySelection(){
+ const index=clamp(Math.trunc(Number($('stageSelect').value)||0),0,tracks.length-1),model=CAR_MODELS[$('carModel').value]||CAR_MODELS.balanced;
+ $('readySelection').textContent=tracks[index].name+' · '+model.name;
+}
 function updateGaragePreview(){
  const id=$('carModel')?.value||'balanced',paint=CAR_PAINTS[$('carColor')?.value||'pink']||CAR_PAINTS.pink;
  const car=CAR_MODELS[id]||CAR_MODELS.balanced,preview=$('garageSummary');
@@ -581,7 +585,7 @@ function updateGaragePreview(){
  context.setTransform(1,0,0,1,0,0);context.clearRect(0,0,width,height);context.fillStyle='#0c1727';context.fillRect(0,0,width,height);
  context.fillStyle=paint.hex+'18';context.beginPath();context.ellipse(width/2,height/2+8,110,48,0,0,Math.PI*2);context.fill();
  context.save();context.translate(width/2,height/2);context.rotate(-.16);context.scale(5,5);drawCarBody(context,{model:id,heading:-.16,color:paint.hex,steer:0,braking:false,wheelTravel:0,done:false,flash:0,offroad:0});context.restore();
- image.setAttribute('aria-label',car.name+', pintura '+paint.name);
+ image.setAttribute('aria-label',car.name+', pintura '+paint.name);updateReadySelection();
 }
 function updateMenuPreview(){
  const index=clamp(Math.trunc(Number($('stageSelect').value)||0),0,tracks.length-1),item=tracks[index],preview=$('trackPreview'),context=preview.getContext('2d');
@@ -603,6 +607,7 @@ function updateMenuPreview(){
  const count=clamp(Number($('opponentCount').value)||3,1,3),difficultyName={easy:'FÁCIL',normal:'NORMAL',hard:'DIFÍCIL'}[$('difficulty').value]||'NORMAL';
  $('menuTrackCount').textContent=tracks.length;$('previewTrackName').textContent=String(index+1).padStart(2,'0')+' · '+item.name;
  $('previewRouteInfo').textContent=LAPS_TO_WIN+' VUELTAS · '+gates.length+' CHECKPOINTS'+(item.roadProfile?' · ANCHO VARIABLE':'');$('previewBarriers').textContent=barrierNames[profile];
+ updateReadySelection();
  const record=bestLapRecords[lapRecordKey(item)];$('previewRecord').textContent=record?format(record):'--:--.-';
  $('raceSummary').textContent=LAPS_TO_WIN+' VUELTAS · '+count+' '+(count===1?'RIVAL CPU':'RIVALES CPU')+' · '+difficultyName;
  $('opponentSummary').textContent=['racer','attacker','precise'].slice(0,count).map(id=>AI_PERSONALITIES[id].name+' · '+AI_PERSONALITIES[id].description).join(' / ');
@@ -1773,7 +1778,11 @@ $('carColor').addEventListener('change',updateGaragePreview);
 updateGaragePreview();updateMenuPreview();updateLocalLobby();
 $('difficulty').addEventListener('change',()=>{difficulty=$('difficulty').value;updateMenuPreview();});
 for(const id of ['stageSelect','opponentCount','barrierMode'])$(id).addEventListener('change',updateMenuPreview);
-$('localSetupBtn').onclick=()=>{$('localPlayerCount').scrollIntoView({behavior:motionPreference?.matches?'auto':'smooth',block:'center'});$('localPlayerCount').focus({preventScroll:true});};
+function focusMenuControl(id){const control=$(id);control.scrollIntoView({behavior:motionPreference?.matches?'auto':'smooth',block:'center'});control.focus({preventScroll:true});}
+function showLocalSetup(open){$('localLobby').classList.toggle('hidden',!open);$('localSetupBtn').setAttribute('aria-expanded',String(open));focusMenuControl(open?'localPlayerCount':'localSetupBtn');}
+$('localSetupBtn').onclick=()=>showLocalSetup(true);
+$('localClose').onclick=()=>showLocalSetup(false);
+$('customizeBtn').onclick=()=>focusMenuControl('stageSelect');
 $('localPlayerCount').addEventListener('change',updateLocalLobby);
 for(let i=1;i<=4;i++){
  $('playerInput'+i).addEventListener('change',updateLocalLobby);

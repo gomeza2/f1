@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.64
+# PIXEL GRAND PRIX — entrega 0.65
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Motor y portada en 0.65
+
+Nueva voz de motor más grave, cuerpo triangular coherente y crucero suave según velocidad real; conserva RPM/marchas/carga y la mezcla/guardado existentes. Dos osciladores por humano, hasta cuatro, sin autoplay ni recursos ajenos. Las pruebas de señal no sustituyen escuchar el resultado.
+
+Paddock compacto con bandera, resumen vivo de pista/coche, inicio rápido, botón para personalizar y parrilla local desplegable con foco/ARIA y elecciones retenidas al cerrar. Conducción, CPU, catorce trazados y récords p6/b1/s1 se mantienen. Pruebas/limitaciones en `tests/experiments/MOTOR_PADDOCK_065.md`; siguiente foco escenarios 36.3, con audio abierto a feedback humano.
 
 ## Thunder Valley en 0.64
 
