@@ -40,6 +40,12 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## Coastline con recorrido propio — 0.67
+
+Coastline Run pasa de 4.261 a 7.143 unidades (+67,6 %), con mundo 2000×1280, recta costera y regreso interior técnico. Ancho de 72–116, pianos por sector, tramo de tierra coherente con la física y diez checkpoints. Abierto por defecto; conserva las cinco opciones de barreras. La referencia automática Normal es 39,90/38,83 s: no es un tiempo humano garantizado.
+
+Los récords de la ruta anterior quedan guardados y la nueva usa `COASTLINE RUN@3:p6:r1:s1:b1`. Las otras trece pistas y sus imágenes se conservan. Hay diez pistas con secciones variables y cuatro uniformes pendientes: Champion, Rally, Meadow e Industrial. Evidencia en [COAST_067.md](tests/experiments/COAST_067.md).
+
 ## Escenarios con más profundidad — 0.66
 
 Tribunas con gradas/público, edificios urbanos con ventanas y azoteas, cabañas nevadas, depósitos, contenedores, tanques y carpas con volumen y sombras coherentes. Detallado añade pequeños elementos; Retro conserva las siluetas y Rendimiento mantiene sus dibujos anteriores. Se generan en el fondo estático existente, sin aumentar la cantidad de objetos ni ocupar las escapatorias. No cambian trazados, fuerzas, CPU, audio ni récords.
@@ -616,3 +622,16 @@ SCENERY_FOCUS=architecture SCENERY_SOURCE_BASELINE=/tmp/pixelgp-before-066.js no
 ```
 
 La comparación reutiliza la prueba de fondos, comprueba las 14 pistas en tres calidades y admite `SCENERY_SCREENSHOTS` para capturas generales y cercanas antes/después. No mide FPS del dispositivo del jugador.
+
+Pruebas de Coastline 0.67:
+
+```sh
+node tests/validate-coast.mjs
+TEST_TRACKS=10 node tests/validate-road-sectors.mjs
+TEST_TRACKS=10 node tests/validate-barriers.mjs
+ROAD_STAGES=10 node tests/browser-road-sectors.cjs
+MIXED_STAGE=10 node tests/browser-thunder-material.cjs
+LOCAL_STAGE=10 node tests/browser-local.cjs
+```
+
+Las pruebas de material mixto se comparten con Thunder: `MIXED_STAGE=10` selecciona Coastline y `MIXED_SCREENSHOTS` exporta capturas. `validate-coast --geometry` omite la matriz de carreras cuando solo se necesita verificar conservación. La prueba de secciones admite `TEST_TRACKS` para evitar repetir las pistas ya comprobadas.

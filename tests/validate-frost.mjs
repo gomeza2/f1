@@ -16,7 +16,7 @@ assert.equal(g.WORLD_SPEED_SCALE,old.worldSpeed);
 for(const key of Object.keys(old.ice))assert.equal(g.TERRAIN_MATERIALS.ice[key],old.ice[key],'Material art changed ice physics');
 let nearest=Infinity;
 for(const t of g.tracks.filter(t=>t!==track)){
- const hash=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');if(!(['PIXEL CITY','JUNGLE SPRINT','THUNDER VALLEY'].includes(t.name)&&t.layoutVersion===3))assert.equal(hash,old.otherTracks[t.name],t.name+' changed');
+ const hash=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');if(!(['PIXEL CITY','JUNGLE SPRINT','THUNDER VALLEY','COASTLINE RUN'].includes(t.name)&&t.layoutVersion===3))assert.equal(hash,old.otherTracks[t.name],t.name+' changed');
  const distance=normalizedShapeDistance(shape,sampleTrackShape(t));nearest=Math.min(nearest,distance);assert.ok(distance>.25,'Frost resembles '+t.name);
 }
 const geometry=analyzeTrackWidth(track,d=>g.roadHalfWidthAt(d,track));assert.ok(geometry.roadMargin>70&&geometry.clearance>40);

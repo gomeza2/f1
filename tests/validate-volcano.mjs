@@ -12,7 +12,7 @@ assert.ok(track.length>4800&&track.length<5200);assert.ok(normalizedShapeDistanc
 assertOriginalModels(game.CAR_MODELS,old.models);assert.equal(game.PHYSICS_VERSION,6); /* Controller migration; validate-countersteer freezes the remaining p5 driving core. */assert.equal(game.WORLD_SPEED_SCALE,.84);
 let nearest=Infinity;
 for(const item of game.tracks.filter(t=>t!==track)){
- const hash=createHash('sha256').update(JSON.stringify({points:item.points,samples:item.samples,worldScale:item.worldScale,layoutVersion:item.layoutVersion,roadProfile:item.roadProfile,roadVersion:item.roadVersion})).digest('hex');if(!(['FROSTBITE GP','PIXEL CITY','JUNGLE SPRINT','THUNDER VALLEY'].includes(item.name)&&item.layoutVersion===3))assert.equal(hash,old.otherTracks[item.name],item.name+' changed');
+ const hash=createHash('sha256').update(JSON.stringify({points:item.points,samples:item.samples,worldScale:item.worldScale,layoutVersion:item.layoutVersion,roadProfile:item.roadProfile,roadVersion:item.roadVersion})).digest('hex');if(!(['FROSTBITE GP','PIXEL CITY','JUNGLE SPRINT','THUNDER VALLEY','COASTLINE RUN'].includes(item.name)&&item.layoutVersion===3))assert.equal(hash,old.otherTracks[item.name],item.name+' changed');
  const distance=normalizedShapeDistance(shape,sampleTrackShape(item));nearest=Math.min(nearest,distance);assert.ok(distance>.2,item.name+' resembles Volcano');
 }
 const geometry=analyzeTrackWidth(track,d=>game.roadHalfWidthAt(d,track));assert.ok(geometry.roadMargin>40&&geometry.clearance>50);

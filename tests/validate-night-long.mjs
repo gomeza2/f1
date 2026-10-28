@@ -12,7 +12,7 @@ assert.ok(night.length>10000&&night.length<11500);assert.ok(normalizedShapeDista
 assertOriginalModels(game.CAR_MODELS,old.models);assert.equal(game.PHYSICS_VERSION,6); /* Controller migration; validate-countersteer freezes the remaining p5 driving core. */assert.equal(game.WORLD_SPEED_SCALE,.84);
 let nearest=Infinity;
 for(const t of game.tracks.filter(t=>t!==night)){
- const signature=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');if(!(['VOLCANO RING','FROSTBITE GP','PIXEL CITY','JUNGLE SPRINT','THUNDER VALLEY'].includes(t.name)&&t.layoutVersion===3))assert.equal(signature,old.otherTracks[t.name],`${t.name} changed`);
+ const signature=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');if(!(['VOLCANO RING','FROSTBITE GP','PIXEL CITY','JUNGLE SPRINT','THUNDER VALLEY','COASTLINE RUN'].includes(t.name)&&t.layoutVersion===3))assert.equal(signature,old.otherTracks[t.name],`${t.name} changed`);
  const distance=normalizedShapeDistance(shape,sampleTrackShape(t));nearest=Math.min(nearest,distance);assert.ok(distance>.2,`Night resembles ${t.name}: ${distance}`);
 }
 const geometry=analyzeTrackWidth(night,d=>game.roadHalfWidthAt(d,night));assert.ok(geometry.roadMargin>50&&geometry.clearance>25);

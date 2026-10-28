@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.66
+# PIXEL GRAND PRIX — entrega 0.67
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Coastline en 0.67
+
+Nuevo recorrido de 7.142,93 unidades (+67,6 %), ancho 72–116, rectas/curvas de distinto ritmo, sectores con y sin pianos, tierra del 31 al 37 % de vuelta y diez checkpoints. Abierto automático, cinco perfiles posibles. Raster de tierra al ancho físico real, incluido preview/minimapa y sin pintura vial encima. Corregido salto de seis unidades en vallas al cambiar entre asfalto costero y tierra.
+
+34 vueltas válidas de matriz y tres en Chromium con reloj fijo; referencia Normal libre 39,90/38,83 s. No se cambian fuerzas, CPU, modelos ni sonido. Las otras trece carreteras conservan sus 39 imágenes en tres calidades. Récord nuevo @3/r1, anterior @2 conservado; p6/b1/s1 permanecen. Evidencia en `tests/experiments/COAST_067.md`. Diez rutas variables/cuatro uniformes; siguiente foco, conducción/frenada/derrape de fase 25 con comparaciones controladas. Evaluación humana y Pages público pendientes.
 
 ## Escenarios en 0.66
 

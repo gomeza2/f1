@@ -10,7 +10,7 @@ assert.equal(g.WORLD_SPEED_SCALE,baseline.worldSpeed);
 assertOriginalModels(g.CAR_MODELS,baseline.models);
 for(const [current,previous] of [[g.AI_DRIVERS,baseline.drivers],[g.AI_PERSONALITIES,baseline.personalities]])assert.deepEqual(JSON.parse(JSON.stringify(current)),previous);
 const materials=JSON.parse(JSON.stringify(g.TERRAIN_MATERIALS));delete materials.grass.road;assert.deepEqual(materials,baseline.materials); // Jungle 0.60 adds grass art only.
-for(const t of g.tracks){if(['JUNGLE SPRINT','THUNDER VALLEY'].includes(t.name)&&t.layoutVersion===3)continue;const signature=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion,surface:t.surface,defaultBarriers:t.defaultBarriers})).digest('hex');assert.equal(signature,baseline.tracks[t.name],t.name+': CPU work changed a course');}
+for(const t of g.tracks){if(['JUNGLE SPRINT','THUNDER VALLEY','COASTLINE RUN'].includes(t.name)&&t.layoutVersion===3)continue;const signature=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion,surface:t.surface,defaultBarriers:t.defaultBarriers})).digest('hex');assert.equal(signature,baseline.tracks[t.name],t.name+': CPU work changed a course');}
 function decision(c){return g.aiTraffic(c,g.nearestOnTrack(c.x,c.y),g.driverFor(c),1/30);}
 function set(c,p,l){g.placeCar(c,p,l);c.speed=100;}
 // The nearer leader must not cancel a side reservation, including small distance-order changes.
@@ -29,7 +29,7 @@ for(const width of [34,26]){
  if(width===34){assert.ok(d.lane>=-6.01&&d.lane<=6.01);assert.ok(d.speedLimit>=100,'Available three-wide space triggered a brake');}
  else{assert.ok(Math.abs(d.lane)<1e-7,'Boxed car squeezed a rival');assert.ok(d.speedLimit<80);const speed=car.speed;g.physics(car,1,1/30);assert.ok(car.speed<speed);assert.ok(speed-car.speed<=(g.CAR_MODELS[car.model].braking+30)/30+1e-7,'Group yielded with extra braking force');}
 }
-console.log('PASS: mirrored overlap priority despite leader-distance jitter, braking for every rival, finished/reset cleanup, feasible opposing lanes and boxed-in hold/yield using shared physical braking; twelve historical routes/material physics/other model fields/driver settings preserved (Speed b1 checked); Jungle/Thunder have newer snapshots.');
+console.log('PASS: mirrored overlap priority despite leader-distance jitter, braking for every rival, finished/reset cleanup, feasible opposing lanes and boxed-in hold/yield using shared physical braking; eleven historical routes/material physics/other model fields/driver settings preserved (Speed b1 checked); Jungle/Thunder/Coast have newer snapshots.');
 if(!process.argv.includes('--focused')){
  let laps=0;const regressions=[];const cases=process.argv.includes('--high-rate')?baseline.cases.filter(c=>c.dt):baseline.cases;
  for(const old of cases){

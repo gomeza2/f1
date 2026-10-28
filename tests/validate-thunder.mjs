@@ -11,7 +11,7 @@ for(const [actual,expected] of [[g.CAR_MODELS,old.models],[g.AI_DRIVERS,old.driv
 assert.equal(g.PHYSICS_VERSION,old.physics);
 const source=readFileSync(new URL('../script.js',import.meta.url),'utf8');assert.equal(createHash('sha256').update(source.slice(source.indexOf('const AI_DRIVERS='),source.indexOf('function getTrackPath'))).digest('hex'),old.drivingCoreSha256,'Track update changed driving/AI/collision functions');assert.equal(source.split('\n').find(line=>line.startsWith('const DRIVING_TUNING=')),old.tuningLine);
 let nearest=Infinity;
-for(const t of g.tracks.filter(t=>t!==track)){const hash=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion,surface:t.surface,defaultBarriers:t.defaultBarriers,dirtRanges:t.dirtRanges})).digest('hex');assert.equal(hash,old.otherTracks[t.name],t.name+': another track changed');nearest=Math.min(nearest,normalizedShapeDistance(shape,sampleTrackShape(t)));}assert.ok(nearest>.25,'Thunder shares another route silhouette');
+for(const t of g.tracks.filter(t=>t!==track)){const hash=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion,surface:t.surface,defaultBarriers:t.defaultBarriers,dirtRanges:t.dirtRanges})).digest('hex');if(!(t.name==='COASTLINE RUN'&&t.layoutVersion===3))assert.equal(hash,old.otherTracks[t.name],t.name+': another track changed');nearest=Math.min(nearest,normalizedShapeDistance(shape,sampleTrackShape(t)));}assert.ok(nearest>.25,'Thunder shares another route silhouette');
 const geometry=analyzeTrackWidth(track,d=>g.roadHalfWidthAt(d,track));assert.ok(geometry.roadMargin>25&&geometry.clearance>20,JSON.stringify(geometry));
 e('barrierMode').value='open';g.start('solo',8);assert.equal(g.checkpoints.length,10);const gaps=[0,...g.checkpoints.map(c=>c.progress),track.length];assert.ok(gaps.slice(1).every((d,i)=>d-gaps[i]<=650));
 for(const d of track.dirtRanges.flat()){
@@ -27,7 +27,7 @@ e('graphics').value='lite';e('barrierMode').value='full';g.start('solo',8);asser
 g.bestLapRecords['THUNDER VALLEY@2:p6:s1:b1']=24;assert.equal(g.lapRecordKey(),'THUNDER VALLEY@3:p6:r1:s1:b1');g.saveBestLap(g.lapRecordKey(),45);assert.equal(g.bestLapRecords['THUNDER VALLEY@2:p6:s1:b1'],24);
 const c=g.cars[0];g.placeCar(c,track.length-1,0);c.speed=120;g.setKeys({w:true});g.physics(c,0,1/60);assert.equal(c.lap,0,'Meta accepted skipped gates');
 console.log(JSON.stringify({length:track.length,change,nearest,geometry,cells:cells.length,asphalt,dirt,kerbs,bare}));
-console.log('PASS: own Thunder silhouette, 76–116 corridor, 10 ordered gates, continuous mixed widths/barriers, dirt coverage/physics/cache, retained records and thirteen unchanged tracks/models/material rules.');
+console.log('PASS: own Thunder silhouette, 76–116 corridor, 10 ordered gates, continuous mixed widths/barriers, dirt coverage/physics/cache, retained records and twelve frozen routes (Coast has its newer snapshot), unchanged models/material rules.');
 if(process.argv.includes('--geometry'))process.exit(0);
 let laps=0;
 for(const profile of ['auto','open','full','half','corners']){

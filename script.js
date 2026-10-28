@@ -14,7 +14,7 @@ const trackDefs=[
 {name:'THUNDER VALLEY',worldScale:2.1,layoutVersion:3,roadVersion:1,roadProfile:[[0,52,0],[0.1,58,0],[0.18,48,6],[0.23,44,0],[0.24,44,0],[0.28,38,0],[0.33,42,0],[0.34,42,0],[0.42,52,6],[0.52,56,0],[0.62,48,0],[0.66,44,0],[0.72,38,0],[0.75,40,0],[0.76,42,0],[0.84,50,6],[0.92,48,0],[1,52,0]],sky:'#a4b4d3',grass:'#406d5a',accent:'#e8f6ff',points:[[100,120],[350,95],[600,95],[780,110],[920,200],[880,280],[760,290],[650,260],[530,300],[510,350],[620,400],[760,440],[820,520],[760,570],[600,570],[450,520],[370,430],[300,390],[250,430],[190,520],[130,550],[80,500],[80,400],[130,300],[190,260],[160,210],[80,190]]},
 {name:'CHAMPION ROAD',worldScale:1.4,layoutVersion:2,sky:'#f3dc7e',grass:'#397653',accent:'#ffffff',points:[[140,100],[400,100],[680,100],[850,100],[910,150],[910,260],[850,300],[750,270],[690,290],[690,380],[790,410],[890,400],[920,460],[890,520],[790,550],[650,530],[580,470],[500,460],[430,520],[320,550],[210,540],[120,500],[90,430],[110,365],[190,350],[270,380],[350,350],[360,270],[290,240],[210,270],[130,250],[90,180]]}
 ,
-{name:'COASTLINE RUN',worldScale:1.3,layoutVersion:2,sky:'#76c6db',grass:'#347f68',accent:'#cfff9d',environment:'coast',points:[[105,135],[165,95],[255,82],[340,105],[405,150],[485,138],[545,92],[625,86],[710,108],[800,91],[875,125],[905,180],[890,226],[825,246],[755,220],[700,252],[706,318],[770,338],[840,317],[895,356],[908,411],[875,466],[808,485],[735,456],[685,418],[608,436],[553,493],[485,535],[410,548],[334,520],[270,541],[198,519],[132,480],[95,422],[116,372],[178,349],[237,370],[293,344],[284,277],[221,254],[157,275],[108,237],[84,184]]},
+{name:'COASTLINE RUN',worldScale:2,layoutVersion:3,roadVersion:1,roadProfile:[[0,52,0],[0.1,58,0],[0.18,50,6],[0.25,44,6],[0.3,42,0],[0.31,42,0],[0.35,38,0],[0.37,42,0],[0.38,42,0],[0.44,48,6],[0.52,40,6],[0.6,36,0],[0.69,46,0],[0.78,52,6],[0.88,42,0],[1,52,0]],sky:'#76c6db',grass:'#347f68',accent:'#cfff9d',environment:'coast',points:[[160,95],[450,80],[720,120],[860,210],[910,330],[865,470],[740,550],[600,560],[540,515],[545,445],[620,390],[710,370],[740,320],[700,270],[620,270],[540,325],[450,380],[410,470],[330,540],[220,535],[130,475],[90,380],[100,290],[185,255],[300,270],[355,220],[330,160],[230,150],[150,180],[100,155]]},
 {name:'RALLY CANYON',worldScale:1.3,layoutVersion:2,sky:'#d7b17c',grass:'#a58b5b',accent:'#f5d49a',environment:'rally',points:[[110,120],[158,88],[220,82],[278,104],[328,147],[390,131],[446,88],[515,79],[574,106],[613,150],[673,137],[732,105],[798,111],[855,146],[900,196],[892,244],[850,267],[798,255],[753,274],[745,322],[785,348],[838,338],[887,362],[904,411],[878,456],[831,474],[779,454],[731,433],[687,458],[651,504],[599,533],[536,535],[483,510],[421,525],[361,511],[303,528],[245,513],[189,529],[140,498],[103,455],[84,409],[101,365],[145,349],[191,362],[235,345],[256,309],[240,273],[199,253],[157,270],[119,250],[88,208],[91,160]]},
 {name:'MEADOW RUN',worldScale:1.3,layoutVersion:2,sky:'#b5d7ad',grass:'#43864c',accent:'#deff91',environment:'meadow',points:[[88,145],[124,104],[196,85],[270,102],[402,102],[445,145],[506,159],[552,122],[617,91],[697,86],[757,110],[828,98],[887,132],[912,184],[895,224],[842,240],[791,219],[745,246],[752,306],[812,327],[874,313],[911,353],[912,399],[878,442],[824,458],[778,440],[735,461],[698,508],[638,533],[571,520],[518,541],[391,539],[322,521],[258,539],[197,514],[149,482],[113,435],[91,380],[111,348],[163,338],[214,356],[267,333],[277,291],[237,266],[184,272],[141,248],[105,213],[82,177]]},
 {name:'INDUSTRIAL MIX',worldScale:1.3,layoutVersion:2,sky:'#9ba9b6',grass:'#4c6956',accent:'#ffcc63',environment:'industrial',points:[[95,110],[175,88],[255,100],[315,132],[385,118],[450,84],[520,85],[565,120],[625,112],[698,85],[780,95],[855,126],[905,180],[892,230],[846,252],[790,246],[744,277],[751,324],[808,344],[875,331],[912,372],[906,423],[865,460],[806,471],[746,449],[698,471],[658,514],[597,538],[532,523],[480,493],[418,510],[360,489],[302,512],[244,498],[182,523],[127,491],[92,445],[90,396],[127,370],[179,381],[221,360],[224,315],[185,283],[136,299],[97,263],[80,213],[95,160]]}
@@ -240,7 +240,7 @@ function roadHalfWidthAt(progress,item=track){const section=roadSectionAt(progre
 function roadMaxHalfWidth(item=track){return item.roadProfile?Math.max(...item.roadProfile.map(p=>p[1]+p[2])):ROAD_SHOULDER;}
 function barrierRadiusAt(progress,item=track){
  if(!item.roadProfile)return 55;
- const surface=surfaceAtProgress(progress,item),legacy=item.surface==='mixed'||surface==='asphalt'||surface==='coastal'?ROAD_SHOULDER:ROAD_EDGE;
+ const surface=surfaceAtProgress(progress,item),legacy=item.surface==='mixed'||item.surface==='coastal'||surface==='asphalt'||surface==='coastal'?ROAD_SHOULDER:ROAD_EDGE;
  return 55+roadHalfWidthAt(progress,item)-legacy;
 }
 // One world-material query drives handling, resistance, particles, audio and the gravel raster.
@@ -594,7 +594,7 @@ function updateMenuPreview(){
  context.save();context.translate((width-item.worldWidth*scale)/2,(height-item.worldHeight*scale)/2);context.scale(scale,scale);context.lineJoin='round';context.lineCap='round';
  context.beginPath();context.moveTo(item.samples[0].x,item.samples[0].y);for(const point of item.samples.slice(1))context.lineTo(point.x,point.y);context.closePath();
  if(item.roadProfile){fillRoadRibbon(context,'#1d3447',d=>roadHalfWidthAt(d,item)+2,item);fillRoadRibbon(context,'#667f8e',d=>roadSectionAt(d,item).halfWidth,item);}else{context.strokeStyle='#1d3447';context.lineWidth=ROAD_EDGE*2+10;context.stroke();context.strokeStyle='#667f8e';context.lineWidth=ROAD_EDGE*2-10;context.stroke();}
- if(item.surface==='mixed'&&item.roadProfile)drawMixedRoad(context,item);
+ if(usesMaterialRaster(item))drawMixedRoad(context,item);
  context.beginPath();context.moveTo(item.samples[0].x,item.samples[0].y);for(const point of item.samples.slice(1))context.lineTo(point.x,point.y);context.closePath();
  context.strokeStyle=item.accent;context.lineWidth=3;context.setLineDash([14,20]);context.stroke();context.setLineDash([]);
  const gates=checkpointsForTrack(item);for(const gate of gates){context.fillStyle='#d7ff38';context.beginPath();context.arc(gate.x,gate.y,7/scale,0,Math.PI*2);context.fill();}
@@ -901,15 +901,17 @@ function drawVariableRoad(context){
   }
  }
 }
-// Only variable mixed roads use this raster. Material/width use shared surface/section queries;
-// legacy mixed/coastal drawing stays intact. Geometry is cached across quality/barrier changes.
+// Variable mixed/coastal roads share a raster driven by the physical material/width.
+// Legacy uniform roads keep their drawing; immutable geometry is cached per track.
+function unpavedRoadRanges(item=track){return item.surface==='coastal'?[[item.length*.31,item.length*.37]]:(item.dirtRanges||[]);}
+function usesMaterialRaster(item=track){return !!item.roadProfile&&['mixed','coastal'].includes(item.surface);}
 const MIXED_ROAD_CELL=2,mixedRoadCache=new WeakMap();
 function mixedRoadRaster(item=track){
- if(!item.roadProfile||item.surface!=='mixed')return [];
+ if(!usesMaterialRaster(item))return [];
  if(mixedRoadCache.has(item))return mixedRoadCache.get(item);
  const cells=[],columns=Math.ceil(item.worldWidth/MIXED_ROAD_CELL),rows=Math.ceil(item.worldHeight/MIXED_ROAD_CELL);
  const seen=new Uint8Array(columns*rows),pad=roadMaxHalfWidth(item)+MIXED_ROAD_CELL,buckets=runoffBuckets(item);
- for(const [start,end] of item.dirtRanges)for(let d=start;d<=end+10;d+=10){
+ for(const [start,end] of unpavedRoadRanges(item))for(let d=start;d<=end+10;d+=10){
   const p=sampleAt(Math.min(d,end),item),left=Math.max(0,Math.floor((p.x-pad)/MIXED_ROAD_CELL)),right=Math.min(columns-1,Math.ceil((p.x+pad)/MIXED_ROAD_CELL));
   const top=Math.max(0,Math.floor((p.y-pad)/MIXED_ROAD_CELL)),bottom=Math.min(rows-1,Math.ceil((p.y+pad)/MIXED_ROAD_CELL));
   for(let row=top;row<=bottom;row++)for(let column=left;column<=right;column++){
@@ -967,12 +969,12 @@ function drawTrackSurface(context){
    strokeTrack(sc,'#11171c',96);strokeTrack(sc,'#cdd1d3',94,[18,18],0);strokeTrack(sc,'#d84b59',90,[12,24],0);strokeTrack(sc,'#282d37',84);strokeTrack(sc,'#e74b5d',82,[23,23],0);strokeTrack(sc,'#f5f0dc',82,[23,23],23);strokeTrack(sc,'#3c414c',74);strokeTrack(sc,graphics==='high'?'#707783':'#646873',68);strokeTrack(sc,'#2c313b',61);
   }
   drawAsphaltTexture(sc);
-  if(track.surface==='mixed'&&track.roadProfile){
+  if(usesMaterialRaster()){
    // Paint belongs to the asphalt: cache it before dirt covers the unpaved sectors.
    strokeTrack(sc,'#eef0d85c',2.5,[18,22]);drawMixedRoad(sc);
   }
   else if(track.surface==='mixed'){for(const [start,end] of track.dirtRanges){strokeTrackRange(sc,start,end,'#76563c',76);strokeTrackRange(sc,start,end,'#ad8258',66,[14,11]);}}
-  if(track.surface==='coastal'){strokeTrackRange(sc,track.length*.31,track.length*.37,'#846b47',74);strokeTrackRange(sc,track.length*.31,track.length*.37,'#c2a06b',63,[9,12]);}
+  if(track.surface==='coastal'&&!usesMaterialRaster()){strokeTrackRange(sc,track.length*.31,track.length*.37,'#846b47',74);strokeTrackRange(sc,track.length*.31,track.length*.37,'#c2a06b',63,[9,12]);}
   trackSurfaceCache=surface;trackSurfaceKey=key;
  }
  context.drawImage(trackSurfaceCache,0,0,track.worldWidth,track.worldHeight);
@@ -1671,7 +1673,7 @@ function drawMiniMap(){
  if(track.roadProfile&&trackSurfaceCache){m.drawImage(trackSurfaceCache,0,0);}
  else{strokeTrack(m,'#02060c',116);strokeTrack(m,track.surface==='dirt'?'#b28b61':track.surface==='grass'?'#74a94e':track.surface==='ice'?'#dffaff':'#5e6875',82);}
  if(track.surface==='mixed'&&!(track.roadProfile&&trackSurfaceCache))for(const [start,end] of track.dirtRanges)strokeTrackRange(m,start,end,'#ad8258',68);
- if(track.surface==='coastal')strokeTrackRange(m,track.length*.31,track.length*.37,'#c2a06b',68);
+ if(track.surface==='coastal'&&!(track.roadProfile&&trackSurfaceCache))strokeTrackRange(m,track.length*.31,track.length*.37,'#c2a06b',68);
  for(const viewport of drivingViewports()){const {player,width,height}=viewport,view=raceCamera(player,width,height);if(view.zoom>overviewZoom()){m.strokeStyle=cars[player]?.color||'#39e8e8';m.lineWidth=1.2/scale;m.strokeRect(view.x-width/2/view.zoom,view.y-height/2/view.zoom,width/view.zoom,height/view.zoom);}}
  cars.forEach(car=>{m.fillStyle=car.color;m.beginPath();m.arc(car.x,car.y,Math.max(17,2.6/scale),0,Math.PI*2);m.fill();});
  m.restore();m.strokeStyle='#5d6b8a';m.lineWidth=2;m.strokeRect(1,1,w-2,h-2);
@@ -1739,7 +1741,7 @@ function drawDrivingView(left,width,player,top=0,height=640){
  const view=raceCamera(player,width,height);ctx.save();ctx.beginPath();ctx.rect(left,top,width,height);ctx.clip();
  ctx.translate(left+width/2,top+height/2);ctx.scale(view.zoom,view.zoom);ctx.translate(-view.x,-view.y);drawBackground(ctx);
  const centerLineColor=track.surface==='dirt'?'#ead0a3':track.surface==='grass'?'#cce88d':track.surface==='ice'?'#f4ffff':track.surface==='volcanic'?'#df8060':'#eef0d85c';
- if(!(track.surface==='mixed'&&track.roadProfile))strokeTrack(ctx,centerLineColor,2.5,[18,22],-elapsed*13);
+ if(!usesMaterialRaster())strokeTrack(ctx,centerLineColor,2.5,[18,22],-elapsed*13);
  drawGroundEffects(ctx);cars.map(renderedCar).sort((a,b)=>a.speed-b.speed).forEach(car=>drawCar(ctx,car));ctx.restore();
 }
 function drawFrame(){

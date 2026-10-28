@@ -299,3 +299,14 @@ Pruebas de huella en 1.829 colocaciones, 14 pistas/tres calidades: espacio de re
 Código de conducción, CPU, geometría, materiales, controles, audio y récords intacto: al quitar únicamente la nueva función gráfica y su despacho, el script reproduce exactamente 0.65. Física p6/b1/s1 conservada. Evidencia en `tests/experiments/ARCHITECTURE_066.md`. La fase gráfica sigue abierta: rocas, más variantes e iluminación ambiental. Próximo tramo recomendado: fase 27, Coastline con trazado y secciones propios, escapatorias y variación de anchura/pianos; alternar con manejo/derrape y escucha humana, sin concentrar todas las entregas en CPU. Siguen doce frentes abiertos, ampliables; no son un número fijo de entregas restantes. Online sigue sin backend/salas.
 
 Cierre 0.66: integración (70 perfiles), menú, local 2–4 y entrega local bajo `/f1/` superados. Pages público pendiente: CONNECT rechazado por el proxy con HTTP 403; no es un fallo observado del juego.
+
+
+## Avance 0.67 — Coastline, variedad real de circuitos, fase 27
+
+Coastline conserva identidad costera/nombre/posición, con nuevo trazado 7.142,93 (+67,6 %), mundo 2000×1280, ancho 72–116, recta amplia y curvas interiores técnicas, sectores con/sin pianos, tierra al 31–37 % y diez checkpoints. Automático abierto y cinco perfiles comprobados. Se amplía el raster compartido de Thunder para respetar el material/ancho de Coastline en pista, preview y minimapa, sin pintar la línea central sobre tierra. Se corrige salto de seis unidades en la valla al cambiar material. No cambia el núcleo de conducción/CPU, modelos, fuerzas ni audio.
+
+Geometría: margen al mundo 66,21 y separación libre de ramales 35,57; distancia de silueta anterior 0,432 y a la más cercana 0,305. 34 vueltas válidas entre perfiles/modelos/dificultades/parrilla; Normal libre 39,90/38,83 s, parrilla completa con seis pasos de contacto y cero salidas. Tres vueltas adicionales en Chromium a reloj fijo. No se declara equilibrio humano por estos tiempos.
+
+Se conservan las otras trece rutas y sus 39 imágenes de carretera. Récord nuevo `COASTLINE RUN@3:p6:r1:s1:b1`; ruta @2 conservada, sin migrar física/balance/reloj. Diez pistas variables; cuatro uniformes restantes: Champion, Rally, Meadow e Industrial. Evidencia y límites en `tests/experiments/COAST_067.md`.
+
+Siguiente tramo recomendado: fase 25, conducción/frenada/derrape con comparación controlada sobre el reloj estable y sin reactivar a ciegas el ensayo lateral descartado en 0.63. Alternar con las cuatro pistas pendientes, gráficos/local y audio según feedback humano; no concentrar todas las entregas en CPU. Doce frentes ampliables y online aún sin backend/salas, sin prometer un número fijo de entregas.
