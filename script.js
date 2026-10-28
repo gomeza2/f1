@@ -1404,9 +1404,11 @@ function physics(car,i,dt){
   controls={throttle:input.throttle,brake:input.brake,hand};
  }
  const {throttle,brake,hand}=controls;car.handbrake=hand;car.braking=brake>0||hand;
- car.speed+=throttle*accelerationAtSpeed(car.speed,model)*dt;
+ // Brake pressure releases drive torque; partial throttle blends engine drag continuously.
+ const driveThrottle=throttle*(1-brake);
+ car.speed+=driveThrottle*accelerationAtSpeed(car.speed,model)*dt;
  car.speed-=brake*(hand?model.braking*1.27:model.braking)*dt;
- car.speed-=(throttle?2.6:DRIVING_TUNING.liftDrag)*dt;
+ car.speed-=(2.6*driveThrottle+DRIVING_TUNING.liftDrag*(1-driveThrottle))*dt;
  if(hand)car.speed-=model.braking*.55*dt;
  if(hand)car.drift=Math.min(1,Math.abs(car.steer)*car.speed/200);
  car.speed=clamp(car.speed,0,model.maxSpeed);

@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.67
+# PIXEL GRAND PRIX — entrega 0.68
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Pedales en 0.68
+
+Corregida la mezcla de acelerador/freno: frenar a fondo retira el empuje aunque se mantenga acelerar, y la retención de gatillos analógicos pasa a ser continua. El freno parcial reduce progresivamente el empuje. Teclado y mandos usan la misma regla, incluida la combinación con freno de mano. No cambia la capacidad máxima de frenado, velocidad, agarre ni giro; los extremos digitales anteriores permanecen.
+
+Desde 200, Speed con acelerar+frenar pasa de 113,51 a 67,17 unidades de parada, igual que soltar acelerar y frenar. Es una corrección de comandos, no una nueva potencia de freno. Se conservan récords p6/b1/s1: las frenadas/retenciones nuevas siguen dentro del rango de fuerzas que ya era alcanzable soltando o combinando correctamente los pedales. Evidencia en `tests/experiments/PEDALS_068.md`; tacto humano, derrape lateral completo y hardware pendiente. La fase 25 sigue abierta.
 
 ## Coastline en 0.67
 

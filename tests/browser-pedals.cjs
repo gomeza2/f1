@@ -1,0 +1,26 @@
+// Native key events and emulated standard triggers run through production fixed-step physics.
+const {chromium}=require('playwright'),fs=require('node:fs'),http=require('node:http'),path=require('node:path'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..');assert.ok(process.env.PEDAL_SOURCE_BASELINE,'Provide the preserved 0.67 script');
+const bridge=`window.pedalProbe={setup(player=0,input='keyboard'){$('carModel').value='speed';for(let i=2;i<=4;i++)$('playerModel'+i).value='speed';$('localPlayerCount').value=String(Math.max(2,player+1));$('barrierMode').value='open';$('playerInput1').value=player===0?input:'keyboard';for(let i=1;i<4;i++)$('playerInput'+(i+1)).value=player===i?input:'keyboard';soundEnabled=false;start('duo',9);cancelAnimationFrame(raf);countdownRemaining=0;goFlashRemaining=0;cars.forEach((c,i)=>{c.done=i!==player;});const c=cars[player];placeCar(c,400,0);c.speed=200;this.player=player;this.x=c.x;},run(frames){for(let n=0;n<frames;n++)advanceRaceFrame(1/60);drawFrame();updateTelemetry();const c=cars[this.player];return {speed:c.speed,distance:c.x-this.x,model:c.model,input:controlsFor(this.player),offroad:terrainAt(c.x,c.y).offroad};},record(){bestLapRecords['CHAMPION ROAD@2:p6:s1:b1']=25;saveBestLap(lapRecordKey(),24);return lapRecordKey();}};`;
+const server=http.createServer((req,res)=>{const file=new URL(req.url,'http://local').pathname.slice(1)||'index.html';if(file==='favicon.ico'){res.writeHead(204).end();return;}if(!['index.html','style.css','engine-audio.js','script.js'].includes(file)){res.writeHead(404).end();return;}res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html');res.end(fs.readFileSync(path.join(root,file)));});
+(async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});try{
+ const results={};for(const [version,source] of Object.entries({before:fs.readFileSync(process.env.PEDAL_SOURCE_BASELINE,'utf8'),current:fs.readFileSync(path.join(root,'script.js'),'utf8')})){
+  const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(()=>{window.testPedalPad={id:'Standard test controller',mapping:'standard',connected:true,index:0,axes:[0,0],buttons:Array.from({length:17},()=>({value:0,pressed:false}))};Object.defineProperty(navigator,'getGamepads',{value:()=>[window.testPedalPad]});});
+  await page.route('https://fonts.googleapis.com/**',r=>r.abort());await page.route(/\/script\.js(?:\?.*)?$/,r=>r.fulfill({contentType:'text/javascript',body:source.replace(/\}\)\(\);\s*$/,bridge+'})();')}));await page.goto('http://127.0.0.1:'+server.address().port);results[version]={keys:[],analog:[]};
+  for(const player of [0,1,2,3])for(const both of [false,true]){
+   await page.evaluate(p=>window.pedalProbe.setup(p),player);const up=['w','ArrowUp','i','t'][player],down=['s','ArrowDown','k','g'][player];if(both)await page.keyboard.down(up);await page.keyboard.down(down);const result=await page.evaluate(()=>window.pedalProbe.run(120));await page.keyboard.up(down);if(both)await page.keyboard.up(up);assert.equal(result.speed,0);assert.equal(result.offroad,false);assert.equal(result.input.brake,1);assert.equal(result.model,'speed');results[version].keys.push({player,both,...result});
+  }
+  for(const throttle of [0,.001,.25,.5,1]){
+   await page.evaluate(()=>window.pedalProbe.setup(0,'pad0'));await page.evaluate(t=>{window.testPedalPad.buttons[7].value=t;window.testPedalPad.buttons[6].value=0;},throttle);const result=await page.evaluate(()=>window.pedalProbe.run(30));assert.equal(result.input.throttle,throttle);assert.equal(result.offroad,false);results[version].analog.push({throttle,...result});
+  }
+  if(version==='current'){
+   for(let i=0;i<8;i+=2)assert.equal(results[version].keys[i+1].distance,results[version].keys[i].distance);assert.ok(results[version].analog[1].speed-results[version].analog[0].speed<.07);
+   assert.equal(await page.evaluate(()=>window.pedalProbe.record()),'CHAMPION ROAD@2:p6:s1:b1');await page.reload();await page.selectOption('#stageSelect','9');assert.equal(await page.locator('#previewRecord').textContent(),'00:24.0');
+  }
+  assert.deepEqual(errors,[]);await page.close();
+ }
+ assert.ok(results.before.keys[1].distance>results.current.keys[1].distance*1.5);assert.equal(results.before.keys[0].distance,results.current.keys[0].distance);
+ for(const i of [0,4])assert.equal(results.before.analog[i].speed,results.current.analog[i].speed);
+ assert.ok(results.before.analog[1].speed-results.before.analog[0].speed>13);
+ console.log(JSON.stringify(results));console.log('PASS: Chromium native P1–P4 keyboard brake priority, actual analog trigger samples/feathering, preserved coast/full-throttle endpoints, real movement on Champion, record retained across reload and no JS errors. Gamepad hardware and human feel remain open.');
+ }finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1}).finally(()=>server.close());

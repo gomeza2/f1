@@ -12,7 +12,7 @@ La versión aparece en el pie. JavaScript y CSS llevan una versión en su URL pa
 
 ## Controles
 
-- **Jugador 1:** W acelera, S frena, A/D gira, ESPACIO freno de mano.
+- **Jugador 1:** W acelera, S frena, A/D gira, ESPACIO freno de mano. Frenar a fondo tiene prioridad aunque mantengas acelerar (también en P2–P4 y mandos).
 - **Jugador 2:** flechas para acelerar, frenar y girar; ENTER freno de mano.
 - **Jugador 3:** I acelera, K frena, J/L gira; U freno de mano.
 - **Jugador 4:** T acelera, G frena, F/H gira; Y freno de mano.
@@ -39,6 +39,12 @@ En el paddock, elegí la pista, las barreras y los gráficos. **PREPARAR MULTIJU
 Cada persona tiene cámara propia y un panel exterior con posición, velocidad, vuelta, checkpoints, tiempo de vuelta y mejor vuelta de esa carrera. Al terminar aparece su tiempo final; resultados y puntos incluyen a todos. Para tres personas, el cuadrante restante muestra posiciones. Las cámaras y el minimapa usan los mismos rectángulos de vista. En ventanas anchas el área local aprovecha el ancho disponible, sin estirar el coche ni cambiar su física.
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
+
+## Pedales más previsibles — 0.68
+
+Frenar a fondo deja de luchar contra el acelerador mantenido. En mandos, levantar RT de forma gradual recupera retención de forma continua: rozar el gatillo ya no anula casi todo el freno motor. La presión parcial de freno reduce progresivamente el empuje. La prioridad se aplica a los cuatro jugadores y conserva el uso del freno de mano.
+
+No aumenta la fuerza máxima de frenado: la frenada con acelerador soltado, el acelerador a fondo y la retención al soltarlo por completo mantienen su respuesta. Velocidades, agarre, dirección, pistas y récords p6/b1/s1 se conservan. No se incorpora todavía deriva física lateral; ver evidencia y límites en [PEDALS_068.md](tests/experiments/PEDALS_068.md).
 
 ## Coastline con recorrido propio — 0.67
 
@@ -635,3 +641,14 @@ LOCAL_STAGE=10 node tests/browser-local.cjs
 ```
 
 Las pruebas de material mixto se comparten con Thunder: `MIXED_STAGE=10` selecciona Coastline y `MIXED_SCREENSHOTS` exporta capturas. `validate-coast --geometry` omite la matriz de carreras cuando solo se necesita verificar conservación. La prueba de secciones admite `TEST_TRACKS` para evitar repetir las pistas ya comprobadas.
+
+Pruebas de pedales 0.68:
+
+```sh
+node tests/validate-pedals.mjs
+node tests/validate-pedal-races.mjs
+git show 612a22c:script.js > /tmp/pixelgp-before-068.js
+PEDAL_SOURCE_BASELINE=/tmp/pixelgp-before-068.js node tests/browser-pedals.cjs
+```
+
+Las comparaciones de carreras contrastan posiciones, velocidades, vueltas, contactos y resultados con la corrección desactivada; no son pruebas humanas. La prueba de navegador usa eventos reales de teclado y mandos emulados, no hardware físico.

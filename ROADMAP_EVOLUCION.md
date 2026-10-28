@@ -310,3 +310,14 @@ Geometría: margen al mundo 66,21 y separación libre de ramales 35,57; distanci
 Se conservan las otras trece rutas y sus 39 imágenes de carretera. Récord nuevo `COASTLINE RUN@3:p6:r1:s1:b1`; ruta @2 conservada, sin migrar física/balance/reloj. Diez pistas variables; cuatro uniformes restantes: Champion, Rally, Meadow e Industrial. Evidencia y límites en `tests/experiments/COAST_067.md`.
 
 Siguiente tramo recomendado: fase 25, conducción/frenada/derrape con comparación controlada sobre el reloj estable y sin reactivar a ciegas el ensayo lateral descartado en 0.63. Alternar con las cuatro pistas pendientes, gráficos/local y audio según feedback humano; no concentrar todas las entregas en CPU. Doce frentes ampliables y online aún sin backend/salas, sin prometer un número fijo de entregas.
+
+
+## Avance 0.68 — pedales, entrada en curva y control, tramo de fase 25
+
+Se confirman dos defectos de control: cualquier presión de acelerador anulaba casi toda la retención, y acelerar+frenar mantenía toda la tracción contra el freno. Nueva mezcla compartida: freno parcial quita empuje progresivamente, freno completo lo cancela; retención continua con acelerador efectivo. Teclado P1–P4 y gatillos de mando comprobados. No se cambian límites de aceleración/frenado/velocidad, agarre/giro, modelos, pistas, sonido ni fuerzas del freno de mano.
+
+Speed desde 200 con gas+freno pasa de 113,51 a 67,17 unidades de parada, exactamente lo que ya lograba soltar gas y frenar; el tope real 260 y 0–260 de 4,02 s permanecen. La retención con gatillo 0,001 deja de saltar: a los 0,5 s desde 200 pasa de ~198,73 a ~185,04 frente a 185 con gatillo cero. Récords p6/b1/s1 se conservan porque no se amplía el rango de fuerzas alcanzable anteriormente.
+
+Comprobado: cuatro modelos/pedales parciales/mano/teclado, 18 trayectorias digitales preservadas entre superficies, reloj 20–144 Hz, doce maniobras de contravolante, Speed 260, geometría Coast/Thunder; 36 vueltas actuales y 36 de referencia con estados/tiempos/contactos/finales idénticos en Sunset Normal, Coastline Normal y Frost Hard. Chromium con teclas nativas P1–P4 y gatillos emulados, local 2–4/cinco tamaños, audio real, integración (70 perfiles) y entrega local `/f1/` superados. Evidencia en `tests/experiments/PEDALS_068.md`.
+
+**No cierra la fase 25:** deriva lateral física y aceptación humana siguen abiertas. No se reactiva el ensayo descartado de 0.63. Siguiente experimento: entrada/salida de derrape, recuperación y contravolante medidos con tráfico/local, sin convertir cada entrega en trabajo de CPU. Continúan diez rutas variables/cuatro uniformes, gráficos, audio y modos/online según hitos; doce frentes ampliables, no doce entregas fijas. Sitio público de Pages aún sin verificar por el bloqueo conocido del entorno.
