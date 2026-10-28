@@ -40,6 +40,12 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## Escenarios con más profundidad — 0.66
+
+Tribunas con gradas/público, edificios urbanos con ventanas y azoteas, cabañas nevadas, depósitos, contenedores, tanques y carpas con volumen y sombras coherentes. Detallado añade pequeños elementos; Retro conserva las siluetas y Rendimiento mantiene sus dibujos anteriores. Se generan en el fondo estático existente, sin aumentar la cantidad de objetos ni ocupar las escapatorias. No cambian trazados, fuerzas, CPU, audio ni récords.
+
+Evidencia, pruebas y límites en [ARCHITECTURE_066.md](tests/experiments/ARCHITECTURE_066.md). Es otro tramo de escenarios 36.3; iluminación ambiental, rocas y más variedad de edificios siguen abiertos.
+
 ## Motor y portada más cómodos — 0.65
 
 El motor tiene una voz más grave, cuerpo una octava por debajo y una transición suave al sostener velocidad. Conserva cambios de marcha, aceleración, retención y controles de mezcla; no cambia la conducción. Se comprueban los cuatro modelos y hasta cuatro motores humanos. [Comparaciones y límites de escucha](tests/experiments/MOTOR_PADDOCK_065.md).
@@ -600,3 +606,13 @@ ENGINE_AUDIO_BASELINE=/tmp/pixelgp-engine-before-065.js ENGINE_AUDIO_DIR=/tmp/pi
 ```
 
 Los WAV exportados reproducen primero el motor anterior y después el nuevo, con pausa y nivel RMS igualado; el juego no los descarga. `PADDOCK_SCREENSHOTS` guarda capturas de cinco resoluciones. `PADDOCK_BASELINE` admite un directorio conservado de la versión anterior (HTML/CSS/scripts) para capturar antes/después.
+
+Pruebas de escenarios 0.66:
+
+```sh
+node tests/validate-scenery.mjs
+git show e7503c2:script.js > /tmp/pixelgp-before-066.js
+SCENERY_FOCUS=architecture SCENERY_SOURCE_BASELINE=/tmp/pixelgp-before-066.js node tests/browser-vegetation.cjs
+```
+
+La comparación reutiliza la prueba de fondos, comprueba las 14 pistas en tres calidades y admite `SCENERY_SCREENSHOTS` para capturas generales y cercanas antes/después. No mide FPS del dispositivo del jugador.

@@ -1224,3 +1224,14 @@ Por pedido adicional del usuario se mejora la portada: bandera e identidad retro
 Siguiente tramo recomendado: **36.3, escenarios/referencias visuales y ambientación**, alternando con cinco rutas uniformes y manejo; mantener el motor abierto a feedback audible. Se respeta alternar áreas y no centrar cada entrega en IA. Online permanece en sus hitos, sin opciones vacías ni plazo artificial.
 
 Verificación 0.65: cuatro modelos a sus máximos reales, cinco cambios de marcha/sexta estable, audio real/mezcla/mute/ciclo de vida y hasta cuatro humanos; portada nativa en cinco resoluciones con foco/ARIA/selecciones retenidas, menú de 14 pistas/24 combinaciones, integración y entrega local superados. Quedan escucha humana/dispositivos y Pages público (proxy 403) pendientes.
+
+
+## Avance 0.66 — arquitectura y referencias visuales, tramo 36.3
+
+Tribunas con cuatro gradas, público determinista, pasillos y soportes; ciudad con azoteas/fachadas y ventanas encendidas/apagadas; cabañas nevadas, depósitos con persianas, contenedores acanalados, tanques con escalera y carpas con paneles. Siete tipos en Detallado/Retro, conservando dibujos de Rendimiento. Sombras coherentes con la luz mundial de coches/vegetación. Sin nuevos objetos, recursos externos o actualización por fotograma: continúa el fondo estático cacheado.
+
+Pruebas de huella en 1.829 colocaciones, 14 pistas/tres calidades: espacio de recuperación, límites, separación y caché superados (759 objetos Detallado/464 Rendimiento). Comparación Chromium: 21 fondos modificados, 21 iguales; las 42 imágenes de carretera y todos los metadatos de colocación idénticos a 0.65. Capturas generales/cercanas revisadas en tribunas, ciudad, nieve e industria. No son carreras humanas ni medición de FPS de hardware.
+
+Código de conducción, CPU, geometría, materiales, controles, audio y récords intacto: al quitar únicamente la nueva función gráfica y su despacho, el script reproduce exactamente 0.65. Física p6/b1/s1 conservada. Evidencia en `tests/experiments/ARCHITECTURE_066.md`. La fase gráfica sigue abierta: rocas, más variantes e iluminación ambiental. Próximo tramo recomendado: fase 27, Coastline con trazado y secciones propios, escapatorias y variación de anchura/pianos; alternar con manejo/derrape y escucha humana, sin concentrar todas las entregas en CPU. Siguen doce frentes abiertos, ampliables; no son un número fijo de entregas restantes. Online sigue sin backend/salas.
+
+Cierre 0.66: integración (70 perfiles), menú, local 2–4 y entrega local bajo `/f1/` superados. Pages público pendiente: CONNECT rechazado por el proxy con HTTP 403; no es un fallo observado del juego.

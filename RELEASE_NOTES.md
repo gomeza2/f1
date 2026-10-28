@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.65
+# PIXEL GRAND PRIX — entrega 0.66
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Escenarios en 0.66
+
+Segundo tramo 36.3: tribunas con público/gradas y arquitectura propia de cada entorno, techos/fachadas con volumen, materiales y sombras de luz fija. Siete tipos mejorados en Detallado/Retro; Rendimiento conserva los dibujos originales. No se añaden objetos, recursos externos, animaciones ni trabajo de escena por fotograma. Huellas, recuperación, cachés de carretera/fondo y simulación permanecen.
+
+Evidencia y límites en `tests/experiments/ARCHITECTURE_066.md`. No cierra la fase gráfica: continúan rocas, variedad/ambientación e iluminación; próxima mejora recomendada de producto, variedad de Coastline con secciones propias. Escucha del motor y manejo humano siguen abiertos. Publicación de GitHub Pages no acreditada por una prueba local.
 
 ## Motor y portada en 0.65
 
