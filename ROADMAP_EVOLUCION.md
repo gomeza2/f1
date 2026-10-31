@@ -20,6 +20,14 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 | 4. Identidad/ritmo de circuitos | 14 pistas, ancho uniforme de conducción y siete originales todavía muy parecidos; Sunset/Dusty/Champion ya tienen rediseños. | Anchos por sector y más siluetas propias. Admitir vueltas de unos 20, 40, 60 s u otras duraciones útiles. El anterior objetivo global de 25–45 s queda retirado. |
 | 5. Base para modos/local/online | IIFE de unas 1400 líneas mezcla simulación, render, audio, entradas, récords y eventos. Control/cámara/resultados tienen ramas específicas para dos humanos. No hay red ni autoridad de servidor. | Extraer responsabilidades cuando se implemente el sistema que lo necesita: audio, entradas, simulación/eventos. Preservar comparativas; no convertir récords locales en ranking online seguro. |
 
+## Prioridades actualizadas — catálogo, online y vista inclinada
+
+- 0.69: recuperación/marcha atrás y motor longitudinal ampliado, integrados y comprobados; deriva lateral aún rechazada para publicación.
+- 0.70: primer catálogo visual de coches/pistas conectado a la carrera; fase 38 parcial.
+- Próximo tramo: fases 30/32, simulación compartida sin DOM y pruebas de paridad/aislamiento para poder desarrollar salas reales. Diseño concreto en [ONLINE_DESIGN.md](ONLINE_DESIGN.md). Online todavía no disponible.
+- Conducción/derrape, CPU justa, audio, cuatro circuitos uniformes, gráficos y local siguen abiertos y se alternarán por impacto. No reducir todo el trabajo a CPU ni dar por terminada la sensación humana por tests.
+- Vista 3D inclinada opcional en fase 37, solicitada para más adelante; no reemplazará por obligación la vista cenital actual.
+
 ## Fases abiertas
 
 ### 25. Control arcade fluido y competición con contacto — revisiones 0.42/0.45
@@ -334,3 +342,22 @@ Ensayo lateral: respuesta por orientación/velocidad, recuperación limitada por
 Estable: cuatro modelos, seis terrenos, interbloqueo/reversa/retorno, dirección, contactos, vallas, gates/meta/clasificación y pausa comprobados; 18 trayectorias digitales idénticas, 36 vueltas actuales emparejadas con 36 de referencia 0.68, más 12 vueltas Meadow dentro del presupuesto original. Chromium: P1–P4 simultáneos, gatillos emulados, HUD/cámaras, recuperación frontal, pausa y nueva carrera; local 2–4/cinco resoluciones, audio, integración y carga local. Evidencia en `tests/experiments/RECOVERY_069.md`.
 
 La fase 25 no se cierra: el siguiente ensayo lateral debe contemplar la evolución del ángulo de deslizamiento durante la planificación, y compararse con contactos/ritmo antes de integrarse. Alternar con circuitos/gráficos/local: diez pistas variables/cuatro uniformes, doce frentes ampliables, online aún sin backend. Evaluación humana, mando físico y Pages público pendientes.
+
+
+### 37. Vista 3D inclinada opcional — planificada
+
+Cámara ortográfica elevada, ligeramente de costado, con pista legible y coches/escenario de volumen estilizado, materiales retro y paleta lima/cian. Comparar una proyección 2.5D con WebGL/meshes simples antes de elegir tecnología por coste/resultado. No presentar una transformación CSS plana como 3D completo ni añadir un selector vacío.
+
+Un solo estado físico XY para 2D y 3D, con geometría/material/ancho compartidos. Primer prototipo de una pista: coches, pianos, barreras visibles y sombras, oclusión/cámara y minimapa coherentes. Después validar las catorce, cuatro cámaras locales, móvil/resize/fullscreen y rendimiento con fallback 2D. No migrar todos los recursos a una biblioteca hasta justificarla. La simulación online no debe depender del renderizador.
+
+### 38. Catálogo, presentación y preparación de carrera — parcial 0.70
+
+Primera entrega: fichas de cuatro coches/seis pinturas y catorce circuitos, prestaciones desde los modelos reales, previews originales, búsqueda por nombre/superficie, selección/foco/teclado y adaptación a pantallas pequeñas. Conecta a los selectores existentes: no hay otra configuración de carrera paralela. El catálogo de coche elige P1; los otros puestos conservan la parrilla local.
+
+Siguientes tramos: fichas equivalentes por asiento local, filtros/orden cuando la colección crezca, presentación de pilotos/CPU con personalidades explicadas, categorías/desbloqueos solo si tienen lógica real, y coherencia con lobby online. Evitar menús cargados, cifras técnicas sin utilidad, pinturas que confundan la dirección y nombres que no distingan rivales.
+
+## Avance 0.70 — catálogo integrado y ruta hacia online
+
+Fichas de coches con seis pinturas, siluetas propias y comparación de giro/freno/agarre respecto a Balanced; fichas de las 14 rutas con trazado cacheado, superficie, longitud por categoría, checkpoints, anchura variable y perfil predeterminado. Búsqueda sin distinguir tildes, estado seleccionado, diálogo accesible con foco contenido y retorno al botón. Selección conectada a garaje, preview y carrera real; sin mutar la carrera anterior al navegar el menú.
+
+Próximo tramo recomendado: extracción de simulación compartida para online (30/32.1), con contratos y pruebas definidos en `ONLINE_DESIGN.md`. La 3D inclinada queda después como opción 37, conservando 2D y una única física. No existen todavía servidor/salas/ranking online ni vista 3D en el producto; no se crean botones que aparenten esas funciones.

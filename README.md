@@ -41,6 +41,14 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## Catálogo visual — 0.70
+
+**EXPLORAR COCHES Y CIRCUITOS** abre un catálogo conectado al paddock. Cuatro siluetas, seis pinturas, velocidad real y comparación de giro/frenada/agarre respecto a Balanced; catorce pistas con trazado, superficies, recorrido corto/medio/largo, checkpoints y perfil predeterminado. La búsqueda admite nombre o superficie y no distingue tildes. La elección del coche corresponde a P1; los demás pilotos conservan su parrilla individual.
+
+Las fichas modifican los selectores existentes y la siguiente carrera, sin alterar el estado de una carrera anterior. Diálogo con teclado, foco contenido, cierre visible y diseño adaptable. No añade coches, retoca la física ni cambia récords. Pruebas y límites en [CATALOGUE_070.md](tests/experiments/CATALOGUE_070.md).
+
+**Online y vista 3D:** todavía no disponibles. [ONLINE_DESIGN.md](ONLINE_DESIGN.md) concreta salas autoritativas de 2–4, controles, sincronización, reconexión y criterios de despliegue. El próximo hito es extraer la simulación compartida sin DOM. La fase 37 reserva una vista 3D inclinada opcional para más adelante; la 38 continúa catálogo/presentación. Conducción, CPU, audio, cuatro pistas uniformes y gráficos siguen abiertos en [ROADMAP_EVOLUCION.md](ROADMAP_EVOLUCION.md).
+
 ## Recuperación y motor de movimiento — 0.69
 
 Ahora podés retroceder para salir de una mala posición sin reiniciar la carrera. El motor longitudinal incorpora velocidad con signo, resistencia del terreno en ambos sentidos, contactos que respetan el movimiento real y retorno a marcha adelante. El HUD marca R, los coches encienden luces blancas de reversa y el audio recibe la velocidad/carga de marcha atrás.
@@ -673,3 +681,14 @@ GROUP_STAGES=12 node tests/validate-group-traffic.mjs
 ```
 
 `RECOVERY_SCREENSHOTS` guarda capturas de cuatro pilotos en reversa y recuperación ante una valla. La comparación de carreras admite `RACE_SOURCE_BASELINE`; sin esa variable conserva su referencia anterior de pedales. `GROUP_STAGES` selecciona escenarios sin cambiar sus presupuestos históricos.
+
+Pruebas de catálogo 0.70:
+
+```sh
+node tests/browser-catalogue.cjs
+node tests/validate-menu.mjs
+node tests/browser-paddock.cjs
+node tests/browser-release.cjs
+```
+
+`CATALOGUE_SCREENSHOTS` exporta vistas de coches/circuitos en cinco resoluciones. La prueba usa entradas nativas y un puente de solo lectura para comprobar que elegir en el menú no modifica los coches de la carrera anterior.

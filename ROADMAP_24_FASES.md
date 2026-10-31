@@ -1270,3 +1270,12 @@ Ensayo lateral: respuesta por orientación/velocidad, recuperación limitada por
 Estable: cuatro modelos, seis terrenos, interbloqueo/reversa/retorno, dirección, contactos, vallas, gates/meta/clasificación y pausa comprobados; 18 trayectorias digitales idénticas, 36 vueltas actuales emparejadas con 36 de referencia 0.68, más 12 vueltas Meadow dentro del presupuesto original. Chromium: P1–P4 simultáneos, gatillos emulados, HUD/cámaras, recuperación frontal, pausa y nueva carrera; local 2–4/cinco resoluciones, audio, integración y carga local. Evidencia en `tests/experiments/RECOVERY_069.md`.
 
 La fase 25 no se cierra: el siguiente ensayo lateral debe contemplar la evolución del ángulo de deslizamiento durante la planificación, y compararse con contactos/ritmo antes de integrarse. Alternar con circuitos/gráficos/local: diez pistas variables/cuatro uniformes, doce frentes ampliables, online aún sin backend. Evaluación humana, mando físico y Pages público pendientes.
+
+
+## Ampliación 0.70 — catálogo, online y vista 3D inclinada
+
+Se incorporan fases abiertas 37 (3D inclinada opcional) y 38 (catálogo/preparación), detalladas en `ROADMAP_EVOLUCION.md`. El catálogo 0.70 está integrado: cuatro modelos, seis pinturas, catorce rutas, comparación, búsqueda, selección real y navegación adaptada. No se cierra toda la presentación ni la conducción.
+
+Pedido vigente: profundizar jugabilidad/derrape, CPU competitiva, motor gráfico, audio, pistas y catálogo; desarrollar online real. Próximo tramo 30/32.1: extraer una simulación compartida sin DOM y comprobar paridad y dos salas aisladas antes de conectar un servidor. `ONLINE_DESIGN.md` concreta autoridad, mensajes, ciclo de sala, reconexión, latencia, validación, pruebas y alojamiento. Online permanece en diseño; no se anuncia como disponible.
+
+La opción 3D se evalúa después, con cámara elevada de costado, volumen estilizado y estética retro. Debe usar el mismo estado/terrenos/barreras, conservar 2D y comprobar las 14 pistas y 2–4 cámaras; sin selector vacío ni cambio de física encubierto. Las fases orientan, no fijan un número de entregas ni un techo de evolución.

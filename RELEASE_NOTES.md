@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.69
+# PIXEL GRAND PRIX — entrega 0.70
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Catálogo y planificación en 0.70
+
+Catálogo real del paddock: cuatro modelos, seis pinturas y catorce pistas, previews propios, comparación de prestaciones coherente con Balanced, búsqueda por nombre/superficie sin tildes y selección conectada a garaje/pista/carrera. Diálogo con foco, teclado, cabecera/cierre persistentes y adaptación a cinco tamaños. No se retoca el motor de carrera ni se borran récords.
+
+Fases ampliadas: 37, vista 3D inclinada opcional; 38, catálogo/presentación. Online se concreta en `ONLINE_DESIGN.md`, con autoridad de servidor y fases de núcleo compartido, salas, sincronización y despliegue. Son tareas pendientes; esta versión no incluye backend ni 3D. Siguiente tramo recomendado: 30/32.1, extracción de simulación sin DOM y paridad/aislamiento. Evidencia en `tests/experiments/CATALOGUE_070.md`.
 
 ## Recuperación y motor de movimiento en 0.69
 

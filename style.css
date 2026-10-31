@@ -278,3 +278,31 @@ body.racing.local-racing .shell{width:100%}
 .controls-help .opponent-summary{margin:12px 0;font-size:13px}
 @media(min-width:601px) and (max-width:960px){.race-setup{display:grid;grid-template-columns:1fr 1fr;align-items:start}}
 @media(max-width:600px){.paddock-heading{margin-bottom:12px}#menu h1{font-size:24px}#menu .intro{font-size:16px}.race-ready{padding:14px}.race-ready .menu-actions{grid-template-columns:1fr}.ready-selection{font-size:15px}#carPreview{height:110px}}
+
+/* Catalogue shares the actual garage/track choices; all artwork is procedural. */
+.catalogue-open{width:100%;margin-top:10px;color:var(--cyan)}
+.catalogue-dialog{width:min(1080px,calc(100vw - 24px));max-height:90vh;max-height:90svh;box-sizing:border-box;overflow:auto;padding:24px;background:#0b1120;color:#ecf2e9;border:1px solid #53717e;box-shadow:0 24px 80px #0009}
+.catalogue-dialog::backdrop{background:#030713d9}
+.catalogue-heading{box-shadow:0 -24px #0b1120;position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0 18px;border-bottom:1px solid #344655;background:#0b1120}
+.catalogue-heading h2{font-size:clamp(14px,2.5vw,22px);line-height:1.6;margin:0;color:var(--lime)}
+.catalogue-heading .eyebrow{margin:0 0 8px}.catalogue-heading button{flex-shrink:0;min-height:44px;font:12px monospace;padding:10px 14px}
+.catalogue-nav{display:flex;gap:8px;margin:20px 0}.catalogue-nav button{flex:1;min-height:44px;font-size:11px}
+.catalogue-nav [aria-pressed=true]{border-color:var(--cyan);color:var(--cyan);background:#132b38}
+.catalogue-paints{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.catalogue-paints button{width:44px;height:44px;min-height:44px;padding:0;border:3px solid #263a49;color:#07111c;font: bold 22px monospace}
+.catalogue-paints [aria-pressed=true]{outline:2px solid #f3f5df;outline-offset:2px}
+.catalogue-search{display:block;font:11px monospace;color:#b8c9cf}.catalogue-search input{display:block;box-sizing:border-box;width:100%;min-height:44px;margin-top:8px;padding:10px 12px;background:#111c2c;color:#eaf4ef;border:1px solid #4e677a;font:16px monospace}
+.catalogue-count{font:13px/1.5 monospace;color:#a4b7c5;margin:16px 0}
+.catalogue-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.catalogue-grid.catalogue-cars{grid-template-columns:repeat(2,minmax(0,1fr))}
+.catalogue-card{display:flex;flex-direction:column;gap:10px;min-width:0;text-align:left;padding:14px;background:linear-gradient(145deg,#172635,#0d1727);border:1px solid #3b5266;white-space:normal;color:#e6f0e8}
+.catalogue-card[aria-pressed=true]{border-color:var(--lime);box-shadow:inset 0 0 0 1px var(--lime)}
+.catalogue-card:hover{background:#1b3040}.catalogue-card:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+.catalogue-card canvas{display:block;width:100%;max-width:320px;height:auto;align-self:center;aspect-ratio:20/9;image-rendering:pixelated;background:#081420;border:1px solid #263e4e;box-sizing:border-box}
+.catalogue-card strong{font-size:11px;line-height:1.8;color:#eaf3e9}.catalogue-card .catalogue-meta{font:13px/1.5 monospace;color:var(--cyan)}
+.catalogue-card .catalogue-description{font:13px/1.5 monospace;color:#b6c8ce;text-transform:none;letter-spacing:0}
+.catalogue-stat{display:grid;grid-template-columns:55px minmax(30px,1fr) 35px;align-items:center;gap:8px;font:11px monospace;width:100%;color:#bccdd0}
+.catalogue-stat meter{width:100%;height:8px;accent-color:var(--cyan)}.catalogue-stat meter::-webkit-meter-bar{background:#263949;border:0}.catalogue-stat meter::-webkit-meter-optimum-value{background:var(--cyan)}.catalogue-stat b{text-align:right;font-weight:400;color:#e5eddd}
+.catalogue-summary{position:sticky;bottom:-24px;background:#101c2cf5;padding:16px;margin:20px -1px -1px;border-top:1px solid #456574;font:14px/1.6 monospace;color:var(--lime)}
+.catalogue-empty{grid-column:1/-1;padding:28px 12px;font:16px/1.6 monospace;color:#c7d4d9}
+@media(max-width:800px){.catalogue-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.catalogue-dialog{padding:16px}.catalogue-heading{align-items:flex-start;flex-direction:column;gap:12px}.catalogue-heading button{align-self:stretch}.catalogue-grid,.catalogue-grid.catalogue-cars{grid-template-columns:1fr}.catalogue-summary{bottom:-16px}}

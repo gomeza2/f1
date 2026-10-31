@@ -615,6 +615,49 @@ function updateMenuPreview(){
  $('opponentSummary').textContent=['racer','attacker','precise'].slice(0,count).map(id=>AI_PERSONALITIES[id].name+' · '+AI_PERSONALITIES[id].description).join(' / ');
  $('soloStartLabel').textContent='CORRER VS '+count+' CPU';preview.setAttribute('aria-label',item.name+', '+gates.length+' checkpoints, '+barrierNames[profile]);validateLocalSetup();
 }
+// Catalogue changes the existing menu choices; it never creates a second race setup.
+let catalogueKind='cars';const catalogueThumbs=new WeakMap();
+const CATALOGUE_SURFACES={asphalt:'ASFALTO',dirt:'TIERRA',ice:'HIELO',grass:'PASTO',volcanic:'VOLCÁNICO',mixed:'MIXTO',coastal:'COSTERO'};
+function catalogueThumbnail(item){
+ if(catalogueThumbs.has(item))return catalogueThumbs.get(item);
+ const image=document.createElement('canvas');image.width=320;image.height=144;const c=image.getContext('2d'),scale=Math.min(296/item.worldWidth,120/item.worldHeight);
+ c.fillStyle='#081420';c.fillRect(0,0,320,144);c.translate((320-item.worldWidth*scale)/2,(144-item.worldHeight*scale)/2);c.scale(scale,scale);c.lineCap='round';c.lineJoin='round';
+ const colors={asphalt:'#8a9dab',coastal:'#86b4b8',dirt:'#d0a36e',grass:'#7eaa65',ice:'#d3f4f0',volcanic:'#b47962'};
+ let material=null;for(let d=0;d<=item.length+24;d+=24){const at=Math.min(d,item.length),p=sampleAt(at,item),next=surfaceAtProgress(at,item);if(next!==material){if(material!==null)c.stroke();c.beginPath();const previous=sampleAt(Math.max(0,at-24),item);c.moveTo(previous.x,previous.y);c.strokeStyle=colors[next]||colors.asphalt;c.lineWidth=6/scale;material=next;}c.lineTo(p.x,p.y);if(at===item.length)break;}c.stroke();
+ const start=sampleAt(0,item);c.fillStyle='#d7ff38';c.beginPath();c.arc(start.x,start.y,3.5/scale,0,Math.PI*2);c.fill();catalogueThumbs.set(item,image);return image;
+}
+function updateCatalogueSelection(){
+ const choice=catalogueKind==='cars'?$('carModel').value:$('stageSelect').value;
+ for(const button of $('catalogueGrid').querySelectorAll('[data-choice]'))button.setAttribute('aria-pressed',String(button.dataset.choice===choice));
+ $('catalogueSummary').textContent=$('readySelection').textContent+' · '+(CAR_PAINTS[$('carColor').value]||CAR_PAINTS.pink).name;
+}
+function catalogueSearchText(text){return text.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('es');}
+function renderCatalogue(){
+ const isCars=catalogueKind==='cars',grid=$('catalogueGrid');grid.replaceChildren();grid.classList.toggle('catalogue-cars',isCars);$('catalogueCars').setAttribute('aria-pressed',String(isCars));$('catalogueTracks').setAttribute('aria-pressed',String(!isCars));$('cataloguePaints').classList.toggle('hidden',!isCars);$('catalogueSearchLabel').classList.toggle('hidden',isCars);
+ $('catalogueCars').textContent='COCHES · '+Object.keys(CAR_MODELS).length;$('catalogueTracks').textContent='CIRCUITOS · '+tracks.length;
+ const query=catalogueSearchText($('catalogueSearch').value.trim());
+ const choices=isCars?Object.entries(CAR_MODELS):tracks.map((item,i)=>[String(i),item]).filter(([,item])=>catalogueSearchText(item.name+' '+(CATALOGUE_SURFACES[item.surface]||'')).includes(query));
+ $('catalogueCount').textContent=isCars?'TU COCHE · P1. Comparación con Balanced (100%).':choices.length+' / '+tracks.length+' CIRCUITOS · Elegí un trazado para tu próxima carrera.';
+ for(const [id,item] of choices){
+  const card=document.createElement('button');card.type='button';card.className='catalogue-card';card.dataset.choice=id;
+  const art=document.createElement('canvas');art.width=320;art.height=144;art.setAttribute('aria-hidden','true');const c=art.getContext('2d');
+  const title=document.createElement('strong');title.textContent=item.name;const meta=document.createElement('span');meta.className='catalogue-meta';const description=document.createElement('span');description.className='catalogue-description';
+  if(isCars){
+   const paint=CAR_PAINTS[$('carColor').value]||CAR_PAINTS.pink;c.fillStyle='#081420';c.fillRect(0,0,320,144);c.save();c.translate(160,72);c.rotate(-.16);c.scale(4.5,4.5);drawCarBody(c,{model:id,heading:-.16,color:paint.hex,steer:0,braking:false,wheelTravel:0,done:false,flash:0,offroad:0});c.restore();meta.textContent=item.maxSpeed+' km/h · '+paint.name;description.textContent=item.description;
+  }else{
+   c.drawImage(catalogueThumbnail(item),0,0);meta.textContent=(CATALOGUE_SURFACES[item.surface]||item.surface)+' · '+'RECORRIDO '+(item.length<4500?'CORTO':item.length<7500?'MEDIO':'LARGO');description.textContent=checkpointsForTrack(item).length+' checkpoints · '+(item.roadProfile?'ancho variable':'ancho fijo')+' · '+(item.defaultBarriers==='open'?'abierto por defecto':'barreras por sectores');
+  }
+  card.append(art,title,meta,description);
+  if(isCars)for(const [field,label] of [['steering','GIRO'],['braking','FRENO'],['grip','AGARRE']]){const percent=Math.round(item[field]/CAR_MODELS.balanced[field]*100),maximum=Math.round(Math.max(...Object.values(CAR_MODELS).map(m=>m[field]))/CAR_MODELS.balanced[field]*100),row=document.createElement('span'),name=document.createElement('span'),meter=document.createElement('meter'),value=document.createElement('b');row.className='catalogue-stat';name.textContent=label;meter.min=0;meter.max=maximum;meter.value=percent;meter.setAttribute('aria-label',label+' de '+item.name);meter.setAttribute('aria-valuetext',percent+'% respecto a Balanced');value.textContent=percent+'%';row.append(name,meter,value);card.append(row);}
+  card.addEventListener('click',()=>{if(isCars){$('carModel').value=id;updateGaragePreview();updateLocalLobby();}else{$('stageSelect').value=id;updateMenuPreview();}updateCatalogueSelection();});grid.append(card);
+ }
+ if(!choices.length){const empty=document.createElement('p');empty.className='catalogue-empty';empty.textContent='No hay circuitos con esa búsqueda. Probá otro nombre o superficie.';grid.append(empty);}
+ updateCatalogueSelection();
+}
+function renderCataloguePaints(){
+ const group=$('cataloguePaints');group.replaceChildren();for(const [id,paint] of Object.entries(CAR_PAINTS)){const button=document.createElement('button');button.type='button';button.style.background=paint.hex;button.setAttribute('aria-label','Pintura '+paint.name);button.setAttribute('aria-pressed',String(id===$('carColor').value));button.textContent=id===$('carColor').value?'✓':'';button.addEventListener('click',()=>{$('carColor').value=id;updateGaragePreview();updateLocalLobby();renderCatalogue();for(const swatch of group.children){const selected=swatch===button;swatch.setAttribute('aria-pressed',String(selected));swatch.textContent=selected?'✓':'';}});group.append(button);}
+}
+function openCatalogue(){if(running)return;catalogueKind='cars';$('catalogueSearch').value='';renderCataloguePaints();renderCatalogue();$('catalogueDialog').showModal();$('catalogueDialog').scrollTop=0;$('catalogueCars').focus({preventScroll:true});}
 const SCENERY_CLEARANCE=124;
 const SCENERY_THEMES={
  park:{kinds:['tree','tree','tent','stands'],leaf:'#327951',light:'#71a66a',stone:'#88917c',roof:'#3cbab5',ground:'#4c694a'},
@@ -1886,6 +1929,15 @@ function showLocalSetup(open){$('localLobby').classList.toggle('hidden',!open);$
 $('localSetupBtn').onclick=()=>showLocalSetup(true);
 $('localClose').onclick=()=>showLocalSetup(false);
 $('customizeBtn').onclick=()=>focusMenuControl('stageSelect');
+$('catalogueBtn').onclick=openCatalogue;
+$('catalogueClose').onclick=()=>$('catalogueDialog').close();
+$('catalogueDialog').addEventListener('close',()=>$('catalogueBtn').focus({preventScroll:true}));
+$('catalogueDialog').addEventListener('keydown',event=>{if(event.key!=='Tab')return;const controls=[...$('catalogueDialog').querySelectorAll('button:not([disabled]),input:not([disabled])')].filter(control=>control.getClientRects().length);const first=controls[0],last=controls.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}});
+
+$('catalogueCars').onclick=()=>{catalogueKind='cars';renderCatalogue();$('catalogueDialog').scrollTop=0;};
+$('catalogueTracks').onclick=()=>{catalogueKind='tracks';renderCatalogue();$('catalogueDialog').scrollTop=0;};
+$('catalogueSearch').addEventListener('input',renderCatalogue);
+
 $('localPlayerCount').addEventListener('change',updateLocalLobby);
 for(let i=1;i<=4;i++){
  $('playerInput'+i).addEventListener('change',updateLocalLobby);

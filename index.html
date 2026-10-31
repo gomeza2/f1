@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="es">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="application-version" content="0.69"><title>PIXEL GRAND PRIX</title><link rel="stylesheet" href="style.css?v=0.69"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="application-version" content="0.70"><title>PIXEL GRAND PRIX</title><link rel="stylesheet" href="style.css?v=0.70"></head>
 <body><main class="shell">
 <header><div class="brand">PIXEL<span>GP</span></div><div class="topnote">ARCADE RACING SYSTEM // 1994</div><div class="header-actions"><button id="soundBtn" class="small" aria-pressed="true">♫ SONIDO: ON</button><button id="audioSettingsBtn" aria-label="Ajustar mezcla de sonido" title="Mezcla de sonido" class="small" aria-haspopup="dialog">MEZCLA</button><button id="fullscreenBtn" class="small" aria-label="Pantalla completa">⛶ PANTALLA COMPLETA</button></div></header>
 <section id="menu" class="panel">
 <div class="paddock-heading"><div><p class="eyebrow">EL PADDOCK</p><h1 id="menuTitle" tabindex="-1">PIXEL GRAND<br><span>PRIX</span></h1><p class="intro">Elegí tu coche. Aprendé la pista. Ganá la carrera.</p></div><p class="paddock-badge"><span class="paddock-flag checkered-pattern" aria-hidden="true"></span><strong id="menuTrackCount">14</strong> CIRCUITOS<br><span>ARCADE · LOCAL 1–4</span></p></div>
 <div class="paddock-layout">
-<div class="race-ready"><p class="preview-label">LISTO PARA CORRER</p><p id="readySelection" class="ready-selection"></p><p id="raceSummary" role="status" aria-live="polite">3 VUELTAS · 3 RIVALES CPU</p><div class="menu-actions"><button id="soloStart" data-mode="solo" class="primary"><span id="soloStartLabel">CORRER VS CPU</span><small>UN JUGADOR</small></button><button id="localSetupBtn" class="small" aria-expanded="false" aria-controls="localLobby">PREPARAR MULTIJUGADOR · 2–4</button></div><button id="customizeBtn" class="small customize-button" aria-controls="raceSetup">CAMBIAR PISTA Y COCHE ↓</button><p class="input-note">WASD para manejar · ESPACIO para derrapar. En celular necesitás un teclado.</p></div>
+<div class="race-ready"><p class="preview-label">LISTO PARA CORRER</p><p id="readySelection" class="ready-selection"></p><p id="raceSummary" role="status" aria-live="polite">3 VUELTAS · 3 RIVALES CPU</p><div class="menu-actions"><button id="soloStart" data-mode="solo" class="primary"><span id="soloStartLabel">CORRER VS CPU</span><small>UN JUGADOR</small></button><button id="localSetupBtn" class="small" aria-expanded="false" aria-controls="localLobby">PREPARAR MULTIJUGADOR · 2–4</button></div><button id="catalogueBtn" class="small catalogue-open" type="button" aria-haspopup="dialog" aria-controls="catalogueDialog">EXPLORAR COCHES Y CIRCUITOS ↗</button><button id="customizeBtn" class="small customize-button" aria-controls="raceSetup">CAMBIAR PISTA Y COCHE ↓</button><p class="input-note">WASD para manejar · ESPACIO para derrapar. En celular necesitás un teclado.</p></div>
 
 <div id="raceSetup" class="race-setup">
 <fieldset class="setup-card"><legend><span>01</span> PREPARÁ LA CARRERA</legend>
@@ -49,4 +49,11 @@
 <label for="volumeEffects">EFECTOS Y AVISOS <output id="volumeEffectsValue" for="volumeEffects">85 %</output></label><input id="volumeEffects" type="range" min="0" max="100" step="1" value="85">
 <p id="audioMixStatus" role="status" aria-live="polite"></p><p id="audioPauseNotice"></p><div class="audio-actions"><button id="audioReset" class="small">RESTABLECER</button><button id="audioClose" class="primary" autofocus>CERRAR</button></div>
 </dialog>
-<footer><span>PIXELGP © ARCADE DIVISION</span><span>BUILD 0.69 // RECOVERY DRIVE</span></footer></main><script src="engine-audio.js?v=0.69"></script><script src="script.js?v=0.69"></script></body></html>
+<dialog id="catalogueDialog" class="catalogue-dialog" aria-labelledby="catalogueTitle">
+<header class="catalogue-heading"><div><p class="eyebrow">TU PADDOCK</p><h2 id="catalogueTitle">ELEGÍ CÓMO CORRER</h2></div><button id="catalogueClose" class="small" type="button">LISTO · VOLVER</button></header>
+<nav class="catalogue-nav" aria-label="Secciones del catálogo"><button id="catalogueCars" type="button" aria-pressed="true">COCHES · 4</button><button id="catalogueTracks" type="button" aria-pressed="false">CIRCUITOS · 14</button></nav>
+<div id="cataloguePaints" class="catalogue-paints" role="group" aria-label="Pintura del coche"></div>
+<label id="catalogueSearchLabel" class="catalogue-search hidden">BUSCAR CIRCUITO<input id="catalogueSearch" type="search" maxlength="60" placeholder="Nombre o superficie" autocomplete="off"></label>
+<p id="catalogueCount" class="catalogue-count" aria-live="polite"></p><div id="catalogueGrid" class="catalogue-grid"></div><p id="catalogueSummary" class="catalogue-summary" role="status" aria-live="polite"></p>
+</dialog>
+<footer><span>PIXELGP © ARCADE DIVISION</span><span>BUILD 0.70 // PADDOCK COLLECTION</span></footer></main><script src="engine-audio.js?v=0.70"></script><script src="script.js?v=0.70"></script></body></html>
