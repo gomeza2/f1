@@ -1290,3 +1290,16 @@ Verificación: 140 casos/3.164 pasos de cuatro modelos, siete rutas/cinco secuen
 Se comprueba catálogo/paddock/local, reversa, audio, reloj fijo, integración y entrega bajo `/f1/`, incluida carga desde HTML anterior sin la dependencia y mensaje/arranque bloqueado si falla. Evidencia en `tests/experiments/SHARED_DRIVING_071.md`; API en `SIMULATION_ARCHITECTURE.md`.
 
 **Próximo tramo 30.2:** datos y geometría/materiales/barreras de las catorce pistas sin render. Siguen 30.3 contactos/progreso/reloj/eventos y 30.4 RaceState completo aislado. Solo después salas y sincronización de 32/33. Dos vehículos aislados no acreditan dos salas; no hay online todavía. Las fases de manejo/CPU, audio, pistas, gráficos/3D opcional y catálogo siguen abiertas, sin concentrar cada entrega en IA.
+
+
+## Avance 0.72 — fase 30.2, pistas compartidas para online
+
+Registro de las catorce pistas y geometría física trasladados a `track-core.js`, consumido por el juego y Node sin Canvas/DOM/audio/storage/reloj. Secciones y materiales, curvas, zonas de grava, checkpoints, contornos, vallas y neumáticos, consultas espaciales y selección de perfiles en una implementación. Definiciones/derivados públicos inmutables, contornos cacheados por pista y candidatos de colisión privados por contexto. Ningún trazado ni regla de manejo se cambia para realizar la extracción; récords p6/b1/s1 conservados.
+
+Al integrar, se corrige el orden de inicialización: el contexto nuevo se activa antes de calcular el plan CPU, para no consultar la curva del circuito anterior al cambiar de pista. Se adapta el bootstrap a dos dependencias, con URL base capturada antes de esperar y recuperación ante HTML anterior. No hay un servidor basado en DOM simulado.
+
+Verificación y resultados específicos en `tests/experiments/SHARED_TRACKS_072.md`. El bloque 30.2 no cierra fase 30: siguen **30.3 contactos/progreso/reloj/eventos**, **30.4 RaceState completo aislado/replay** y después **32/33 salas y sincronización**. Contextos de geometría independientes no acreditan carreras o salas independientes. No hay botón online ni carreras por Internet todavía.
+
+**Ubicación acordada para fase 37:** la vista 3D inclinada será opcional en **Cámara y gráficos** del paddock y accesible desde pausa, con elección explícita **2D / 3D inclinada**, preferencia local y regreso rápido a 2D. La distancia cerca/panorámica y la tecla C conservarán su función. Mantener acceso cómodo por teclado y móvil, fallback ante incompatibilidad/rendimiento y una única simulación para ambos renderizadores. El control solo se mostrará cuando el modo funcione: hoy es planificación, no un selector vacío.
+
+La fase 38 de elección visual de P2–P4 sigue pendiente. Se priorizó online conforme a la última instrucción del usuario; manejo/derrape, audio, cuatro pistas uniformes y gráficos siguen abiertos.

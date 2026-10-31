@@ -49,13 +49,21 @@ Esta extracción conserva conducción, CPU, pistas y récords. Todavía faltan g
 
 La carga comprueba el nuevo archivo también ante un HTML anterior en caché y muestra una recarga necesaria si no puede obtenerlo. Se mantienen las rutas de Pages y el juego local sin backend.
 
+## Pistas compartidas para online — 0.72
+
+El juego y Node ya usan `track-core.js` para las catorce pistas: recorrido, anchuras/pianos, curvas, materiales y escapatorias, checkpoints, vallas y neumáticos físicos. Registro inmutable y contexto separado para cada pista/perfil; no se mantienen dos geometrías distintas. La entrega conserva las pistas y la conducción anteriores.
+
+Esto completa el bloque de geometría 30.2; **todavía no hay partidas online**. Siguen contactos, vueltas y reloj en el núcleo compartido, aislamiento de carreras y después salas/sincronización. Documentación técnica en [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md) y evidencia en [SHARED_TRACKS_072.md](tests/experiments/SHARED_TRACKS_072.md).
+
+La futura vista **3D inclinada opcional** tendrá acceso en **Cámara y gráficos** del paddock y desde pausa, con elección 2D/3D y regreso rápido a 2D. Se mantendrá separada del encuadre cerca/panorámica (`C`). Es una ubicación planificada: el renderizador 3D y ese selector aún no están disponibles.
+
 ## Catálogo visual — 0.70
 
 **EXPLORAR COCHES Y CIRCUITOS** abre un catálogo conectado al paddock. Cuatro siluetas, seis pinturas, velocidad real y comparación de giro/frenada/agarre respecto a Balanced; catorce pistas con trazado, superficies, recorrido corto/medio/largo, checkpoints y perfil predeterminado. La búsqueda admite nombre o superficie y no distingue tildes. La elección del coche corresponde a P1; los demás pilotos conservan su parrilla individual.
 
 Las fichas modifican los selectores existentes y la siguiente carrera, sin alterar el estado de una carrera anterior. Diálogo con teclado, foco contenido, cierre visible y diseño adaptable. No añade coches, retoca la física ni cambia récords. Pruebas y límites en [CATALOGUE_070.md](tests/experiments/CATALOGUE_070.md).
 
-**Online y vista 3D:** todavía no disponibles. [ONLINE_DESIGN.md](ONLINE_DESIGN.md) concreta salas autoritativas de 2–4, controles, sincronización, reconexión y criterios de despliegue. El próximo hito es extraer la simulación compartida sin DOM. La fase 37 reserva una vista 3D inclinada opcional para más adelante; la 38 continúa catálogo/presentación. Conducción, CPU, audio, cuatro pistas uniformes y gráficos siguen abiertos en [ROADMAP_EVOLUCION.md](ROADMAP_EVOLUCION.md).
+**Online y vista 3D:** todavía no disponibles. [ONLINE_DESIGN.md](ONLINE_DESIGN.md) concreta salas autoritativas de 2–4, controles, sincronización, reconexión y criterios de despliegue. La conducción y la geometría ya se comparten sin DOM; el próximo hito es extraer contactos, vueltas/reloj y estados completos independientes por carrera. La fase 37 reserva una vista 3D inclinada opcional para más adelante; la 38 continúa catálogo/presentación. Conducción, CPU, audio, cuatro pistas uniformes y gráficos siguen abiertos en [ROADMAP_EVOLUCION.md](ROADMAP_EVOLUCION.md).
 
 ## Recuperación y motor de movimiento — 0.69
 
@@ -714,3 +722,13 @@ DRIVING_HTML_BASELINE=/tmp/pixelgp-before-071.html node tests/browser-release.cj
 ```
 
 Las pruebas nativas usan Playwright/Chromium opcionales; el módulo de conducción no agrega dependencias. La igualdad con la implementación anterior se comprueba por entorno; entre Node y Chromium se mide el pequeño redondeo numérico, sin prometer lockstep binario universal.
+
+
+Pruebas de geometría compartida 0.72:
+
+```sh
+node tests/validate-shared-tracks.mjs
+node tests/validate-tracks.mjs
+```
+
+Para comparar con un archivo real de la entrega anterior, definir `TRACK_SOURCE_BASELINE`; sin esa variable, el validador revierte exclusivamente la extracción declarada mediante el helper histórico. La evidencia de entrega distingue paridad matemática, carreras automatizadas y navegador; no equivale a aprobación humana ni a despliegue de un servidor.

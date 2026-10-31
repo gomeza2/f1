@@ -1,6 +1,6 @@
 # PIXEL GRAND PRIX — diseño de online privado
 
-**Estado en 0.71: primer módulo de conducción compartido integrado; sin servidor ni carreras online disponibles.** `driving-core.js` ya funciona en navegador y Node, pero el estado de carrera completo, geometría/colisiones/progreso y eventos todavía dependen del adaptador actual. Ver [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md). El catálogo 0.70 y la recuperación 0.69 permanecen integrados.
+**Estado en 0.72: conducción y geometría compartidas integradas; sin servidor ni carreras online disponibles.** `driving-core.js` y `track-core.js` funcionan en navegador y Node. Faltan respuesta a contactos, progreso/reloj/eventos y estado completo independiente por carrera. Ver [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md). El catálogo 0.70 y la recuperación 0.69 permanecen integrados.
 
 ## Primera entrega completa que se busca
 
@@ -82,4 +82,4 @@ TLS, orígenes permitidos, sesiones impredecibles, límites de conexiones/salas/
 
 ## Orden inmediato
 
-0.70 completa el primer catálogo visual y 0.71 extrae el motor de vehículos con paridad/aislamiento de ese componente. Próximo paso online: geometría y consultas de pistas compartidas; después carrera/eventos y dos RaceState completos aislados (30/32.1). Después, servidor/salas y prueba local integral; luego reconciliación/latencia; finalmente despliegue revisable. La vista 3D inclinada queda en fase 37 como opción de render que consumirá la misma simulación, sin cambiar la autoridad ni duplicar la física.
+0.70 completa el primer catálogo visual y 0.71 extrae el motor de vehículos con paridad/aislamiento de ese componente. 0.72 integra geometría/materiales/checkpoints/barreras compartidos de las 14 pistas. Próximo paso online: contactos y carrera/eventos, y después dos RaceState completos aislados (30/32.1). Después, servidor/salas y prueba local integral; luego reconciliación/latencia; finalmente despliegue revisable. La vista 3D inclinada queda en fase 37 como opción de render que consumirá la misma simulación, sin cambiar la autoridad ni duplicar la física.

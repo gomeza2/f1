@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.71
+# PIXEL GRAND PRIX — entrega 0.72
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Geometría compartida para online en 0.72
+
+`track-core.js` integra datos y consultas físicas de 14 pistas para navegador/Node: secciones, materiales y grava, curvas, gates, contornos, vallas/neumáticos y candidatos de colisión. Estado de geometría inmutable y contextos por perfil; el juego consume la misma implementación. Se conserva manejo, trazados y récords. Corregido orden de cambio de pista antes de planificar CPU y carga de dos dependencias ante HTML viejo.
+
+Bloque 30.2, sin servidor/salas todavía. Siguiente: contactos, progreso/reloj/eventos y carreras completas aisladas. La futura 3D queda registrada como opción cómoda en Cámara y gráficos/pausa, separada del encuadre actual; no se añade un control sin renderizador. Detalle de pruebas y límites en `tests/experiments/SHARED_TRACKS_072.md`.
 
 ## Primer bloque compartido de simulación en 0.71
 

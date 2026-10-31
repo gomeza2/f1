@@ -24,7 +24,7 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 
 - 0.69: recuperación/marcha atrás y motor longitudinal ampliado, integrados y comprobados; deriva lateral aún rechazada para publicación.
 - 0.70: primer catálogo visual de coches/pistas conectado a la carrera; fase 38 parcial.
-- 0.71: primer motor de vehículos compartido con paridad; pendiente la carrera completa. Próximo tramo 30.2: geometría de pistas sin render, y después contactos/progreso/eventos y RaceState aislado para salas reales. Diseño concreto en [ONLINE_DESIGN.md](ONLINE_DESIGN.md). Online todavía no disponible.
+- 0.71: motor de vehículos compartido; 0.72: geometría/materiales/checkpoints/barreras de las catorce pistas compartidos y comprobados. Siguen 30.3 contactos/progreso/reloj/eventos y 30.4 RaceState completo aislado, antes de salas reales. Diseño concreto en [ONLINE_DESIGN.md](ONLINE_DESIGN.md). Online todavía no disponible.
 - Conducción/derrape, CPU justa, audio, cuatro circuitos uniformes, gráficos y local siguen abiertos y se alternarán por impacto. No reducir todo el trabajo a CPU ni dar por terminada la sensación humana por tests.
 - Vista 3D inclinada opcional en fase 37, solicitada para más adelante; no reemplazará por obligación la vista cenital actual.
 
@@ -100,6 +100,8 @@ Avance 0.54: prioridad lateral para un rival solapado aunque haya un líder algo
 - Validación: escenarios automáticos y Chromium con mandos emulados y teclado real automatizado; distribución en escritorio y móvil, capturas revisadas. No equivale a hardware real ni a una carrera humana de cuatro. Siguen pendientes remapeo configurable, comodidad de teclado/mandos físicos y rendimiento sostenido con cuatro cámaras. Física 5, CPU, recorridos y récords conservados.
 
 ### 30. Simulación y eventos mantenibles
+
+Estado 0.72: 30.1 conducción y 30.2 geometría integradas con paridad; 30.3 contactos/progreso/reloj/eventos y 30.4 aislamiento/replay pendientes. El paso fijo/interpolación ya está integrado desde 0.58, sin cerrar el núcleo completo por eso.
 
 - Extraer paso de simulación/controles normalizados sin DOM, Canvas, audio ni localStorage. Emitir eventos de checkpoint/vuelta/choque/final para sus consumidores.
 - Actualización fija con acumulador, límite de recuperación tras pausas y render interpolado; medir antes de elegir frecuencia y presupuesto.
@@ -346,6 +348,8 @@ La fase 25 no se cierra: el siguiente ensayo lateral debe contemplar la evoluci�
 
 ### 37. Vista 3D inclinada opcional — planificada
 
+Acceso previsto en **Cámara y gráficos** del paddock y desde pausa: **2D / 3D inclinada**, preferencia local y regreso rápido a 2D. La tecla C conserva el encuadre cerca/panorámica. Mostrar la opción cuando exista un renderizador funcional y un fallback comprobado.
+
 Cámara ortográfica elevada, ligeramente de costado, con pista legible y coches/escenario de volumen estilizado, materiales retro y paleta lima/cian. Comparar una proyección 2.5D con WebGL/meshes simples antes de elegir tecnología por coste/resultado. No presentar una transformación CSS plana como 3D completo ni añadir un selector vacío.
 
 Un solo estado físico XY para 2D y 3D, con geometría/material/ancho compartidos. Primer prototipo de una pista: coches, pianos, barreras visibles y sombras, oclusión/cámara y minimapa coherentes. Después validar las catorce, cuatro cámaras locales, móvil/resize/fullscreen y rendimiento con fallback 2D. No migrar todos los recursos a una biblioteca hasta justificarla. La simulación online no debe depender del renderizador.
@@ -372,3 +376,16 @@ Verificación: 140 casos/3.164 pasos de cuatro modelos, siete rutas/cinco secuen
 Se comprueba catálogo/paddock/local, reversa, audio, reloj fijo, integración y entrega bajo `/f1/`, incluida carga desde HTML anterior sin la dependencia y mensaje/arranque bloqueado si falla. Evidencia en `tests/experiments/SHARED_DRIVING_071.md`; API en `SIMULATION_ARCHITECTURE.md`.
 
 **Próximo tramo 30.2:** datos y geometría/materiales/barreras de las catorce pistas sin render. Siguen 30.3 contactos/progreso/reloj/eventos y 30.4 RaceState completo aislado. Solo después salas y sincronización de 32/33. Dos vehículos aislados no acreditan dos salas; no hay online todavía. Las fases de manejo/CPU, audio, pistas, gráficos/3D opcional y catálogo siguen abiertas, sin concentrar cada entrega en IA.
+
+
+## Avance 0.72 — fase 30.2, pistas compartidas para online
+
+Registro de las catorce pistas y geometría física trasladados a `track-core.js`, consumido por el juego y Node sin Canvas/DOM/audio/storage/reloj. Secciones y materiales, curvas, zonas de grava, checkpoints, contornos, vallas y neumáticos, consultas espaciales y selección de perfiles en una implementación. Definiciones/derivados públicos inmutables, contornos cacheados por pista y candidatos de colisión privados por contexto. Ningún trazado ni regla de manejo se cambia para realizar la extracción; récords p6/b1/s1 conservados.
+
+Al integrar, se corrige el orden de inicialización: el contexto nuevo se activa antes de calcular el plan CPU, para no consultar la curva del circuito anterior al cambiar de pista. Se adapta el bootstrap a dos dependencias, con URL base capturada antes de esperar y recuperación ante HTML anterior. No hay un servidor basado en DOM simulado.
+
+Verificación y resultados específicos en `tests/experiments/SHARED_TRACKS_072.md`. El bloque 30.2 no cierra fase 30: siguen **30.3 contactos/progreso/reloj/eventos**, **30.4 RaceState completo aislado/replay** y después **32/33 salas y sincronización**. Contextos de geometría independientes no acreditan carreras o salas independientes. No hay botón online ni carreras por Internet todavía.
+
+**Ubicación acordada para fase 37:** la vista 3D inclinada será opcional en **Cámara y gráficos** del paddock y accesible desde pausa, con elección explícita **2D / 3D inclinada**, preferencia local y regreso rápido a 2D. La distancia cerca/panorámica y la tecla C conservarán su función. Mantener acceso cómodo por teclado y móvil, fallback ante incompatibilidad/rendimiento y una única simulación para ambos renderizadores. El control solo se mostrará cuando el modo funcione: hoy es planificación, no un selector vacío.
+
+La fase 38 de elección visual de P2–P4 sigue pendiente. Se priorizó online conforme a la última instrucción del usuario; manejo/derrape, audio, cuatro pistas uniformes y gráficos siguen abiertos.

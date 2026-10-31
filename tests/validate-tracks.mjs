@@ -1,31 +1,8 @@
 import assert from 'node:assert/strict';
 import {analyzeTrackWidth} from './helpers/track-geometry.mjs';
-import { readFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url),{tracks}=require('../track-core.js').create();
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const source = await readFile(resolve(root, 'script.js'), 'utf8');
-
-function sourceBetween(startMarker, endMarker) {
-  const start = source.indexOf(startMarker);
-  const end = source.indexOf(endMarker, start);
-  assert.notEqual(start, -1, `Marker not found: ${startMarker}`);
-  assert.notEqual(end, -1, `Marker not found: ${endMarker}`);
-  assert.ok(end > start, `Markers are in the wrong order: ${startMarker}`);
-  return source.slice(start, end);
-}
-
-const definitionsSource = sourceBetween('const trackDefs=', 'const clamp=');
-const trackDefs = new Function(`${definitionsSource}; return trackDefs;`)();
-
-const helperSource = sourceBetween('const clamp=', 'const tracks=trackDefs.map');
-const makeTrack = new Function(`${helperSource}; return makeTrack;`)();
-
-const profilesSource = sourceBetween('const TRACK_SURFACES=', 'tracks.forEach');
-const profiles = new Function(`${profilesSource}; return { TRACK_SURFACES, TRACK_BARRIERS };`)();
-
-const tracks = trackDefs.map(makeTrack);
 const legalSurfaces = new Set(['asphalt', 'dirt', 'grass', 'ice', 'volcanic', 'mixed', 'coastal']);
 const legalBarriers = new Set(['full', 'half', 'corners', 'open']);
 
@@ -41,13 +18,12 @@ function segmentsCross(a, b, c, d) {
 
 assert.ok(tracks.length >= 14, `Expected at least 14 tracks, got ${tracks.length}`);
 assert.equal(new Set(tracks.map(track => track.name)).size, tracks.length, 'Track names must be unique');
-assert.equal(profiles.TRACK_SURFACES.length, tracks.length, 'Every track must have a surface profile');
-assert.equal(profiles.TRACK_BARRIERS.length, tracks.length, 'Every track must have a barrier profile');
+assert.ok(tracks.every(track=>Object.hasOwn(track,'surface')&&Object.hasOwn(track,'defaultBarriers')),'Every track must register both profiles');
 
 for (let index = 0; index < tracks.length; index++) {
   const track = tracks[index];
-  assert.ok(legalSurfaces.has(profiles.TRACK_SURFACES[index]), `${track.name}: unknown surface profile`);
-  assert.ok(legalBarriers.has(profiles.TRACK_BARRIERS[index]), `${track.name}: unknown barrier profile`);
+  assert.ok(legalSurfaces.has(track.surface), `${track.name}: unknown surface profile`);
+  assert.ok(legalBarriers.has(track.defaultBarriers), `${track.name}: unknown barrier profile`);
   assert.ok(track.points.length >= 15, `${track.name}: too few control points`);
   assert.ok(track.samples.length >= track.points.length * 8, `${track.name}: sample generation failed`);
   assert.ok(Number.isFinite(track.length) && track.length > 500, `${track.name}: invalid track length`);

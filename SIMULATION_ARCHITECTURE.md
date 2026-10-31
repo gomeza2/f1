@@ -1,8 +1,8 @@
-# Simulación compartida — estado 0.71
+# Simulación compartida — estado 0.72
 
 `driving-core.js` es el primer bloque extraído del motor real. Lo usa `script.js` para conducir en el navegador y puede importarse directamente en Node. No necesita DOM, Canvas, audio, almacenamiento, reloj externo ni dependencias de npm.
 
-**Todavía no es una carrera completa ni un servidor.** Geometría/barreras, consultas de terreno, colisiones, checkpoints/vueltas, reloj de carrera y eventos permanecen en el adaptador actual. No hay salas online disponibles.
+**Todavía no es una carrera completa ni un servidor.** Desde 0.72, geometría/barreras, consultas de terreno y posiciones de checkpoints están en `track-core.js`. La respuesta a contactos, el progreso por checkpoints/vueltas, el reloj de carrera y los eventos permanecen en el adaptador actual. No hay salas online disponibles.
 
 ## Una implementación de conducción
 
@@ -55,9 +55,37 @@ Al cambiar versión de entrega, revisar las URLs del HTML y la versión de depen
 ## Próximos bloques para online
 
 1. **30.1 — vehículos compartidos: integrado.** Paridad de este componente, sin declarar cerrado el núcleo de carreras.
-2. **30.2 — pistas/geometría: pendiente.** Datos de 14 pistas, secciones/materiales, consultas espaciales y barreras sin Canvas/DOM; geometría inmutable compartible entre carreras.
+2. **30.2 — pistas/geometría: integrado en 0.72, con verificación detallada en la evidencia de entrega.** Registro de 14 pistas, secciones/materiales, curvas, checkpoints, zonas de grava y barreras sin Canvas/DOM. Contextos por pista/perfil y geometría inmutable; todavía no son carreras completas.
 3. **30.3 — carrera y eventos: pendiente.** Contactos, gates/vueltas, resultados, reloj y eventos numerados. Mantener el orden de decisiones/pasos de cada coche al adaptar los rivales existentes.
 4. **30.4 — aislamiento de carreras: pendiente.** Dos `RaceState` completos sin globals compartidos, replay/paridad con el juego y pruebas de ciclo de vida. Dos vehículos aislados no acreditan dos salas completas.
 5. **32/33 — salas, sincronización y despliegue: pendiente.** El primer online privado puede empezar con humanos 2–4; los controladores CPU offline pueden seguir como adaptadores sobre la misma física, sin bloquear toda la red por rehacer la IA.
 
 Contratos de red y criterios de publicación en [ONLINE_DESIGN.md](ONLINE_DESIGN.md). Ningún ranking local se presenta como resultado online validado.
+
+
+## Geometría compartida — 0.72
+
+`track-core.js` se carga antes del adaptador y también funciona con `require` en Node, sin importar el juego ni simular un DOM. El navegador usa su registro real y delega las consultas y construcción de barreras a esta misma implementación. No cambia puntos, anchuras, materiales, pianos, colisiones, meta ni claves de récord.
+
+```js
+const tracks = require('./track-core.js').create();
+const world = tracks.createWorld(10, 'auto'); // Coastline; resuelve a abierto.
+const position = tracks.sampleAt(400, world.track);
+const nearest = tracks.nearestOnTrack(position.x, position.y, null, world.track);
+console.log(world.terrainAt(position.x, position.y, nearest));
+console.log(world.barriersNear(position.x, position.y));
+```
+
+API versión 1:
+
+- `tracks`: catorce definiciones/muestras/longitudes, congeladas recursivamente por instancia. `rules` centraliza borde, arcén y ancho de grava.
+- `sampleAt`, `nearestOnTrack`, `surfaceAtProgress`, `roadSectionAt`, `roadHalfWidthAt`, `roadMaxHalfWidth`, `barrierRadiusAt`, `projectToSegment`, `checkpointsForTrack`: consultas sin efectos; el parámetro de pista es explícito, con la primera como valor predeterminado.
+- `runoffBuckets(item)`: índice de segmentos de carretera, fachada de solo lectura con `get(clave)`; arrays congelados. Es un índice amplio para render/materiales; fuera de su cobertura usar `nearestOnTrack` completo. No se expone un Map modificable.
+- `createWorld(index, profile='auto')`: valida índice entero/perfil conocido y devuelve contexto inmutable con `track`, `barrierMode`, `features`, `guardrailRanges`, `runoffZones`, `tireBarriers`, `curvatureAt`, `guardrailActive` y `terrainAt`. La consulta de terreno puede recibir la proyección ya calculada.
+- `contours`, `guardrailPaths`, `physicalBarriers` y `barriersNear(x,y)`: límites visibles y cápsulas físicas comunes, con índice de colisiones privado. Contornos cacheados e inmutables por pista; cápsulas/índice propios por contexto. Construcción costosa diferida hasta pedir geometría física. La consulta de candidatos conserva el orden del juego anterior.
+
+Las consultas devuelven resultados nuevos donde corresponde; las definiciones, índices y derivados publicados no se pueden editar. Los validadores de entradas de red siguen siendo necesarios: esta API no analiza mensajes ni sustituye controles de autorización.
+
+El cambio de pista activa el nuevo contexto **antes** de planificar la CPU, manteniendo el orden posterior de movimiento/contactos/progreso. Solo los renderizadores de carretera, raster decorativo, Canvas, audio y UI permanecen en el cliente; la respuesta a contactos y las reglas de vueltas/reloj se extraerán en 30.3.
+
+El bootstrap recupera cualquiera de los dos módulos omitidos por HTML viejo, resolviendo ambas rutas desde la URL del script capturada antes del primer `await`. Falla de forma explícita si no puede cargarlos y bloquea largar. `browser-release` prueba HTML sin ambos módulos y HTML con conducción pero sin pistas, además del fallo individual de cada archivo. Evidencia y límites en [SHARED_TRACKS_072.md](tests/experiments/SHARED_TRACKS_072.md).

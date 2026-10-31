@@ -1,3 +1,4 @@
+import {withoutSharedTracks} from './without-shared-tracks.mjs';
 // Restore only the declared module extraction for immutable historical source checks.
 // Actual module rules/motion are independently compared against the legacy engine.
 const edits=[
@@ -47,6 +48,7 @@ const edits=[
  ]
 ];
 export function withoutSharedDriving(source){
+ source=withoutSharedTracks(source);
  if(!source.includes('const drivingCore=PixelDrivingCore.create();'))return source;
  // Cache-busting revisions do not change the historical physics being checked.
  source=source.replace(/dependency\.searchParams\.set\('v','[0-9.]+'\)/,"dependency.searchParams.set('v','0.71')");
