@@ -45,9 +45,21 @@ El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran t
 
 `driving-core.js` contiene la misma conducción que usa el juego y puede ejecutarse directamente en Node sin navegador. Incluye modelos/materiales, aceleración, freno, reversa, agarre, dirección y movimiento. Cada motor tiene reglas inmutables y cada coche su propio estado; no se mantienen dos físicas distintas.
 
-Esta extracción conserva conducción, CPU, pistas y récords. Todavía faltan geometría/colisiones, progreso/eventos y un estado completo por carrera para poder crear salas. **No hay online disponible aún.** API, ejemplo Node y siguientes bloques en [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md); evidencia en [SHARED_DRIVING_071.md](tests/experiments/SHARED_DRIVING_071.md).
+Esta extracción conserva conducción, CPU, pistas y récords. La geometría ya está compartida desde 0.72; todavía faltan respuesta a contactos, progreso/eventos y un estado completo por carrera para poder crear salas. **No hay online disponible aún.** API, ejemplo Node y siguientes bloques en [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md); evidencia en [SHARED_DRIVING_071.md](tests/experiments/SHARED_DRIVING_071.md).
 
 La carga comprueba el nuevo archivo también ante un HTML anterior en caché y muestra una recarga necesaria si no puede obtenerlo. Se mantienen las rutas de Pages y el juego local sin backend.
+
+## Modos y comodidad — 0.73
+
+El paddock separa **PARTIDA RÁPIDA**, **CAMPEONATO** y **MULTIJUGADOR LOCAL**. La rápida disputa tres vueltas en la pista elegida: resultados independientes, sin puntos de campeonato y botón **REVANCHA** sobre el mismo trazado. El campeonato conserva la secuencia existente desde la pista seleccionada hasta Industrial Mix, suma puntos y permite iniciar una nueva temporada. El local de 2–4 puede usar cualquiera de los dos formatos; conserva coches, controles y panel por piloto. La revancha/reinicio conserva el formato de la carrera activa.
+
+**CONFIGURACIÓN DE CARRERA** es una sección plegable con pista, dificultad, cantidad de CPU, barreras y calidad gráfica. Cerrarla conserva las elecciones; **CAMBIAR PISTA Y COCHE** la abre y lleva el foco a la selección. El catálogo y la mezcla de sonido siguen disponibles.
+
+La carrera individual aprovecha el ancho de las pantallas grandes, ampliando el campo visible con la misma escala de coches y sin estirar el lienzo. Se conserva el límite de resolución del buffer y el HUD exterior. En pantallas verticales sigue pendiente aprovechar mejor el espacio alto y añadir controles táctiles.
+
+Al iniciar desde el paddock o continuar/repetir desde resultados aparece **PREPARANDO LA PARRILLA** antes del trabajo de pista y gráficos. Sin porcentajes inventados ni demora mínima añadida; se bloquean inicios duplicados y se conserva el desbloqueo de audio dentro del gesto de usuario. Si falla la preparación, se muestra un error con regreso al paddock y posibilidad de reintentar. La generación todavía ocurre en el hilo principal; el aviso no equivale a una optimización ni a un worker. Los reinicios directos por R/botón conservan su comportamiento inmediato.
+
+**Aún no disponibles:** online, 3D inclinada y más de tres CPU. Las fases 30/32/33 continúan online; 37, 39–41 organizan la vista opcional, parrillas más grandes/competitivas, variantes arcade y configuración/rendimiento. No se agregan opciones vacías al menú. Evidencia en [EVENT_HUB_073.md](tests/experiments/EVENT_HUB_073.md).
 
 ## Pistas compartidas para online — 0.72
 
@@ -732,3 +744,12 @@ node tests/validate-tracks.mjs
 ```
 
 Para comparar con un archivo real de la entrega anterior, definir `TRACK_SOURCE_BASELINE`; sin esa variable, el validador revierte exclusivamente la extracción declarada mediante el helper histórico. La evidencia de entrega distingue paridad matemática, carreras automatizadas y navegador; no equivale a aprobación humana ni a despliegue de un servidor.
+
+
+Pruebas de modos/UX 0.73:
+
+```sh
+node tests/validate-events.mjs
+node tests/validate-results.mjs
+node tests/browser-events.cjs # Requiere Playwright y Chromium de desarrollo.
+```

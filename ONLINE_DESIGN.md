@@ -83,3 +83,10 @@ TLS, orígenes permitidos, sesiones impredecibles, límites de conexiones/salas/
 ## Orden inmediato
 
 0.70 completa el primer catálogo visual y 0.71 extrae el motor de vehículos con paridad/aislamiento de ese componente. 0.72 integra geometría/materiales/checkpoints/barreras compartidos de las 14 pistas. Próximo paso online: contactos y carrera/eventos, y después dos RaceState completos aislados (30/32.1). Después, servidor/salas y prueba local integral; luego reconciliación/latencia; finalmente despliegue revisable. La vista 3D inclinada queda en fase 37 como opción de render que consumirá la misma simulación, sin cambiar la autoridad ni duplicar la física.
+
+
+## Modos y UX tras 0.73
+
+La rápida y el campeonato offline ya tienen resultados separados; local 2–4 admite ambos. El primer hito online sigue siendo carreras rápidas privadas de 2–4 humanos, con capacidad configurable después de medirla. Campeonato de sala/calendario/puntos se ampliará después, decidido por servidor; no reutilizar el objeto de puntos del frontend como autoridad.
+
+La preparación local visible no es una sala ni sincroniza salida entre clientes. El lobby de red deberá confirmar configuración/listos y carga de pista de cada participante antes de la cuenta regresiva autoritativa, con timeout/desconexión explícitos. La elección 2D/3D será de presentación por cliente; las variantes arcade que cambien reglas deberán ser acordadas por sala y versionadas.

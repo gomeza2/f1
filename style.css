@@ -93,7 +93,7 @@ button:disabled{opacity:.6;cursor:default}
 
 /* Maximize the available driving area in a window as well as fullscreen. */
 body.racing{padding:6px;overflow:hidden}
-body.racing .shell{width:min(1600px,100%);height:calc(100dvh - 12px);min-height:0;padding:8px}
+body.racing .shell{width:100%;height:calc(100dvh - 12px);min-height:0;padding:8px}
 body.racing .shell:fullscreen{width:100vw;max-width:none;height:100dvh;padding:8px}
 body.racing header{flex:0 0 auto;padding-bottom:5px}
 body.racing .brand{font-size:15px}
@@ -306,3 +306,23 @@ body.racing.local-racing .shell{width:100%}
 .catalogue-empty{grid-column:1/-1;padding:28px 12px;font:16px/1.6 monospace;color:#c7d4d9}
 @media(max-width:800px){.catalogue-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.catalogue-dialog{padding:16px}.catalogue-heading{align-items:flex-start;flex-direction:column;gap:12px}.catalogue-heading button{align-self:stretch}.catalogue-grid,.catalogue-grid.catalogue-cars{grid-template-columns:1fr}.catalogue-summary{bottom:-16px}}
+
+/* 0.73: actual event choices, a wider race viewport and honest preparation feedback. */
+.event-modes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 18px;text-align:left}
+.event-modes button{min-width:0;min-height:82px;padding:12px;text-align:left;white-space:normal;background:linear-gradient(140deg,#203443,#101c2c);border:1px solid #476071;display:flex;flex-direction:column;gap:8px}
+.event-modes button>span{font:10px monospace;color:#8da6b3}.event-modes strong{font:10px/1.6 'Press Start 2P',monospace;color:#eaf0df}.event-modes small{font:14px/1.3 Rajdhani,Arial,sans-serif;color:#aec6d0}
+.event-modes [aria-pressed=true]{border-color:var(--lime);background:linear-gradient(140deg,#2d3d2b,#152729);box-shadow:inset 3px 0 var(--lime)}
+.event-modes #localSetupBtn{grid-column:1/-1;min-height:66px;border-color:#396973;background:linear-gradient(110deg,#132e3b,#132033)}
+.event-modes #localSetupBtn[aria-expanded=true]{border-color:var(--cyan)}
+.menu-actions{grid-template-columns:1fr!important}.menu-actions button{min-height:58px}
+#result.quick-event .result-tables{grid-template-columns:1fr}#result.quick-event #raceResults tr>:last-child{display:none}
+.race-loading{width:min(480px,calc(100vw - 32px));padding:30px;background:#101b2c;border:1px solid #5d7885;color:#e9f1df;text-align:center;box-shadow:0 20px 80px #0009}
+.race-loading::backdrop{background:#050a16dc}.race-loading h2{font-size:15px;line-height:1.8}.race-loading p:last-of-type{font:16px/1.6 Rajdhani,Arial,sans-serif;color:#abc8d3}
+.loading-road{height:38px;margin:0 0 22px;background:repeating-linear-gradient(90deg,transparent 0 24px,#c1d2ba 24px 38px,transparent 38px 55px) center/100% 2px no-repeat #243341;border-top:2px solid #728496;border-bottom:2px solid #728496;position:relative;overflow:hidden}
+.loading-road span{position:absolute;width:32px;height:16px;top:9px;left:0;background:var(--lime);border:3px solid #091b25;box-shadow:inset -9px 0 var(--cyan);animation:loading-lap 1.5s ease-in-out infinite alternate}
+@keyframes loading-lap{to{left:calc(100% - 32px)}}
+@media(prefers-reduced-motion:reduce){.loading-road span{animation:none;left:calc(50% - 16px)}}
+@media(max-width:600px){.event-modes{margin-bottom:14px;gap:6px}.event-modes button{padding:10px;min-height:76px}.event-modes strong{font-size:8px}.event-modes small{font-size:13px}.event-modes button>span{font-size:9px}}
+
+.race-options>summary{cursor:pointer;font:9px/1.6 monospace;color:var(--cyan);padding:0 0 14px}.race-options:not([open])>summary{padding-bottom:0}.race-options>summary:focus-visible{outline:2px solid var(--lime);outline-offset:4px}
+.paddock-heading{padding-top:8px;padding-bottom:8px}#carPreview{height:80px}

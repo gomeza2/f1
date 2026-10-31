@@ -25,7 +25,7 @@ const server=http.createServer((req,res)=>{
   for(const count of [2,3,4]){
    await page.selectOption('#localPlayerCount',String(count));assert.equal(await page.locator('.local-seat:visible').count(),count-1);
    if(count===4&&process.env.LOCAL_SCREENSHOTS)await page.screenshot({path:path.join(process.env.LOCAL_SCREENSHOTS,'lobby-four.png'),fullPage:true});
-   await page.click('#localStart');await page.evaluate(()=>window.localTest.skipCountdown());
+   await page.click('#localStart');await page.waitForSelector('#game:not(.hidden)');await page.waitForFunction(()=>!document.getElementById('raceLoading')?.open);await page.evaluate(()=>window.localTest.skipCountdown());
    assert.equal((await page.evaluate(()=>window.localTest.cars)).length,count);assert.equal(await page.locator('.player-hud:visible').count(),count);
    assert.equal(await page.locator('.telemetry-chip:visible').count(),0);
    const keys=['w','ArrowUp','i','t'].slice(0,count);for(const key of keys)await page.keyboard.down(key);
@@ -45,12 +45,12 @@ const server=http.createServer((req,res)=>{
    await page.setViewportSize({width:1440,height:1000});await page.click('#fullscreenBtn');await page.waitForFunction(()=>!!document.fullscreenElement);await page.click('#fullscreenBtn');await page.waitForFunction(()=>!document.fullscreenElement);
    await page.click('#restartBtn');assert.equal((await page.evaluate(()=>window.localTest.cars)).length,count);assert.ok((await page.evaluate(()=>window.localTest.cars)).every(c=>c.lap===0));
    await page.evaluate(()=>window.localTest.finish());assert.equal(await page.locator('#raceRows tr').count(),count);assert.equal(await page.locator('#seasonRows tr').count(),count);assert.match(await page.locator('#finishSummary').textContent(),new RegExp('P'+count));
-   await page.click('#nextBtn');assert.equal((await page.evaluate(()=>window.localTest.cars)).length,count);await page.click('#backBtn');
+   await page.click('#nextBtn');await page.waitForSelector('#game:not(.hidden)');await page.waitForFunction(()=>!document.getElementById('raceLoading')?.open);assert.equal((await page.evaluate(()=>window.localTest.cars)).length,count);await page.click('#backBtn');
   }
   // Four physical controller slots through the Gamepad API; disconnected player pauses everyone.
   await page.evaluate(()=>{window.testPads=Array.from({length:4},()=>({connected:true,mapping:'standard',axes:[0],buttons:Array.from({length:8},()=>({value:0}))}));});
   for(let i=1;i<=4;i++)await page.selectOption('#playerInput'+i,'pad'+(i-1));
-  await page.click('#localStart');await page.evaluate(()=>window.localTest.skipCountdown());
+  await page.click('#localStart');await page.waitForSelector('#game:not(.hidden)');await page.waitForFunction(()=>!document.getElementById('raceLoading')?.open);await page.evaluate(()=>window.localTest.skipCountdown());
   await page.evaluate(()=>{for(const pad of window.testPads)pad.buttons[7].value=.8;});
   await page.waitForFunction(()=>window.localTest.cars.every(c=>c.speed>20));assert.equal((await page.evaluate(()=>window.localTest.audio)).length,4);
   await page.evaluate(()=>{window.testPads[2]=null;});await page.waitForFunction(()=>window.localTest.paused);assert.match(await page.locator('#status').textContent(),/P3.*DESCONECTADO/);

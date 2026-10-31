@@ -25,6 +25,7 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 - 0.69: recuperación/marcha atrás y motor longitudinal ampliado, integrados y comprobados; deriva lateral aún rechazada para publicación.
 - 0.70: primer catálogo visual de coches/pistas conectado a la carrera; fase 38 parcial.
 - 0.71: motor de vehículos compartido; 0.72: geometría/materiales/checkpoints/barreras de las catorce pistas compartidos y comprobados. Siguen 30.3 contactos/progreso/reloj/eventos y 30.4 RaceState completo aislado, antes de salas reales. Diseño concreto en [ONLINE_DESIGN.md](ONLINE_DESIGN.md). Online todavía no disponible.
+- 0.73: partida rápida/campeonato/local con selección visual, ajustes plegables, carga previa y vista amplia; ampliaciones de parrilla/modos/configuración en 39–41.
 - Conducción/derrape, CPU justa, audio, cuatro circuitos uniformes, gráficos y local siguen abiertos y se alternarán por impacto. No reducir todo el trabajo a CPU ni dar por terminada la sensación humana por tests.
 - Vista 3D inclinada opcional en fase 37, solicitada para más adelante; no reemplazará por obligación la vista cenital actual.
 
@@ -389,3 +390,30 @@ Verificación y resultados específicos en `tests/experiments/SHARED_TRACKS_072.
 **Ubicación acordada para fase 37:** la vista 3D inclinada será opcional en **Cámara y gráficos** del paddock y accesible desde pausa, con elección explícita **2D / 3D inclinada**, preferencia local y regreso rápido a 2D. La distancia cerca/panorámica y la tecla C conservarán su función. Mantener acceso cómodo por teclado y móvil, fallback ante incompatibilidad/rendimiento y una única simulación para ambos renderizadores. El control solo se mostrará cuando el modo funcione: hoy es planificación, no un selector vacío.
 
 La fase 38 de elección visual de P2–P4 sigue pendiente. Se priorizó online conforme a la última instrucción del usuario; manejo/derrape, audio, cuatro pistas uniformes y gráficos siguen abiertos.
+
+
+## Avance 0.73 — modos, presentación y comodidad, fases 17/22/38
+
+Partida rápida independiente de tres vueltas, resultados sin campeonato, revancha sobre la misma pista y formato activo preservado. Campeonato existente con puntos/avance/final y local 2–4 con ambos formatos. Modos reales en fichas, configuración plegable sin perder elecciones y acceso con foco; vista individual más amplia en escritorio sin deformar coches, conservando resolución máxima y HUD exterior. Preparación de pista visible antes de trabajo síncrono, bloqueo de doble inicio, audio desbloqueado por gesto y recuperación de error/reintento.
+
+Código de conducción/CPU/contactos/progreso y módulos de físicas/pistas intactos; récords p6/b1/s1 conservados. Los resultados diferencian rápida de campeonato. Se limpia el estado CSS de carrera local al salir/terminar para mantener un paddock consistente. Evidencia automática/nativa y límites en `tests/experiments/EVENT_HUB_073.md`. No se declara completada la comodidad humana ni optimización del trabajo pesado por mostrar un aviso.
+
+### 39. Parrillas más grandes y rivales más picantes — pendiente
+
+Ampliar por etapas a más de tres CPU, con primera meta de ocho coches totales (un humano y hasta siete rivales), identidades/nombres/colores propios y opciones de parrilla. Medir coste de tráfico/contactos, salida, recuperación y clasificación en las catorce pistas, antes de activar el número máximo. Probar ocho coches inmóviles y doblajes sin bloqueos/choques injustificados; resultados, puntos, minimapa y HUD deben admitirlos. Mantener mismos límites físicos y cronometraje.
+
+Más dificultad mediante anticipación, trazadas de ataque, decisiones de adelantamiento y defensa, perfiles de riesgo y errores controlados; no aumentar velocidad máxima oculta ni atravesar superficies/barreras. Comparar ritmo/contactos/salidas con las tres CPU actuales y con conducción humana. Online puede comenzar humano contra humano sin esperar este bloque; después se evaluarán CPU en salas con la autoridad y el presupuesto reales.
+
+### 40. Variantes arcade y opciones de competición — pendiente
+
+Conservar **Normal** como reglas actuales. Investigar variantes de derrape/ataque y desafíos más arriesgados con objetivos, riesgo/recompensa, condiciones y resultados propios; no cambiar solo el nombre del modo. Contrarreloj/fantasma sigue en 31, sin duplicar sistemas. Ampliar campeonato con calendario/vueltas configurables y temporada completa desde cualquier pista; el flujo actual sigue desde la seleccionada hasta la última.
+
+Separar reglas de representación: 2D/3D inclinada en fase 37 son vistas opcionales, no físicas incompatibles ocultas. Si una variante modifica manejo/materiales, versionar récords/resultados y validar las mismas reglas en cliente/servidor. Mostrar solo modos que completen su bucle de carrera.
+
+### 41. Configuración, carga y accesibilidad ampliadas — parcial 0.73
+
+Primer bloque: ajustes plegables, modos claros, aviso de preparación real y campo visible más amplio. Pendiente: apartado dedicado con categorías de carrera, cámara/gráficos, audio y controles; preferencias locales validadas, restaurar valores, remapeo y comodidad de teclado/mandos/táctil. Vista 3D opcional tendrá acceso en Cámara y gráficos y pausa con fallback 2D, manteniendo el encuadre separado.
+
+Medir tiempos de preparación, uso de memoria y render por dispositivo/calidad antes de mover generación a workers o precalcular recursos. Progreso por tareas reales, cancelación cuando sea viable, errores recuperables y movimiento reducido; no porcentajes ni esperas ficticias. Revisar móvil vertical, superficie de conducción, tamaño de botones y estabilidad con cuatro cámaras. La mejora gráfica retro con más volumen/materiales/escenarios sigue en 36/37, sin duplicar un renderizador por modo.
+
+**Siguiente recomendado:** retomar 30.3 (contactos, progreso/vueltas, reloj y eventos compartidos) y 30.4 (carreras completas aisladas), para implementar 32/33 salas privadas y sincronización reales. Objetivo inicial online 2–4 humanos y número configurable después de medir capacidad; no hay un techo permanente ni servidor desplegado todavía. Alternar después con 39, manejo/derrape, gráficos/audio y comodidad según feedback.

@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.72
+# PIXEL GRAND PRIX — entrega 0.73
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Modos y experiencia de usuario en 0.73
+
+Partida rápida independiente, campeonato conservado y local 2–4 con ambos formatos. Resultados/revancha propios de la rápida, sin tabla de temporada ni puntos ficticios. Selector visual de modos, ajustes plegables y retorno al foco, preparación visible antes del trabajo de pista con bloqueo de inicios duplicados y recuperación de error. Vista individual amplia en pantallas anchas, conservando escala/proporciones y presupuesto de buffer.
+
+No se retoca conducción, IA, geometría ni audio de motor. Más CPU/variantes arcade y mejoras de configuración quedan en fases 39–41; online y 3D opcional continúan abiertos. Evidencia/limitaciones en `tests/experiments/EVENT_HUB_073.md`.
 
 ## Geometría compartida para online en 0.72
 
