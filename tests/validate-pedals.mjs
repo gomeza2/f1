@@ -1,13 +1,14 @@
+import {withoutReverseRecovery} from './helpers/without-reverse-recovery.mjs';
 import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {createHash} from 'node:crypto';
 import {loadGame} from './helpers/game-harness.mjs';import {withoutPedalBlend} from './helpers/without-pedal-blend.mjs';
 const source=readFileSync(new URL('../script.js',import.meta.url),'utf8'),old=withoutPedalBlend(source),frozen=JSON.parse(readFileSync(new URL('./fixtures/coast-0.66.json',import.meta.url),'utf8'));
-assert.notEqual(source,old,'Missing pedal correction');assert.equal(createHash('sha256').update(old.slice(old.indexOf('const AI_DRIVERS='),old.indexOf('function getTrackPath'))).digest('hex'),frozen.drivingCoreSha256,'Changes beyond the declared pedal correction');
+assert.notEqual(source,old,'Missing pedal correction');assert.equal(createHash('sha256').update((s=>s.slice(s.indexOf('const AI_DRIVERS='),s.indexOf('function getTrackPath')))(withoutPedalBlend(withoutReverseRecovery(source)))).digest('hex'),frozen.drivingCoreSha256,'Changes beyond the declared pedal correction');
 const pad=()=>({id:'Pedal test',mapping:'standard',connected:true,index:0,axes:[0,0],buttons:Array.from({length:17},()=>({value:0,pressed:false}))});
 const p=pad(),bp=pad(),now=loadGame({gamepads:[p]}),before=loadGame({sourceOverride:old,gamepads:[bp]});
 function probe(fixture,controller,{throttle=0,brake=0,model='balanced',hand=false,frames=30,keyboard=null,stage=9,progress=400,initial=200,rate=60}={}){
  const {game:g,element:e}=fixture;e('carModel').value=model;e('barrierMode').value='open';e('playerInput1').value=keyboard?'keyboard':'pad0';g.start('duo',stage);g.setCountdown(0);g.cars[1].done=true;
  const c=g.cars[0];g.placeCar(c,progress,0);c.speed=initial;g.setKeys(keyboard||{});for(const b of controller.buttons){b.value=0;b.pressed=false;}controller.buttons[7].value=throttle;controller.buttons[6].value=brake;controller.buttons[2].value=hand?1:0;
- const start={x:c.x,y:c.y};for(let n=0;n<frames;n++)g.advanceRaceFrame(1/rate);
+ const start={x:c.x,y:c.y};for(let n=0;n<frames;n++){g.advanceRaceFrame(1/rate);if((brake===1||keyboard?.s)&&c.speed===0)break;}
  return {speed:c.speed,distance:Math.hypot(c.x-start.x,c.y-start.y),x:c.x,y:c.y,heading:c.heading,steer:c.steer,drift:c.drift,yaw:c.yawRate,lap:c.lap,progress:c.progress};
 }
 const rows=[];

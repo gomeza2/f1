@@ -17,6 +17,7 @@ La versión aparece en el pie. JavaScript y CSS llevan una versión en su URL pa
 - **Jugador 3:** I acelera, K frena, J/L gira; U freno de mano.
 - **Jugador 4:** T acelera, G frena, F/H gira; Y freno de mano.
 - **Mandos estándar (local):** cada piloto puede elegir un mando diferente en la parrilla. Stick izquierdo gira, RT o A acelera, LT o B frena, X derrapa. Acelerador, freno y dirección analógicos con zona muerta. Conectá el mando y pulsá un botón para que el navegador lo detecte. Si falta un mando asignado, la carrera espera en pausa; reconectalo y pulsá ESC o SEGUIR. No se requiere mando para usar teclado.
+- **Marcha atrás:** detenete, soltá el acelerador y mantené el freno ~0,35 s (S, ↓, K o G; LT/B en mando). Retrocede hasta 28 km/h, con dirección inversa y señal R en cada HUD. Soltá el freno y acelerá para detener la marcha atrás y volver hacia adelante. Acelerar+frenar juntos sigue deteniendo el coche sin seleccionar reversa.
 - **R:** reinicia la carrera actual.
 - **C / botón VISTA:** alterna vista cercana y circuito completo en modo individual. El modo local usa una cámara por jugador: dos mitades para dos personas, tres/cuatro cuadrantes para tres/cuatro. La vista se adapta al espacio de la ventana sin deformar los coches.
 - **ESC:** pausa o reanuda la carrera. Si estás en pantalla completa, también permite salir. La pestaña oculta pausa automáticamente; al volver se reanuda de forma manual. Pausar limpia las teclas mantenidas: volvé a acelerar al continuar.
@@ -39,6 +40,14 @@ En el paddock, elegí la pista, las barreras y los gráficos. **PREPARAR MULTIJU
 Cada persona tiene cámara propia y un panel exterior con posición, velocidad, vuelta, checkpoints, tiempo de vuelta y mejor vuelta de esa carrera. Al terminar aparece su tiempo final; resultados y puntos incluyen a todos. Para tres personas, el cuadrante restante muestra posiciones. Las cámaras y el minimapa usan los mismos rectángulos de vista. En ventanas anchas el área local aprovecha el ancho disponible, sin estirar el coche ni cambiar su física.
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
+
+## Recuperación y motor de movimiento — 0.69
+
+Ahora podés retroceder para salir de una mala posición sin reiniciar la carrera. El motor longitudinal incorpora velocidad con signo, resistencia del terreno en ambos sentidos, contactos que respetan el movimiento real y retorno a marcha adelante. El HUD marca R, los coches encienden luces blancas de reversa y el audio recibe la velocidad/carga de marcha atrás.
+
+Retroceder sobre la meta no suma vueltas ni coloca al coche falsamente al frente. El avance fijo se protege también internamente durante pausa/cuenta regresiva y fuera de carrera. Se conservan las prestaciones hacia adelante y los récords p6/b1/s1.
+
+El ensayo de deriva lateral sigue fuera de la versión estable por regresiones de tráfico. Evidencia, archivo experimental y límites en [RECOVERY_069.md](tests/experiments/RECOVERY_069.md). No se presenta la recuperación como un derrape físico nuevo.
 
 ## Pedales más previsibles — 0.68
 
@@ -652,3 +661,15 @@ PEDAL_SOURCE_BASELINE=/tmp/pixelgp-before-068.js node tests/browser-pedals.cjs
 ```
 
 Las comparaciones de carreras contrastan posiciones, velocidades, vueltas, contactos y resultados con la corrección desactivada; no son pruebas humanas. La prueba de navegador usa eventos reales de teclado y mandos emulados, no hardware físico.
+
+Pruebas de recuperación 0.69:
+
+```sh
+node tests/validate-reverse.mjs
+node tests/browser-recovery.cjs
+git show d338ca9:script.js > /tmp/pixelgp-before-069.js
+RACE_SOURCE_BASELINE=/tmp/pixelgp-before-069.js node tests/validate-pedal-races.mjs
+GROUP_STAGES=12 node tests/validate-group-traffic.mjs
+```
+
+`RECOVERY_SCREENSHOTS` guarda capturas de cuatro pilotos en reversa y recuperación ante una valla. La comparación de carreras admite `RACE_SOURCE_BASELINE`; sin esa variable conserva su referencia anterior de pedales. `GROUP_STAGES` selecciona escenarios sin cambiar sus presupuestos históricos.

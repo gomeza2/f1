@@ -29,6 +29,7 @@ export function loadGame({audioContextClass,frameScheduler,sourceOverride,gamepa
     get checkpoints(){return checkpoints},get tracks(){return tracks},get cars(){return cars},get track(){return track},
     tick(dt){elapsed+=dt;cars.forEach((car,i)=>{if(!car.done)physics(car,i,dt)});const contact=cars.some((a,i)=>!a.done&&cars.slice(i+1).some(b=>!b.done&&Math.hypot(a.x-b.x,a.y-b.y)<23-1e-6));resolveCollisions(dt);return contact},
     setCountdown(value){countdownRemaining=value},setElapsed(value){elapsed=value},get running(){return running},setKeys(value){keys=value},setDifficulty(value){difficulty=value}};
+    if(typeof updateDriveSpeed==='function')Object.assign(globalThis.testGame,{updateDriveSpeed,DRIVE_RECOVERY,speedLabel});
     if(typeof mixedRoadRaster==='function')Object.assign(globalThis.testGame,{mixedRoadRaster,drawMixedRoad,MIXED_ROAD_CELL});
     if(typeof humanSteeringInput==='function')Object.assign(globalThis.testGame,{humanSteeringInput});
     if(typeof advanceRaceFrame==='function'){Object.assign(globalThis.testGame,{advanceRaceFrame,renderedCar,resetSimulationClock,SIMULATION_STEP,MAX_SIMULATION_STEPS});Object.defineProperties(globalThis.testGame,{elapsed:{get:()=>elapsed},simulationAccumulator:{get:()=>simulationAccumulator},renderPrevious:{get:()=>renderPrevious}});}

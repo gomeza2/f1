@@ -26,6 +26,7 @@ const LAPS_TO_WIN=3;
 const ROAD_EDGE=42, WALL_EDGE=66,CAR_HALF_WIDTH=10;
 const PHYSICS_VERSION=6;
 const CAR_BALANCE_VERSION=1;
+const DRIVE_RECOVERY={reverseDelay:.35,reverseMax:28,reverseAcceleration:.65};
 const DRIVING_TUNING={accelerationScale:.82,accelerationTaper:.45,lateralAcceleration:280,maxSpeedGripLoss:.24,speedGripLoss:.0014,inputResponse:14,handInputResponse:16,yawResponse:18,yawSpeedWeight:4,topSpeedLateralLoss:.16,liftDrag:30};
 const CAR_MODELS={
  balanced:{name:'BALANCED',maxSpeed:232,acceleration:110,braking:230,steering:1,grip:1,grass:1,description:'Equilibrado para aprender y competir.'},
@@ -148,10 +149,11 @@ function updateAudio(){
  if(!allowed)releaseAudioVoices();
  const humans=cars.filter(car=>!car.isAI&&!car.done),mix=1/Math.sqrt(Math.max(1,humans.length));
  audioChannels.forEach((channel,player)=>{
-  const car=cars.find(candidate=>candidate.player===player&&!candidate.isAI&&!candidate.done),speed=car?.speed||0,model=CAR_MODELS[car?.model]||CAR_MODELS.balanced;
+  const car=cars.find(candidate=>candidate.player===player&&!candidate.isAI&&!candidate.done),speed=Math.abs(car?.speed||0),model=CAR_MODELS[car?.model]||CAR_MODELS.balanced;
   const ratio=clamp(speed/model.maxSpeed,0,1);
   const audible=active&&!!car;
-  channel.update({speed,maxSpeed:model.maxSpeed,model:car?.model,throttle:controlsFor(player).throttle,braking:!!car?.braking,audible,mix});
+  const input=controlsFor(player),reversing=car?.speed<0;
+  channel.update({speed,maxSpeed:model.maxSpeed,model:car?.model,throttle:reversing?input.brake:input.throttle,braking:!!car?.braking&&!reversing,audible,mix});
   const ground=car?terrainAt(car.x,car.y):{material:'asphalt',offroad:false},surface=ground.material,offroad=ground.offroad;
   const sliding=car?drivingSlip(car):0;
   channel.skid.filter.frequency.setTargetAtTime(surface==='ice'?850:1450,now,.08);channel.skid.filter.Q.value=1.2;
@@ -528,7 +530,7 @@ function closestSegments(a,b,c,d){
  return candidates.reduce((best,p)=>p.distanceSq<best.distanceSq?p:best);
 }
 function resolveBarrierContact(car,previousX,previousY){
- const incomingSpeed=car.speed;let hit=false,impactFactor=1;
+ const incomingSpeed=Math.abs(car.speed),direction=car.speed<0?-1:1;let hit=false,impactFactor=1;
  for(let pass=0;pass<4;pass++){
   let deepest=null;
   const hx=Math.cos(car.heading)*5,hy=Math.sin(car.heading)*5;
@@ -542,10 +544,10 @@ function resolveBarrierContact(car,previousX,previousY){
   if(deepest.distance<1e-6){nx=previousX-deepest.wall.x;ny=previousY-deepest.wall.y;}
   const length=Math.hypot(nx,ny)||1;nx/=length;ny/=length;
   car.x+=nx*(deepest.depth+.05);car.y+=ny*(deepest.depth+.05);hit=true;
-  const vx=Math.cos(car.heading),vy=Math.sin(car.heading),inward=vx*nx+vy*ny;
+  const vx=Math.cos(car.heading)*direction,vy=Math.sin(car.heading)*direction,inward=vx*nx+vy*ny;
   if(inward<-.02){
    const reflectedX=vx-1.15*inward*nx,reflectedY=vy-1.15*inward*ny;
-   car.heading=Math.atan2(reflectedY,reflectedX);
+   const angle=Math.atan2(reflectedY,reflectedX);car.heading=direction<0?wrapAngle(angle-Math.PI):angle;
    impactFactor=Math.min(impactFactor,Math.hypot(reflectedX,reflectedY)*.94);
   }
  }
@@ -984,14 +986,14 @@ function setupCar(player,isAI=false){
  const paint=CAR_PAINTS[choice.color];
  const personality=isAI?['racer','attacker','precise'][player-1]||'racer':null;
  return {player,isAI,model,personality,color:isAI?AI_PERSONALITIES[personality].color:paint.hex,
-  x:0,y:0,heading:0,yawRate:0,speed:0,steer:0,drift:0,handbrake:false,braking:false,wheelTravel:0,done:false,finishTime:null,newBestLap:false,
-  progress:0,previousProgress:0,lap:0,lapTimes:[],lapStartTime:0,raceProgress:0,offroad:0,roadOffset:0,particles:[],flash:0};
+  x:0,y:0,heading:0,yawRate:0,reverseHeld:0,speed:0,steer:0,drift:0,handbrake:false,braking:false,wheelTravel:0,done:false,finishTime:null,newBestLap:false,
+  progress:0,previousProgress:0,raceOffset:0,lap:0,lapTimes:[],lapStartTime:0,raceProgress:0,offroad:0,roadOffset:0,particles:[],flash:0};
 }
 function placeCar(car,progress,lateral){
  renderPrevious.delete(car);
  const p=sampleAt(progress),nx=-Math.sin(p.angle),ny=Math.cos(p.angle);
- car.x=p.x+nx*lateral;car.y=p.y+ny*lateral;car.heading=p.angle;car.yawRate=0;car.braking=false;car.wheelTravel=0;
- car.progress=wrapDistance(progress);car.previousProgress=car.progress;car.raceProgress=car.progress;
+ car.x=p.x+nx*lateral;car.y=p.y+ny*lateral;car.heading=p.angle;car.yawRate=0;car.reverseHeld=0;car.braking=false;car.wheelTravel=0;
+ car.progress=wrapDistance(progress);car.previousProgress=car.progress;car.raceProgress=car.progress;car.raceOffset=0;
  car.nextCheckpoint=0;car.checkpointPasses=0;car.lastCheckpointTime=0;car.aiManeuver=null;car.aiTrafficStates={};car.aiLane=lateral;
 }
 function start(m,s=Number($('stageSelect').value),keepSeason=false){
@@ -1068,9 +1070,9 @@ window.addEventListener('keydown',e=>{
  keys[k]=true;if(k==='escape'&&!e.repeat&&running)togglePause();if(k==='r'&&!e.repeat&&running)start(mode,stage,true);if(k==='c'&&!e.repeat&&running)toggleCamera();
 });
 window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-window.addEventListener('blur',()=>{keys=Object.create(null);});
+window.addEventListener('blur',()=>{keys=Object.create(null);cars.forEach(car=>{car.reverseHeld=0;});});
 function togglePause(){
- if(!running)return;if(paused&&!checkLocalControllers())return;paused=!paused;keys=Object.create(null);cancelAnimationFrame(raf);
+ if(!running)return;if(paused&&!checkLocalControllers())return;paused=!paused;keys=Object.create(null);cars.forEach(car=>{car.reverseHeld=0;});cancelAnimationFrame(raf);
  resetSimulationClock();
  $('pauseBtn').textContent=paused?'▶ SEGUIR':'Ⅱ PAUSA';$('pauseBtn').setAttribute('aria-pressed',String(paused));
  if(paused){$('status').textContent='PAUSA — ESC PARA SEGUIR';$('status').classList.remove('checkered-status');}
@@ -1089,7 +1091,7 @@ function gateCrossed(gate,fromX,fromY,toX,toY,heading){
  return crosses&&Math.abs(lateral)<=(gate.halfWidth??ROAD_EDGE)+CAR_HALF_WIDTH&&forward;
 }
 function updateProgress(car,loc,fromX,fromY){
- const old=car.progress,newP=loc.progress,delta=newP-old;
+ const old=car.progress,newP=loc.progress,delta=newP-old,oldLap=car.lap;
  const finishGate=sampleAt(0);
  const finish={x:finishGate.x,y:finishGate.y,angle:finishGate.angle,halfWidth:roadHalfWidthAt(0)};
  for(let tries=0;tries<checkpoints.length;tries++){
@@ -1106,7 +1108,10 @@ function updateProgress(car,loc,fromX,fromY){
   car.lapStartTime=elapsed;car.lap++;car.checkpointPasses=0;car.nextCheckpoint=0;
   playRaceCue(car.lap>=LAPS_TO_WIN?'finish':improved?'record':'lap',car);
  }
- car.previousProgress=old;car.progress=newP;car.raceProgress=car.lap*track.length+newP;
+ if(car.lap>oldLap)car.raceOffset=0;
+ else if(delta>track.length/2)car.raceOffset=(car.raceOffset||0)-1;
+ else if(delta<-track.length/2&&car.raceOffset<0)car.raceOffset++;
+ car.previousProgress=old;car.progress=newP;car.raceProgress=(car.lap+(car.raceOffset||0))*track.length+newP;
  car.offroad=Math.abs(loc.offset);car.roadOffset=loc.offset;car.nearest=loc;
  if(car.lap>=LAPS_TO_WIN&&!car.done){car.done=true;car.finishTime=elapsed;car.speed=0;car.braking=false;}
 }
@@ -1377,7 +1382,7 @@ function driveAI(car,before,model,dt){
 // Integrate the first-order response exactly for this step, independent of FPS.
 function updateSteeringInertia(car,turnRate,maxSpeed,dt){
  if(car.speed===0){car.yawRate=0;return;} // Wheels can steer at rest; the chassis needs motion to turn.
- const target=car.steer*turnRate,response=car.handbrake?20:DRIVING_TUNING.yawResponse-DRIVING_TUNING.yawSpeedWeight*clamp(car.speed/maxSpeed,0,1);
+ const target=car.steer*turnRate*(car.speed<0?-1:1),response=car.handbrake?20:DRIVING_TUNING.yawResponse-DRIVING_TUNING.yawSpeedWeight*clamp(Math.abs(car.speed)/maxSpeed,0,1);
  const previous=car.yawRate||0,decay=Math.exp(-response*dt);
  car.yawRate=target+(previous-target)*decay;
  car.heading=wrapAngle(car.heading+target*dt+(previous-target)*(1-decay)/response);
@@ -1392,6 +1397,28 @@ function humanSteeringInput(current,target,hand,dt){
  }
  return target+(current-target)*Math.exp(-response*dt);
 }
+// Signed longitudinal speed keeps reverse in the same motion/contact pipeline.
+// Reverse is an explicit driver command; holding a normal CPU brake never requests it.
+function updateDriveSpeed(car,controls,model,dt){
+ const {throttle,brake,hand,reverse=false}=controls;
+ if(reverse){
+  car.speed=Math.max(-DRIVE_RECOVERY.reverseMax,car.speed-brake*model.acceleration*DRIVE_RECOVERY.reverseAcceleration*dt);
+ }else if(car.speed<0){
+  car.speed=Math.min(0,car.speed+(DRIVING_TUNING.liftDrag+throttle*model.braking+(hand?model.braking*.55:0))*dt);
+ }else{
+  // Brake pressure releases drive torque; partial throttle blends engine drag continuously.
+  const driveThrottle=throttle*(1-brake);
+  car.speed+=driveThrottle*accelerationAtSpeed(car.speed,model)*dt;
+  car.speed-=brake*(hand?model.braking*1.27:model.braking)*dt;
+  car.speed-=(2.6*driveThrottle+DRIVING_TUNING.liftDrag*(1-driveThrottle))*dt;
+  if(hand)car.speed-=model.braking*.55*dt;
+  car.speed=clamp(car.speed,0,model.maxSpeed);
+ }
+}
+function applyGroundDrag(speed,drag,dt,crawl){
+ const sign=speed<0?-1:1,magnitude=Math.abs(speed);
+ return sign*Math.max(Math.min(crawl,magnitude),magnitude-drag*dt);
+}
 function physics(car,i,dt){
  const before=nearestOnTrack(car.x,car.y),localBend=curvatureAt(before.progress);
  const model=CAR_MODELS[car.model]||CAR_MODELS.balanced;
@@ -1401,20 +1428,16 @@ function physics(car,i,dt){
  }else{
   const input=controlsFor(i),{hand,steering}=input;
   car.steer=humanSteeringInput(car.steer,steering,hand,dt);
-  controls={throttle:input.throttle,brake:input.brake,hand};
+  const reverseIntent=input.brake>.5&&input.throttle<.05&&!hand&&car.speed<=.001;
+  car.reverseHeld=reverseIntent?(car.reverseHeld||0)+dt:0;
+  controls={throttle:input.throttle,brake:input.brake,hand,reverse:reverseIntent&&car.reverseHeld>=DRIVE_RECOVERY.reverseDelay};
  }
- const {throttle,brake,hand}=controls;car.handbrake=hand;car.braking=brake>0||hand;
- // Brake pressure releases drive torque; partial throttle blends engine drag continuously.
- const driveThrottle=throttle*(1-brake);
- car.speed+=driveThrottle*accelerationAtSpeed(car.speed,model)*dt;
- car.speed-=brake*(hand?model.braking*1.27:model.braking)*dt;
- car.speed-=(2.6*driveThrottle+DRIVING_TUNING.liftDrag*(1-driveThrottle))*dt;
- if(hand)car.speed-=model.braking*.55*dt;
- if(hand)car.drift=Math.min(1,Math.abs(car.steer)*car.speed/200);
- car.speed=clamp(car.speed,0,model.maxSpeed);
+ const {brake,hand}=controls;car.handbrake=hand;car.braking=brake>0||hand;
+ updateDriveSpeed(car,controls,model,dt);
+ if(hand)car.drift=Math.min(1,Math.abs(car.steer)*Math.abs(car.speed)/200);
  const tooFast=Math.max(0,car.speed-localBend.safeSpeed);
  const drivingSurface=terrainAt(car.x,car.y,before).material;
- const handling=vehicleHandling(car.speed,model,drivingSurface,localBend.safeSpeed,car.drift,car.handbrake);
+ const handling=vehicleHandling(Math.abs(car.speed),model,drivingSurface,localBend.safeSpeed,car.drift,car.handbrake);
  updateSteeringInertia(car,handling.turnRate,model.maxSpeed,dt);
  car.drift=clamp(Math.max(car.drift*Math.exp(-4.5*dt),tooFast/160),0,1);
  const oldProgress=car.progress,previousX=car.x,previousY=car.y;
@@ -1425,9 +1448,9 @@ function physics(car,i,dt){
  // Resistance uses the same material sampled by the visible runoff layer.
  let ground=terrainAt(car.x,car.y,after),roadEdge=ground.offroad?ground.depth:0;
  if(ground.offroad){
-  const material=TERRAIN_MATERIALS[ground.material],drag=material.drag+ground.depth*material.edgeDrag+car.speed*(material.speedDrag||0);
+  const material=TERRAIN_MATERIALS[ground.material],drag=material.drag+ground.depth*material.edgeDrag+Math.abs(car.speed)*(material.speedDrag||0);
   // Preserve a recovery crawl without creating speed from rest or released throttle.
-  car.speed=Math.max(Math.min(14,car.speed),car.speed-drag*model.grass*dt);
+  car.speed=applyGroundDrag(car.speed,drag*model.grass,dt,14);
   car.drift=Math.max(car.drift,ground.material==='gravel'?.42:.28);
  }
  // The rendered rails and tires are also the physical collision geometry.
@@ -1436,7 +1459,7 @@ function physics(car,i,dt){
  const side=Math.sign(after.offset)||1,nx=-Math.sin(after.angle),ny=Math.cos(after.angle);
  const recoveryExtra=track.roadProfile?roadHalfWidthAt(after.progress)-ROAD_SHOULDER:0;
  if(!hitBarrier&&Math.abs(after.offset)>92+recoveryExtra){
-  car.speed=Math.max(Math.min(12,car.speed),car.speed-(100+(Math.abs(after.offset)-92-recoveryExtra)*2.2)*dt);
+  car.speed=applyGroundDrag(car.speed,100+(Math.abs(after.offset)-92-recoveryExtra)*2.2,dt,12);
   if(Math.abs(after.offset)>112+recoveryExtra){car.x=after.x+nx*side*(108+recoveryExtra);car.y=after.y+ny*side*(108+recoveryExtra);car.speed*=.76;after=nearestOnTrack(car.x,car.y);}
  }
  ground=terrainAt(car.x,car.y,after);roadEdge=ground.offroad?ground.depth:0;
@@ -1471,8 +1494,8 @@ function resolveCollisions(dt){
     const av=Math.cos(a.heading)*nx+Math.sin(a.heading)*ny,bv=Math.cos(b.heading)*nx+Math.sin(b.heading)*ny;
     const closing=Math.max(0,a.speed*av-b.speed*bv);
     // Dissipate closing motion only; no artificial acceleration or rebound.
-    a.speed=Math.max(0,a.speed-closing*.65*Math.max(0,av));
-    b.speed=Math.max(0,b.speed-closing*.65*Math.max(0,-bv));
+    a.speed=(a.speed<0?-1:1)*Math.max(0,Math.abs(a.speed)-closing*.65*Math.max(0,(a.speed<0?-1:1)*av));
+    b.speed=(b.speed<0?-1:1)*Math.max(0,Math.abs(b.speed)-closing*.65*Math.max(0,(b.speed<0?-1:1)*-bv));
     if(closing>8){a.flash=.06;b.flash=.06;playRaceCue('impact',!a.isAI?a:b,closing/160);}
     impacted.add(key);
    }
@@ -1656,6 +1679,7 @@ function drawCarBody(context,car){
  rect(11,-4.7,2.5,1.8,'#fff0b9');rect(11,2.9,2.5,1.8,'#fff0b9');
  const rearLight=visual.braking?'#ff685c':'#993747';
  rect(-14,-4.8,2,2.2,rearLight);rect(-14,2.6,2,2.2,rearLight);
+ if(car.speed<0){rect(-14,-1.8,2,1.2,'#d9fbff');rect(-14,.6,2,1.2,'#d9fbff');}
  if(visual.braking&&detail){rect(-15,-5.3,1,3.2,'#ff75634a');rect(-15,2.1,1,3.2,'#ff75634a');}
  if(car.offroad>39){const dirt=track.surface==='ice'?'#d6ecee99':track.surface==='grass'?'#9ca47699':'#bda27b99';rect(-12,-6.5,3,1.2,dirt);rect(-12,5.3,3,1.2,dirt);if(detail)rect(-9,-2,1,2,dirt);}
 }
@@ -1704,9 +1728,10 @@ function updateFinishFeedback(force=false){
   $('status').textContent='LLEGASTE '+(raceClassification().indexOf(human)+1)+'.º / '+cars.length+(state.closed?' · CARRERA TERMINADA':' · ESPERANDO RIVALES');
  }else $('status').textContent=carName(latest)+' TERMINÓ · '+(mode==='solo'?'SEGUÍ CORRIENDO':'SIGUEN EN PISTA');
 }
+function speedLabel(car){return (car.speed<0?'R ':'')+Math.round(Math.abs(car.speed))+' km/h';}
 function updateTelemetry(){
  const player=cars[0];if(!player)return;
- $('speedValue').textContent=Math.round(player.speed)+' km/h';
+ $('speedValue').textContent=speedLabel(player);
  $('cpValue').textContent=Math.min(player.checkpointPasses||0,checkpoints.length)+' / '+checkpoints.length;
  const best=bestLapRecords[lapRecordKey()];$('bestLapValue').textContent=best?format(best):'--:--.-';
  $('position').textContent=(raceClassification().indexOf(player)+1)+'/'+cars.length;
@@ -1715,7 +1740,7 @@ function updateTelemetry(){
  if(mode!=='solo'){const ranking=raceClassification();cars.forEach((car,i)=>{
   const n=i+1,best=car.lapTimes.length?format(Math.min(...car.lapTimes)):'--:--.-';
   $('playerHud'+n).style.setProperty('--pilot-color',car.color);$('playerHudName'+n).textContent=carName(car)+' · '+(ranking.indexOf(car)+1)+'.º';
-  $('playerSpeed'+n).textContent=Math.round(car.speed)+' km/h';$('playerProgress'+n).textContent='V '+Math.min(LAPS_TO_WIN,car.lap+1)+'/'+LAPS_TO_WIN+' · CP '+Math.min(car.checkpointPasses||0,checkpoints.length)+'/'+checkpoints.length;
+  $('playerSpeed'+n).textContent=speedLabel(car);$('playerProgress'+n).textContent='V '+Math.min(LAPS_TO_WIN,car.lap+1)+'/'+LAPS_TO_WIN+' · CP '+Math.min(car.checkpointPasses||0,checkpoints.length)+'/'+checkpoints.length;
   $('playerTime'+n).textContent=(car.done?'FINAL ':'VUELTA ')+format(car.done?car.finishTime:currentLapTime(car));$('playerBest'+n).textContent='MEJOR '+best;
  });}
  drawMiniMap();
@@ -1761,6 +1786,7 @@ function drawFrame(){
  if(paused){ctx.fillStyle='#050716bb';ctx.fillRect(0,0,localViewWidth,640);ctx.fillStyle='#d7ff38';ctx.font='bold 40px monospace';ctx.textAlign='center';ctx.fillText('PAUSED',localViewWidth/2,310);ctx.font='16px monospace';ctx.fillText('PRESS ESC TO RESUME',localViewWidth/2,342);}
 }
 function advanceRaceFrame(frameTime){
+ if(!running||paused||countdownRemaining>0)return 0;
  if(!Number.isFinite(frameTime)||frameTime<=0)return 0;
  // Drop excess after a stall instead of accumulating unlimited catch-up work.
  simulationAccumulator=Math.min(simulationAccumulator+frameTime,SIMULATION_STEP*MAX_SIMULATION_STEPS);

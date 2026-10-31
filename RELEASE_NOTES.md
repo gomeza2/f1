@@ -1,10 +1,18 @@
-# PIXEL GRAND PRIX — entrega 0.68
+# PIXEL GRAND PRIX — entrega 0.69
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Recuperación y motor de movimiento en 0.69
+
+Marcha atrás después de ~0,35 s detenido con freno sostenido y acelerador suelto, máximo 28 km/h. Dirección inversa, retorno gradual hacia adelante, misma geometría de contacto/terreno, HUD R y luces de reversa para cada piloto. El motor longitudinal se separa en una función común con velocidad firmada. La CPU no selecciona reversa por mantener un freno normal; la capacidad física es compartida y la intención de marcha es explícita.
+
+Corregida la clasificación al cruzar la meta hacia atrás; sin vueltas/checkpoints concedidos en reversa. El avance fijo rechaza también llamadas directas durante pausa/cuenta regresiva o fuera de carrera. Pruebas de recuperación y comparación exacta de conducción/rondas anteriores, local 2–4, audio, integración y entrega local. Prestaciones hacia adelante y registros p6/b1/s1 conservados.
+
+El nuevo ensayo de deriva lateral no supera el límite de contactos en Meadow: se archiva y queda fuera del juego. No se amplían presupuestos para aprobarlo. Evidencia y pendientes en `tests/experiments/RECOVERY_069.md`. La fase de conducción/derrape sigue abierta y Pages público permanece sin verificar.
 
 ## Pedales en 0.68
 

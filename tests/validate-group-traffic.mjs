@@ -31,7 +31,7 @@ for(const width of [34,26]){
 }
 console.log('PASS: mirrored overlap priority despite leader-distance jitter, braking for every rival, finished/reset cleanup, feasible opposing lanes and boxed-in hold/yield using shared physical braking; eleven historical routes/material physics/other model fields/driver settings preserved (Speed b1 checked); Jungle/Thunder/Coast have newer snapshots.');
 if(!process.argv.includes('--focused')){
- let laps=0;const regressions=[];const cases=process.argv.includes('--high-rate')?baseline.cases.filter(c=>c.dt):baseline.cases;
+ let laps=0;const regressions=[];const selected=process.env.GROUP_STAGES?.split(',').map(Number);const cases=(process.argv.includes('--high-rate')?baseline.cases.filter(c=>c.dt):baseline.cases).filter(c=>!selected||selected.includes(c.stage));assert.ok(cases.length,'Empty group selection');
  for(const old of cases){
   const dt=old.dt||baseline.dt;
   e('difficulty').value=old.level;g.start('solo',old.stage);g.cars[0].isAI=true;let contacts=0,off=0;
