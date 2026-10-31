@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
 // Execute the real game closure; expose state only inside this test sandbox.
-export function loadGame({audioContextClass,frameScheduler,sourceOverride,gamepads=[],storage,clock=()=>0}={}) {
+export function loadGame({audioContextClass,frameScheduler,sourceOverride,coreSourceOverride,gamepads=[],storage,clock=()=>0}={}) {
   const elements = new Map();
   const context = new Proxy({}, { get: () => () => {} });
   function element(id) {
@@ -21,6 +21,7 @@ export function loadGame({audioContextClass,frameScheduler,sourceOverride,gamepa
     navigator:{getGamepads:()=>gamepads},performance: { now: clock }, requestAnimationFrame: frameScheduler?.request||(() => 1), cancelAnimationFrame:frameScheduler?.cancel||(()=>{}), console,
   };
   vm.createContext(sandbox);
+  vm.runInContext(coreSourceOverride??readFileSync(new URL('../../driving-core.js',import.meta.url),'utf8'),sandbox);
   vm.runInContext(readFileSync(new URL('../../engine-audio.js', import.meta.url), 'utf8'),sandbox);
   const source = sourceOverride ?? readFileSync(new URL('../../script.js', import.meta.url), 'utf8');
   const expose = `globalThis.testGame={aiTargetSpeed,get aiSpeedPlan(){return aiSpeedPlan},roadSectionAt,roadHalfWidthAt,roadMaxHalfWidth,barrierRadiusAt,fillRoadRibbon,drawVariableRoad,updateMenuPreview,updateGaragePreview,checkpointsForTrack,initAudio,updateAudio,playRaceCue,get audioContext(){return audioContext},get audioChannels(){return audioChannels},get audioVoices(){return audioVoices},get audioMaster(){return audioMaster},start,physics,placeCar,setupCar,aiTraffic,trafficApproach,AI_DRIVERS,AI_PERSONALITIES,driverFor,aiLookAhead,racePoints,seasonStandings,renderResults,raceClassification,awardPoints,standingsText,finishRace,raceFinishState,gateCrossed,updateFinishFeedback,togglePause,format,get paused(){return paused},get countdown(){return countdownRemaining},CAR_MODELS,CAR_VISUALS,carVisualState,drawCarBody,drawCar,get motionPreference(){return motionPreference},get skidMarks(){return skidMarks},WORLD_SPEED_SCALE,ROAD_EDGE,PHYSICS_VERSION,TERRAIN_MATERIALS,ROAD_SHOULDER,GRAVEL_WIDTH,RUNOFF_CELL,terrainAt,runoffRaster,drawRunoff,get runoffZones(){return runoffZones},surfaceAtProgress,accelerationAtSpeed,vehicleHandling,updateSteeringInertia,raceCamera,toggleCamera,overviewZoom,usesSplitScreen,lapRecordKey,saveBestLap,currentLapTime,updateTelemetry,
@@ -29,6 +30,9 @@ export function loadGame({audioContextClass,frameScheduler,sourceOverride,gamepa
     get checkpoints(){return checkpoints},get tracks(){return tracks},get cars(){return cars},get track(){return track},
     tick(dt){elapsed+=dt;cars.forEach((car,i)=>{if(!car.done)physics(car,i,dt)});const contact=cars.some((a,i)=>!a.done&&cars.slice(i+1).some(b=>!b.done&&Math.hypot(a.x-b.x,a.y-b.y)<23-1e-6));resolveCollisions(dt);return contact},
     setCountdown(value){countdownRemaining=value},setElapsed(value){elapsed=value},get running(){return running},setKeys(value){keys=value},setDifficulty(value){difficulty=value}};
+    if(typeof DRIVING_TUNING!=='undefined')Object.assign(globalThis.testGame,{DRIVING_TUNING});
+    if(typeof drivingCore!=='undefined')Object.assign(globalThis.testGame,{drivingCore});
+    if(typeof applyGroundDrag==='function')Object.assign(globalThis.testGame,{applyGroundDrag});
     if(typeof updateDriveSpeed==='function')Object.assign(globalThis.testGame,{updateDriveSpeed,DRIVE_RECOVERY,speedLabel});
     if(typeof mixedRoadRaster==='function')Object.assign(globalThis.testGame,{mixedRoadRaster,drawMixedRoad,MIXED_ROAD_CELL});
     if(typeof humanSteeringInput==='function')Object.assign(globalThis.testGame,{humanSteeringInput});

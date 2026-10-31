@@ -1,10 +1,18 @@
-# PIXEL GRAND PRIX — entrega 0.70
+# PIXEL GRAND PRIX — entrega 0.71
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Primer bloque compartido de simulación en 0.71
+
+Conducción extraída a `driving-core.js`, usada por el juego y por Node sin DOM/Canvas/audio/almacenamiento/reloj. Datos de modelos/materiales en una fuente común; estados de vehículo independientes y reglas inmutables. Misma aceleración, frenado/reversa, agarre, dirección y desplazamiento; no se retoca el balance ni se borran récords p6/b1/s1.
+
+Paridad de 140 casos de vehículo, 16 escenarios nativos y 36 vueltas emparejadas con 0.70; comparación numérica adicional Node/Chromium, local, catálogo, audio y entrega local. Bootstrap probado con HTML anterior que omite el nuevo archivo y fallo de carga explícito. Los servidores de pruebas sirven la misma dependencia real.
+
+Es el tramo 30.1, no una carrera headless completa ni salas online. Próximo: datos/geometría de pistas; después colisiones/progreso/eventos y RaceState aislado, antes de servidor/sincronización. API/límites en `SIMULATION_ARCHITECTURE.md` y pruebas en `tests/experiments/SHARED_DRIVING_071.md`.
 
 ## Catálogo y planificación en 0.70
 

@@ -1,7 +1,7 @@
 // Real offline Web Audio; optional matched-RMS WAV exports are review artifacts, not game assets.
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{chromium}=require('playwright');
-const source=fs.readFileSync(path.join(__dirname,'../engine-audio.js'),'utf8'),game=fs.readFileSync(path.join(__dirname,'../script.js'),'utf8');
-const models=new Function(game.slice(game.indexOf('const CAR_MODELS='),game.indexOf('const CAR_PAINTS='))+'return CAR_MODELS')();
+const source=fs.readFileSync(path.join(__dirname,'../engine-audio.js'),'utf8');
+const models=require('../driving-core.js').create().rules.models;
 function matched(samples){const rms=Math.sqrt(samples.reduce((s,v)=>s+v*v,0)/samples.length),a=Float32Array.from(samples,v=>v*.12/rms),fade=480;for(let n=0;n<fade;n++){a[n]*=n/fade;a[a.length-1-n]*=n/fade;}return a;}
 function wav(file,segments){const size=segments.reduce((n,a)=>n+a.length,0)*2,b=Buffer.alloc(44+size);b.write('RIFF');b.writeUInt32LE(36+size,4);b.write('WAVEfmt ',8);b.writeUInt32LE(16,16);b.writeUInt16LE(1,20);b.writeUInt16LE(1,22);b.writeUInt32LE(24000,24);b.writeUInt32LE(48000,28);b.writeUInt16LE(2,32);b.writeUInt16LE(16,34);b.write('data',36);b.writeUInt32LE(size,40);let offset=44;for(const a of segments)for(const v of a){b.writeInt16LE(Math.round(Math.max(-.95,Math.min(.95,v))*32767),offset);offset+=2;}fs.writeFileSync(file,b);}
 (async()=>{const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});try{const page=await browser.newPage();await page.setContent('<title>Engine tone review</title>');const versions=process.env.ENGINE_AUDIO_BASELINE?{before:fs.readFileSync(process.env.ENGINE_AUDIO_BASELINE,'utf8'),current:source}:{current:source},results={},pcm={};

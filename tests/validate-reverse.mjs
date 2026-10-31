@@ -1,5 +1,6 @@
+import {withoutSharedDriving} from './helpers/without-shared-driving.mjs';
 import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {loadGame} from './helpers/game-harness.mjs';import {withoutReverseRecovery} from './helpers/without-reverse-recovery.mjs';
-const source=readFileSync(new URL('../script.js',import.meta.url),'utf8'),current=loadGame(),before=loadGame({sourceOverride:withoutReverseRecovery(source)}),{game:g,element:e}=current;
+const source=readFileSync(new URL('../script.js',import.meta.url),'utf8'),current=loadGame(),before=loadGame({sourceOverride:withoutReverseRecovery(withoutSharedDriving(source))}),{game:g,element:e}=current;
 function setup(model='balanced',stage=9,progress=400,barriers='open'){e('barrierMode').value=barriers;e('carModel').value=model;g.start('solo',stage);g.cars[1].done=true;g.setCountdown(0);const c=g.cars[0];g.placeCar(c,progress,0);return c;}
 function steps(c,keys,count){g.setKeys(keys);for(let n=0;n<count;n++){const x=c.x,y=c.y;g.advanceRaceFrame(1/60);assert.ok(c.speed>=-28&&c.speed<=g.CAR_MODELS[c.model].maxSpeed);assert.ok(Math.hypot(c.x-x,c.y-y)<=Math.max(28,g.CAR_MODELS[c.model].maxSpeed)*g.WORLD_SPEED_SCALE/60+1e-5,'Recovery teleported');}}
 const results=[];

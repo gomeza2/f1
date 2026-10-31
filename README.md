@@ -41,6 +41,14 @@ Cada persona tiene cámara propia y un panel exterior con posición, velocidad, 
 
 El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
+## Motor compartido para avanzar al online — 0.71
+
+`driving-core.js` contiene la misma conducción que usa el juego y puede ejecutarse directamente en Node sin navegador. Incluye modelos/materiales, aceleración, freno, reversa, agarre, dirección y movimiento. Cada motor tiene reglas inmutables y cada coche su propio estado; no se mantienen dos físicas distintas.
+
+Esta extracción conserva conducción, CPU, pistas y récords. Todavía faltan geometría/colisiones, progreso/eventos y un estado completo por carrera para poder crear salas. **No hay online disponible aún.** API, ejemplo Node y siguientes bloques en [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md); evidencia en [SHARED_DRIVING_071.md](tests/experiments/SHARED_DRIVING_071.md).
+
+La carga comprueba el nuevo archivo también ante un HTML anterior en caché y muestra una recarga necesaria si no puede obtenerlo. Se mantienen las rutas de Pages y el juego local sin backend.
+
 ## Catálogo visual — 0.70
 
 **EXPLORAR COCHES Y CIRCUITOS** abre un catálogo conectado al paddock. Cuatro siluetas, seis pinturas, velocidad real y comparación de giro/frenada/agarre respecto a Balanced; catorce pistas con trazado, superficies, recorrido corto/medio/largo, checkpoints y perfil predeterminado. La búsqueda admite nombre o superficie y no distingue tildes. La elección del coche corresponde a P1; los demás pilotos conservan su parrilla individual.
@@ -692,3 +700,17 @@ node tests/browser-release.cjs
 ```
 
 `CATALOGUE_SCREENSHOTS` exporta vistas de coches/circuitos en cinco resoluciones. La prueba usa entradas nativas y un puente de solo lectura para comprobar que elegir en el menú no modifica los coches de la carrera anterior.
+
+Pruebas del motor compartido 0.71:
+
+```sh
+node tests/validate-shared-driving.mjs
+node tests/browser-core-vectors.cjs
+git show d417b94:script.js > /tmp/pixelgp-before-071.js
+RACE_SOURCE_BASELINE=/tmp/pixelgp-before-071.js node tests/validate-pedal-races.mjs
+DRIVING_SOURCE_BASELINE=/tmp/pixelgp-before-071.js node tests/browser-shared-driving.cjs
+git show d417b94:index.html > /tmp/pixelgp-before-071.html
+DRIVING_HTML_BASELINE=/tmp/pixelgp-before-071.html node tests/browser-release.cjs
+```
+
+Las pruebas nativas usan Playwright/Chromium opcionales; el módulo de conducción no agrega dependencias. La igualdad con la implementación anterior se comprueba por entorno; entre Node y Chromium se mide el pequeño redondeo numérico, sin prometer lockstep binario universal.

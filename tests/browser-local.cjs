@@ -6,7 +6,7 @@ const bridge=`window.localTest={get cars(){return cars.map(c=>({player:c.player,
 const server=http.createServer((req,res)=>{
  const name=new URL(req.url,'http://localhost').pathname.slice(1)||'index.html';
  if(name==='favicon.ico'){res.writeHead(204).end();return}
- if(!['index.html','style.css','engine-audio.js','script.js'].includes(name)){res.writeHead(404).end();return}
+ if(!['index.html','style.css','driving-core.js','engine-audio.js','script.js'].includes(name)){res.writeHead(404).end();return}
  res.setHeader('Content-Type',name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':'text/html');
  let body=fs.readFileSync(path.join(root,name),'utf8');if(name==='script.js')body=body.replace(/\}\)\(\);\s*$/,bridge+'})();');res.end(body);
 });

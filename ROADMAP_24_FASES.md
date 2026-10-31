@@ -1279,3 +1279,14 @@ Se incorporan fases abiertas 37 (3D inclinada opcional) y 38 (catálogo/preparac
 Pedido vigente: profundizar jugabilidad/derrape, CPU competitiva, motor gráfico, audio, pistas y catálogo; desarrollar online real. Próximo tramo 30/32.1: extraer una simulación compartida sin DOM y comprobar paridad y dos salas aisladas antes de conectar un servidor. `ONLINE_DESIGN.md` concreta autoridad, mensajes, ciclo de sala, reconexión, latencia, validación, pruebas y alojamiento. Online permanece en diseño; no se anuncia como disponible.
 
 La opción 3D se evalúa después, con cámara elevada de costado, volumen estilizado y estética retro. Debe usar el mismo estado/terrenos/barreras, conservar 2D y comprobar las 14 pistas y 2–4 cámaras; sin selector vacío ni cambio de física encubierto. Las fases orientan, no fijan un número de entregas ni un techo de evolución.
+
+
+## Avance 0.71 — fase 30.1, conducción compartida para online
+
+`driving-core.js` es la implementación canónica de modelos/materiales y movimiento: aceleración/pedales/reversa, agarre, dirección/yaw, deriva escalar previa y posición. El navegador la consume y Node puede importarla sin DOM/Canvas/audio/storage/reloj. Reglas inmutables por instancia, coches con estado propio y sin dos fórmulas de conducción paralelas. API versión 1; física p6/b1/s1 y récords conservados.
+
+Verificación: 140 casos/3.164 pasos de cuatro modelos, siete rutas/cinco secuencias, fuerzas de siete materiales y seis funciones trasladadas intactas; 16 escenarios nativos/96 snapshots y 3.552 llamadas observadas al paso compartido; 36 vueltas actuales emparejadas exactamente con 36 de referencia 0.70. Comparación adicional de 28 vectores Node/Chromium: pequeñas diferencias de redondeo en posiciones/ángulos se miden con cota 1e-10, manteniendo velocidad/timers/flags exactos. No se afirma determinismo binario universal ni se relajan presupuestos de contactos/ritmo de carreras.
+
+Se comprueba catálogo/paddock/local, reversa, audio, reloj fijo, integración y entrega bajo `/f1/`, incluida carga desde HTML anterior sin la dependencia y mensaje/arranque bloqueado si falla. Evidencia en `tests/experiments/SHARED_DRIVING_071.md`; API en `SIMULATION_ARCHITECTURE.md`.
+
+**Próximo tramo 30.2:** datos y geometría/materiales/barreras de las catorce pistas sin render. Siguen 30.3 contactos/progreso/reloj/eventos y 30.4 RaceState completo aislado. Solo después salas y sincronización de 32/33. Dos vehículos aislados no acreditan dos salas; no hay online todavía. Las fases de manejo/CPU, audio, pistas, gráficos/3D opcional y catálogo siguen abiertas, sin concentrar cada entrega en IA.

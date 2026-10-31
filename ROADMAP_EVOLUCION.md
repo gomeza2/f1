@@ -24,7 +24,7 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 
 - 0.69: recuperación/marcha atrás y motor longitudinal ampliado, integrados y comprobados; deriva lateral aún rechazada para publicación.
 - 0.70: primer catálogo visual de coches/pistas conectado a la carrera; fase 38 parcial.
-- Próximo tramo: fases 30/32, simulación compartida sin DOM y pruebas de paridad/aislamiento para poder desarrollar salas reales. Diseño concreto en [ONLINE_DESIGN.md](ONLINE_DESIGN.md). Online todavía no disponible.
+- 0.71: primer motor de vehículos compartido con paridad; pendiente la carrera completa. Próximo tramo 30.2: geometría de pistas sin render, y después contactos/progreso/eventos y RaceState aislado para salas reales. Diseño concreto en [ONLINE_DESIGN.md](ONLINE_DESIGN.md). Online todavía no disponible.
 - Conducción/derrape, CPU justa, audio, cuatro circuitos uniformes, gráficos y local siguen abiertos y se alternarán por impacto. No reducir todo el trabajo a CPU ni dar por terminada la sensación humana por tests.
 - Vista 3D inclinada opcional en fase 37, solicitada para más adelante; no reemplazará por obligación la vista cenital actual.
 
@@ -361,3 +361,14 @@ Siguientes tramos: fichas equivalentes por asiento local, filtros/orden cuando l
 Fichas de coches con seis pinturas, siluetas propias y comparación de giro/freno/agarre respecto a Balanced; fichas de las 14 rutas con trazado cacheado, superficie, longitud por categoría, checkpoints, anchura variable y perfil predeterminado. Búsqueda sin distinguir tildes, estado seleccionado, diálogo accesible con foco contenido y retorno al botón. Selección conectada a garaje, preview y carrera real; sin mutar la carrera anterior al navegar el menú.
 
 Próximo tramo recomendado: extracción de simulación compartida para online (30/32.1), con contratos y pruebas definidos en `ONLINE_DESIGN.md`. La 3D inclinada queda después como opción 37, conservando 2D y una única física. No existen todavía servidor/salas/ranking online ni vista 3D en el producto; no se crean botones que aparenten esas funciones.
+
+
+## Avance 0.71 — fase 30.1, conducción compartida para online
+
+`driving-core.js` es la implementación canónica de modelos/materiales y movimiento: aceleración/pedales/reversa, agarre, dirección/yaw, deriva escalar previa y posición. El navegador la consume y Node puede importarla sin DOM/Canvas/audio/storage/reloj. Reglas inmutables por instancia, coches con estado propio y sin dos fórmulas de conducción paralelas. API versión 1; física p6/b1/s1 y récords conservados.
+
+Verificación: 140 casos/3.164 pasos de cuatro modelos, siete rutas/cinco secuencias, fuerzas de siete materiales y seis funciones trasladadas intactas; 16 escenarios nativos/96 snapshots y 3.552 llamadas observadas al paso compartido; 36 vueltas actuales emparejadas exactamente con 36 de referencia 0.70. Comparación adicional de 28 vectores Node/Chromium: pequeñas diferencias de redondeo en posiciones/ángulos se miden con cota 1e-10, manteniendo velocidad/timers/flags exactos. No se afirma determinismo binario universal ni se relajan presupuestos de contactos/ritmo de carreras.
+
+Se comprueba catálogo/paddock/local, reversa, audio, reloj fijo, integración y entrega bajo `/f1/`, incluida carga desde HTML anterior sin la dependencia y mensaje/arranque bloqueado si falla. Evidencia en `tests/experiments/SHARED_DRIVING_071.md`; API en `SIMULATION_ARCHITECTURE.md`.
+
+**Próximo tramo 30.2:** datos y geometría/materiales/barreras de las catorce pistas sin render. Siguen 30.3 contactos/progreso/reloj/eventos y 30.4 RaceState completo aislado. Solo después salas y sincronización de 32/33. Dos vehículos aislados no acreditan dos salas; no hay online todavía. Las fases de manejo/CPU, audio, pistas, gráficos/3D opcional y catálogo siguen abiertas, sin concentrar cada entrega en IA.

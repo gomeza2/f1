@@ -1,8 +1,8 @@
 // Optional Playwright/Chromium. Offline Web Audio compares sustained cruise, not just launch.
 const {chromium}=require('playwright');
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
-const source=fs.readFileSync(path.join(__dirname,'../engine-audio.js'),'utf8'),gameSource=fs.readFileSync(path.join(__dirname,'../script.js'),'utf8');
-const models=new Function(gameSource.slice(gameSource.indexOf('const CAR_MODELS='),gameSource.indexOf('const CAR_PAINTS='))+'return CAR_MODELS;')();
+const source=fs.readFileSync(path.join(__dirname,'../engine-audio.js'),'utf8');
+const models=require('../driving-core.js').create().rules.models;
 (async()=>{
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
  try{

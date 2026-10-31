@@ -1,6 +1,6 @@
 # PIXEL GRAND PRIX — diseño de online privado
 
-**Estado en 0.70: diseño, sin servidor ni carreras online disponibles.** La simulación todavía depende de variables de carrera/DOM dentro de `script.js`. El catálogo 0.70 y la recuperación 0.69 sí están integrados; este documento no los convierte en online.
+**Estado en 0.71: primer módulo de conducción compartido integrado; sin servidor ni carreras online disponibles.** `driving-core.js` ya funciona en navegador y Node, pero el estado de carrera completo, geometría/colisiones/progreso y eventos todavía dependen del adaptador actual. Ver [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md). El catálogo 0.70 y la recuperación 0.69 permanecen integrados.
 
 ## Primera entrega completa que se busca
 
@@ -18,7 +18,7 @@ Extraer una única simulación compartida, sin mantener dos físicas distintas:
 - El cliente identifica su coche por `selfPilotId`; cámara, HUD y controles no deben asumir que su asiento de servidor es el índice cero.
 - Canvas, audio, partículas decorativas y localStorage quedan en el adaptador del navegador. No se ejecutará un DOM falso o un navegador en el servidor.
 - Intención de conducción y física se separan: el servidor calcula el retardo de reversa. Un freno de emergencia de red no puede activar marcha atrás automáticamente.
-- Formato preferido: módulos ES compartidos sin bundler obligatorio. La migración debe probar rutas/versionado de todos los módulos bajo `/f1/`, además de apertura y carga del cliente.
+- Primer formato elegido en 0.71: módulo clásico/CJS compartido sin bundler, para mantener Pages estático y uso directo en Node. Revisar la opción de módulos ES si la siguiente extracción la justifica. Las rutas/versiones bajo `/f1/` y recuperación ante HTML anterior están comprobadas para este bloque.
 
 Criterio de salida: con las mismas entradas, el adaptador actual y el núcleo extraído producen posiciones/velocidades, contactos, gates, vueltas y tiempos iguales. Dos carreras simultáneas no deben contaminar estado. La extracción no es permiso para cambiar el balance sin medirlo.
 
@@ -82,4 +82,4 @@ TLS, orígenes permitidos, sesiones impredecibles, límites de conexiones/salas/
 
 ## Orden inmediato
 
-0.70 completa el primer catálogo visual. Próximo paso online: extraer la simulación compartida y demostrar paridad/aislamiento (30/32.1). Después, servidor/salas y prueba local integral; luego reconciliación/latencia; finalmente despliegue revisable. La vista 3D inclinada queda en fase 37 como opción de render que consumirá la misma simulación, sin cambiar la autoridad ni duplicar la física.
+0.70 completa el primer catálogo visual y 0.71 extrae el motor de vehículos con paridad/aislamiento de ese componente. Próximo paso online: geometría y consultas de pistas compartidas; después carrera/eventos y dos RaceState completos aislados (30/32.1). Después, servidor/salas y prueba local integral; luego reconciliación/latencia; finalmente despliegue revisable. La vista 3D inclinada queda en fase 37 como opción de render que consumirá la misma simulación, sin cambiar la autoridad ni duplicar la física.

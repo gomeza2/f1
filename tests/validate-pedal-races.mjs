@@ -1,5 +1,6 @@
+import {withoutSharedDriving} from './helpers/without-shared-driving.mjs';
 import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {loadGame} from './helpers/game-harness.mjs';import {withoutPedalBlend} from './helpers/without-pedal-blend.mjs';
-const source=readFileSync(new URL('../script.js',import.meta.url),'utf8'),current=loadGame(),before=loadGame({sourceOverride:process.env.RACE_SOURCE_BASELINE?readFileSync(process.env.RACE_SOURCE_BASELINE,'utf8'):withoutPedalBlend(source)});
+const source=readFileSync(new URL('../script.js',import.meta.url),'utf8'),current=loadGame(),before=loadGame({sourceOverride:process.env.RACE_SOURCE_BASELINE?readFileSync(process.env.RACE_SOURCE_BASELINE,'utf8'):withoutPedalBlend(withoutSharedDriving(source))});
 const state=g=>Array.from(g.cars,c=>({x:c.x,y:c.y,speed:c.speed,heading:c.heading,yaw:c.yawRate,steer:c.steer,drift:c.drift,lap:c.lap,checkpoint:c.nextCheckpoint,passes:c.checkpointPasses,raceProgress:c.raceProgress,lapTimes:Array.from(c.lapTimes),finish:c.finishTime,done:c.done}));
 let laps=0;
 for(const [stage,difficulty] of [[0,'normal'],[10,'normal'],[4,'hard']]){
