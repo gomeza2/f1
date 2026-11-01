@@ -122,3 +122,9 @@ Pruebas y límites en [SHARED_RULES_074.md](tests/experiments/SHARED_RULES_074.m
 El táctil permanece en la capa de entrada/DOM de `script.js`, no en los módulos Node. Normaliza GAS/FRENO/dirección/mano y comparte `humanControls`/`advanceVehicle` con teclado y CPU. P1 puede combinar táctil y teclado; al elegir mando en local solo se usa esa fuente. El resto de asientos conserva su mapeo.
 
 La cámara táctil adapta dimensiones/anticipación sin realimentar la simulación; el estado mundial y los récords p6/b1/s1 permanecen. Limpieza de punteros en ciclo de vida y ajustes evita órdenes pegadas. Al extraer RaceState en 30.4 hay que mantener esa frontera: el adaptador entrega comandos, la carrera posee su estado/reloj. En online, abrir ajustes no podrá pausar globalmente al servidor; seguirá la política de input seguro del diseño de salas.
+
+## Consumidor local de vueltas — 0.76
+
+El contrarreloj de fase 31.1 usa `race-rules.onLap` para aceptar una vuelta y un grabador `ghost-lap.js` sin DOM/reloj. `script.js` posee almacenamiento y playback de poses. El fantasma no pertenece a la lista de coches ni llama a física, colisiones, gates o audio; el tiempo de reproducción se ajusta al retardo visual existente. No hay un segundo modelo dinámico.
+
+Esto no implementa la repetición determinista de entradas/eventos ni el estado completo de carrera de 30.4. Los datos de poses son una referencia local validada por esquema, no evidencia de un resultado competitivo ante un servidor. Siguen pendientes aislamiento del reloj/estado/resultados y dos carreras independientes antes de salas.

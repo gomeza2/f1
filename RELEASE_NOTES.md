@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.75
+# PIXEL GRAND PRIX — entrega 0.76
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Contrarreloj y fantasma en 0.76
+
+Modo real de tres vueltas individuales con checkpoints existentes, récord por pista/coche/barreras, fantasma transparente de la mejor vuelta, interruptor exterior, resultados por vuelta y reintento. Sin CPU, colisiones con el fantasma ni puntos de temporada. `ghost-lap.js` es independiente de DOM/reloj/almacenamiento; el adaptador del juego registra poses, valida al cargar y limita memoria a ocho repeticiones de hasta 180 s. Los tiempos se conservan aunque se retire una repetición por presupuesto. Fallo de almacenamiento visible en resultados; entrada táctil/local/rápida/campeonato conservadas.
+
+No cambia fuerzas, velocidad, IA, trazados ni timbre del motor; los récords generales siguen con sus claves anteriores. Fase 31.1 implementada; repetición completa/importación y autoridad online pendientes. Detalles comprobados y límites en `tests/experiments/TRIAL_076.md`.
 
 ## Controles táctiles y cámara móvil en 0.75
 

@@ -34,3 +34,12 @@ Siguiente entrega de producto: controles táctiles (42, desglosada de 41), con l
 ## Seguimiento 0.75
 
 El bloqueo móvil identificado se aborda con controles multitáctiles reales para P1 y cámara que ocupa el panel en vertical/horizontal, usando la misma física. Activación/tamaño/disposición y persistencia validados; teclado, mandos y local conservados. Evidencia en `tests/experiments/TOUCH_075.md`. El diagnóstico anterior describe la base auditada, no niega este avance. Teléfono físico/aceptación humana siguen pendientes.
+
+
+## Revisión de continuación 0.76
+
+Base real revisada: `main` limpio `e628ad3` / 0.75, antes de crear `work/time-trial-076`. Contrastados inicio/modos/resultados/tiempos, paso fijo, dibujo de coches, carga de dependencias, almacenamiento, reglas de vueltas, módulos de conducción/geometría y pruebas; documentación/arquitectura/online consultadas. Siguen catorce pistas, cuatro modelos, diez anchos variables y cuatro uniformes; no se usa el resumen antiguo como autoridad.
+
+Cinco oportunidades vigentes: (1) práctica con feedback propio: faltaba contrarreloj/fantasma real, implementado en 0.76; (2) manejo/derrape y evaluación humana, aún pendiente; (3) variar cuatro trazados uniformes y sus decisiones; (4) audio/claridad gráfica y aceptación en dispositivos físicos; (5) aislar carrera completa antes de autoridad de servidor. Se elige 31.1 por valor jugable y porque puede aprovechar las reglas actuales sin inventar un servidor ni un segundo modelo físico.
+
+La inspección de navegador de esta entrega y sus límites se registran en `tests/experiments/TRIAL_076.md`. El punto histórico «no hay contrarreloj» de la auditoría 0.74 queda superado solo para el modo/fantasma personal 0.76; libre/eliminación/diarios/replay completo siguen pendientes.

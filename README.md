@@ -2,6 +2,16 @@
 
 Juego web arcade de carreras 2D desde arriba, con identidad retro propia, circuitos de formas variadas, rivales controlados por CPU, derrapes, superficies y campeonato.
 
+## Nuevo en 0.76 — contrarreloj con fantasma personal
+
+Elegí **CONTRARRELOJ**, pista, coche y barreras, y pulsá **CORRER CONTRARRELOJ**. Tres vueltas válidas sin CPU: practicá frenadas, trazadas y derrapes contra tu propia mejor vuelta. Los checkpoints y la conducción son los mismos de carrera. La primera vuelta crea una referencia; una mejora válida reemplaza el fantasma para la siguiente vuelta/intento. **FANTASMA ON/OFF** está en la barra exterior y no cambia el coche ni el cronómetro.
+
+Récord independiente por trazado/física/coche/perfil real de barreras; AUTO y su perfil equivalente comparten récord. Resultados muestran las tres vueltas, mejor de la tanda y récord personal, sin puntos de campeonato; **OTRO INTENTO** repite la pista. El lobby local cambia a partida rápida: el contrarreloj es individual.
+
+Guardado local versionado (`pixelGP.timeTrials.v1`), con todos los tiempos y hasta ocho fantasmas de las últimas mejores vueltas guardadas. Cada repetición admite hasta 180 s, muestreo de poses aproximadamente a 10 Hz y máximo 1.802 muestras; las vueltas más largas conservan su tiempo, hasta menos de una hora, sin prometer un fantasma completo. Datos inválidos se descartan. Si el navegador rechaza el guardado, resultados avisa que el récord queda solo en esta sesión. Se conservan los récords generales anteriores. No son resultados verificados por servidor ni una repetición completa de carrera.
+
+Evidencia y límites: [TRIAL_076.md](tests/experiments/TRIAL_076.md). Siguiente requisito para online: aislamiento completo de estado/reloj/resultados en fase 30.4; también siguen abiertos manejo/derrape, audio, cuatro rutas uniformes y gráficos.
+
 ## Cómo ejecutar
 
 Abrí `index.html` en un navegador moderno. No necesita servidor ni instalación de dependencias para su versión básica.

@@ -2,6 +2,8 @@
 
 La planificación abierta vigente continúa en [`ROADMAP_EVOLUCION.md`](ROADMAP_EVOLUCION.md), sin límite artificial de fases. Las 24 originales y sus decisiones se conservan aquí como contexto y registro.
 
+> Estado vigente: entrega **0.76**, contrarreloj/fantasma de fase 31.1. La sección «Estado real» inferior corresponde al registro histórico 0.62; no describe la última build. Ver `ROADMAP_EVOLUCION.md` y `RELEASE_NOTES.md`.
+
 ## Objetivo de diseño
 
 Crear un arcade de carreras 2D con circuitos originales, recorridos más variados y largos, física expresiva, una CPU competitiva pero justa, distintos terrenos y una interfaz que no tape la pista. La referencia general es el género de carreras desde arriba; el arte, los trazados y la personalidad del juego deben seguir siendo propios.

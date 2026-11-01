@@ -110,7 +110,7 @@ Estado 0.74: 30.1 conducción, 30.2 geometría y reglas de contactos/progreso/ev
 - Replays/escenarios reproducibles y migración con pruebas de paridad. Separar aleatoriedad visual de decisiones de carrera.
 - Justificación: necesario para mandos, fantasmas, repetición y una autoridad online. Mantener Canvas 2D mientras sus mediciones lo permitan.
 
-### 31. Contrarreloj, fantasma y repetición local
+### 31. Contrarreloj, fantasma y repetición local — primera entrega 0.76
 
 - Un modo completo con vuelta válida, récord versionado, fantasma grabado y reproducción; límites de tamaño y validación de datos importados.
 - Datos estructurados, sin código ejecutable; distinguir récord local de tiempo confirmado por servidor.
@@ -455,3 +455,12 @@ Cámara táctil individual ocupa el rectángulo completo, conserva coche legible
 Entrada/estados implementados y comprobados en Chromium multitáctil y regresiones; evidencia en `tests/experiments/TOUCH_075.md`. La fase 42 sigue parcial: teléfono físico, aceptación humana, calibración más libre, alternativas analógicas y comodidad de más jugadores en dispositivos pequeños no se cierran por emulación. 3D/online, eliminación/libre/diarios/fantasmas, garaje y recompensas siguen pendientes en sus fases.
 
 **Siguiente tramo recomendado:** 30.4 para agrupar estado/reloj/resultados/replay y dos carreras independientes antes de salas 32/33. Alternar con 25 (derrape/maniobras/aceptación humana), 27 (cuatro rutas uniformes), 39 (parrilla y CPU), 26/36 (audio/gráficos) y 40/43 (modos/progresión), conservando controles móviles al evolucionar el manejo.
+
+
+## Avance 0.76 — fase 31.1, competir contra una vuelta propia
+
+Se prioriza un bucle de juego nuevo tras la entrega táctil, sin cerrar ni saltar los requisitos de servidor. Modo individual de tres vueltas, récord específico de trazado/física/coche/barreras, grabación acotada, reproducción visual interpolada sin colisión, interruptor exterior, resultados por vuelta y reintento. Catorce pistas y cuatro modelos disponibles; las reglas compartidas conceden las vueltas. Guardado validado, ocho repeticiones y tiempos independientes; fallo de persistencia comunicado.
+
+Implementación integrada; pruebas de componente y navegador documentadas en `tests/experiments/TRIAL_076.md`. Las carreras automáticas no validan diversión humana. No es replay de toda una carrera ni ranking online seguro. **31 sigue parcial:** repetir carrera completa con entradas/eventos, importación/exportación validada, sectores/deltas solo cuando se midan realmente y aceptación humana del fantasma. Se conserva la evaluación física/audio pendiente.
+
+**Siguiente entrega técnica recomendada: 30.4**, estado/reloj/cuenta regresiva/clasificación aislados y dos carreras simultáneas independientes, antes de 32/33 salas autoritativas. No confundir una grabación de poses locales con simulación autoritativa. Alternar con fase 27 (Champion/Rally/Meadow/Industrial aún uniformes), 25/26 (manejo/audio) y 36 (gráficos), sin concentrar todo en CPU. Online, 3D opcional y las demás variantes continúan pendientes.

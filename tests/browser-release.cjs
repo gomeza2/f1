@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const fs=require('node:fs'),http=require('node:http'),path=require('node:path'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-const legacyHtml=process.env.DRIVING_HTML_BASELINE?fs.readFileSync(process.env.DRIVING_HTML_BASELINE,'utf8'):html.replace(/<script src="(?:(?:driving|track)-core|race-rules)\.js[^"]*"><\/script>/g,'');
+const legacyHtml=process.env.DRIVING_HTML_BASELINE?fs.readFileSync(process.env.DRIVING_HTML_BASELINE,'utf8'):html.replace(/<script src="(?:(?:driving|track)-core|race-rules|ghost-lap)\.js[^"]*"><\/script>/g,'');
 const trackLegacyHtml=process.env.TRACK_HTML_BASELINE?fs.readFileSync(process.env.TRACK_HTML_BASELINE,'utf8'):html.replace(/<script src="track-core\.js[^"]*"><\/script>/,'');
 const version=html.match(/name="application-version" content="([^"]+)"/)[1],requests=[];
 const server=http.createServer((req,res)=>{
@@ -12,7 +12,7 @@ const server=http.createServer((req,res)=>{
  if(url.pathname==='/seed'){res.setHeader('Content-Type','text/html');res.end('<link rel="stylesheet" href="/f1/style.css?v=old"><script src="/f1/script.js?v=old"></script>');return}
  if(url.pathname==='/favicon.ico'){res.writeHead(204).end();return}
  const name=url.pathname.replace(/^\/f1\//,'')||'index.html';
- if(!['index.html','style.css','driving-core.js','track-core.js','race-rules.js','engine-audio.js','script.js'].includes(name)){res.writeHead(404).end();return}
+ if(!['index.html','style.css','driving-core.js','track-core.js','race-rules.js','ghost-lap.js','engine-audio.js','script.js'].includes(name)){res.writeHead(404).end();return}
  res.setHeader('Content-Type',name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':'text/html');
  res.setHeader('Cache-Control',name==='index.html'?'no-store':'public, max-age=31536000, immutable');
  if(url.searchParams.get('v')==='old'){res.end(name==='script.js'?'window.staleBuild=true;':'body{background:red}');return}
@@ -24,42 +24,48 @@ const server=http.createServer((req,res)=>{
  try{
   const page=await browser.newPage({viewport:{width:1366,height:768}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
   const base='http://127.0.0.1:'+server.address().port;
+  // Wait for actual response, rather than assuming that 350 ms includes a RAF under load.
+  async function drive(key,selector){
+   await page.keyboard.down(key);
+   try{await page.waitForFunction(id=>parseInt(document.querySelector(id).textContent)>0,selector,{timeout:3000});}
+   catch(error){throw new Error('Release input did not move: '+JSON.stringify(await page.evaluate(()=>({status:document.getElementById('status').textContent,paused:document.getElementById('pauseBtn').getAttribute('aria-pressed'),hidden:document.hidden,focus:document.activeElement.id}))));}
+   finally{await page.keyboard.up(key);}
+  }
   await page.goto(base+'/seed');assert.equal(await page.evaluate(()=>window.staleBuild),true);
   const oldFetches=requests.filter(url=>url.includes('?v=old')).length;
   // Routing is deliberately unused: Playwright routes disable the browser HTTP cache.
   await page.goto(base+'/f1/');assert.equal(await page.evaluate(()=>window.staleBuild),undefined);
   assert.equal(requests.filter(url=>url.includes('?v=old')).length,oldFetches);
-  for(const name of ['driving-core.js','track-core.js','race-rules.js','engine-audio.js','script.js','style.css'])assert.ok(requests.includes('/f1/'+name+'?v='+version));
+  for(const name of ['driving-core.js','track-core.js','race-rules.js','ghost-lap.js','engine-audio.js','script.js','style.css'])assert.ok(requests.includes('/f1/'+name+'?v='+version));
   assert.match(await page.locator('footer').textContent(),new RegExp('BUILD '+version.replaceAll('.','\\.')));
   assert.equal(await page.locator('#stageSelect option').count(),14);assert.ok(await page.locator('#trackPreview').isVisible());
   assert.ok((await page.locator('#stageSelect').boundingBox()).height>=44,'Release CSS did not load');
   await page.selectOption('#stageSelect','2');await page.selectOption('#opponentCount','2');await page.click('#soloStart');
-  try{await page.waitForFunction(()=>document.getElementById('status').textContent==='¡A FONDO!',{},{timeout:10000});}
+  try{await page.waitForFunction(()=>!document.getElementById('game').classList.contains('hidden')&&document.getElementById('status').textContent==='¡A FONDO!',{},{timeout:10000});}
   catch(error){const state=await page.evaluate(()=>({status:document.getElementById('status').textContent,paused:document.getElementById('pauseBtn').getAttribute('aria-pressed'),hidden:document.hidden}));throw new Error('Release countdown did not finish: '+JSON.stringify(state));}
-  await page.keyboard.down('w');await page.waitForTimeout(600);await page.keyboard.up('w');
-  assert.ok(parseInt(await page.locator('#speedValue').textContent())>0,'Actual release did not drive');
+  await drive('w','#speedValue');
   await page.keyboard.press('Escape');assert.equal(await page.getAttribute('#pauseBtn','aria-pressed'),'true');
   await page.keyboard.press('Escape');assert.equal(await page.getAttribute('#pauseBtn','aria-pressed'),'false');
   await page.click('#restartBtn');assert.equal(await page.locator('#timer').textContent(),'00:00.0');
   await page.click('#backBtn');assert.ok(await page.locator('#menu').isVisible());assert.equal(await page.evaluate(()=>document.activeElement.id),'menuTitle');
   // A cached HTML without the new tag may fetch a newer main script.
   await page.goto(base+'/f1/legacy.html');await page.waitForFunction(()=>document.querySelectorAll('#stageSelect option').length===14);
-  for(const [file,marker] of [['driving-core.js','driving-core'],['track-core.js','track-core'],['race-rules.js','race-rules']]){
+  for(const [file,marker] of [['driving-core.js','driving-core'],['track-core.js','track-core'],['race-rules.js','race-rules'],['ghost-lap.js','ghost-lap']]){
    const fallback=page.locator('script[data-'+marker+'="fallback"]');
    if(!legacyHtml.includes('<script src="'+file)){assert.equal(await fallback.count(),1);const dependency=await fallback.getAttribute('src');assert.equal(new URL(dependency).searchParams.get('v'),version);assert.equal(new URL(dependency).pathname,'/f1/'+file);}
    else assert.equal(await fallback.count(),0);
   }
-  await page.click('#soloStart');await page.waitForFunction(()=>document.getElementById('status').textContent==='¡A FONDO!',{},{timeout:10000});await page.keyboard.down('w');await page.waitForTimeout(350);await page.keyboard.up('w');assert.ok(parseInt(await page.locator('#speedValue').textContent())>0);
+  await page.click('#soloStart');await page.waitForFunction(()=>!document.getElementById('game').classList.contains('hidden')&&document.getElementById('status').textContent==='¡A FONDO!',{},{timeout:10000});await drive('w','#speedValue');
   await page.goto(base+'/f1/track-legacy.html');await page.waitForFunction(()=>document.querySelectorAll('#stageSelect option').length===14);
   assert.equal(await page.locator('script[data-driving-core="fallback"]').count(),0);assert.equal(await page.locator('script[data-track-core="fallback"]').count(),1);
   assert.equal(new URL(await page.locator('script[data-track-core="fallback"]').getAttribute('src')).searchParams.get('v'),version);
-  await page.click('#localSetupBtn');await page.selectOption('#localPlayerCount','3');await page.click('#localStart');await page.waitForFunction(()=>document.getElementById('status').textContent==='¡A FONDO!',{},{timeout:10000});
-  await page.keyboard.down('i');await page.waitForTimeout(350);await page.keyboard.up('i');assert.ok(parseInt(await page.locator('#playerSpeed3').textContent())>0);
-  for(const file of ['driving-core.js','track-core.js','race-rules.js']){
+  await page.click('#localSetupBtn');await page.selectOption('#localPlayerCount','3');await page.click('#localStart');await page.waitForFunction(()=>!document.getElementById('game').classList.contains('hidden')&&document.getElementById('status').textContent==='¡A FONDO!',{},{timeout:10000});
+  await drive('i','#playerSpeed3');
+  for(const file of ['driving-core.js','track-core.js','race-rules.js','ghost-lap.js']){
    const broken=await browser.newPage(),brokenErrors=[];broken.on('pageerror',e=>brokenErrors.push(e.message));await broken.route('**/'+file+'?*',r=>r.abort());await broken.route('https://fonts.googleapis.com/**',r=>r.abort());await broken.goto(base+'/f1/');await broken.waitForFunction(()=>document.getElementById('raceSummary').textContent.includes('No se pudo cargar el motor'));
    assert.equal(await broken.locator('#soloStart').isDisabled(),true);assert.equal(await broken.locator('#localStart').isDisabled(),true);assert.deepEqual(brokenErrors,[]);await broken.close();
   }
   assert.deepEqual(errors,[]);
-  console.log('PASS: unmodified release at /f1/, old asset cache primed, six versioned CSS/JS resources, 14 tracks, selection, countdown, real input, pause/resume/restart/menu and no JavaScript errors. Both old HTML dependency configurations, local P3 input and failure of any shared module passed. This is a local release check, not proof of GitHub Pages deployment.');
+  console.log('PASS: unmodified release at /f1/, old asset cache primed, seven versioned CSS/JS resources, 14 tracks, selection, countdown, real input, pause/resume/restart/menu and no JavaScript errors. Both old HTML dependency configurations, local P3 input and failure of any shared module passed. This is a local release check, not proof of GitHub Pages deployment.');
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1}).finally(()=>server.close());

@@ -1,3 +1,4 @@
+import {withoutTimeTrial} from './without-time-trial.mjs';
 // Restore only the declared 0.74 extraction for historical regression checks.
 const edits=[
  [
@@ -42,6 +43,7 @@ const edits=[
  ]
 ];
 export function withoutSharedRules(source){
+ source=withoutTimeTrial(source);
  if(!source.includes('let raceRules=createRaceRules();'))return source;
  source=source.replace(/dependency\.searchParams\.set\('v','[0-9.]+'\)/,"dependency.searchParams.set('v','0.74')");
  for(const [current,previous] of edits){if(!source.includes(current))throw Error('Shared race-rule extraction anchor changed');source=source.replace(current,previous);}
