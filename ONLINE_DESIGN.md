@@ -1,6 +1,6 @@
 # PIXEL GRAND PRIX — diseño de online privado
 
-**Estado en 0.72: conducción y geometría compartidas integradas; sin servidor ni carreras online disponibles.** `driving-core.js` y `track-core.js` funcionan en navegador y Node. Faltan respuesta a contactos, progreso/reloj/eventos y estado completo independiente por carrera. Ver [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md). El catálogo 0.70 y la recuperación 0.69 permanecen integrados.
+**Estado en 0.74: conducción, geometría y reglas de contactos/progreso compartidas; sin servidor ni carreras online disponibles.** `driving-core.js`, `track-core.js` y `race-rules.js` funcionan en navegador y Node. Eventos numerados y plazo de cierre compartidos. Falta el estado completo/reloj/resultados de una carrera independiente. Ver [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md). Los modos/UX de 0.73 permanecen integrados.
 
 ## Primera entrega completa que se busca
 
@@ -82,7 +82,7 @@ TLS, orígenes permitidos, sesiones impredecibles, límites de conexiones/salas/
 
 ## Orden inmediato
 
-0.70 completa el primer catálogo visual y 0.71 extrae el motor de vehículos con paridad/aislamiento de ese componente. 0.72 integra geometría/materiales/checkpoints/barreras compartidos de las 14 pistas. Próximo paso online: contactos y carrera/eventos, y después dos RaceState completos aislados (30/32.1). Después, servidor/salas y prueba local integral; luego reconciliación/latencia; finalmente despliegue revisable. La vista 3D inclinada queda en fase 37 como opción de render que consumirá la misma simulación, sin cambiar la autoridad ni duplicar la física.
+0.70 completa el primer catálogo visual y 0.71 extrae el motor de vehículos con paridad/aislamiento de ese componente. 0.72 integra geometría/materiales/checkpoints/barreras compartidos de las 14 pistas. 0.74 integra contactos, progreso/vueltas y eventos de componente. Próximo paso online: estado/reloj/resultados completos y dos RaceState aislados (30.4/32.1). Después, servidor/salas y prueba local integral; luego reconciliación/latencia; finalmente despliegue revisable. La vista 3D inclinada queda en fase 37 como opción de render que consumirá la misma simulación, sin cambiar la autoridad ni duplicar la física.
 
 
 ## Modos y UX tras 0.73
@@ -90,3 +90,6 @@ TLS, orígenes permitidos, sesiones impredecibles, límites de conexiones/salas/
 La rápida y el campeonato offline ya tienen resultados separados; local 2–4 admite ambos. El primer hito online sigue siendo carreras rápidas privadas de 2–4 humanos, con capacidad configurable después de medirla. Campeonato de sala/calendario/puntos se ampliará después, decidido por servidor; no reutilizar el objeto de puntos del frontend como autoridad.
 
 La preparación local visible no es una sala ni sincroniza salida entre clientes. El lobby de red deberá confirmar configuración/listos y carga de pista de cada participante antes de la cuenta regresiva autoritativa, con timeout/desconexión explícitos. La elección 2D/3D será de presentación por cliente; las variantes arcade que cambien reglas deberán ser acordadas por sala y versionadas.
+
+
+Los eventos compartidos 0.74 tienen secuencia local al contexto. El transporte deberá adjuntar un `raceId` de servidor para deduplicar y evitar mezclar temporadas o reinicios; la secuencia por sí sola no es identidad global. `time` lo proporciona el futuro reloj autoritativo, nunca un timestamp aceptado del cliente. El hook de récord local es solo anotación/feedback y no valida resultados online. Falta implementar esta envoltura de sala, no se presupone disponible por la extracción.

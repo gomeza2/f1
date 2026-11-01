@@ -1,8 +1,8 @@
-# Simulación compartida — estado 0.72
+# Simulación compartida — estado 0.74
 
 `driving-core.js` es el primer bloque extraído del motor real. Lo usa `script.js` para conducir en el navegador y puede importarse directamente en Node. No necesita DOM, Canvas, audio, almacenamiento, reloj externo ni dependencias de npm.
 
-**Todavía no es una carrera completa ni un servidor.** Desde 0.72, geometría/barreras, consultas de terreno y posiciones de checkpoints están en `track-core.js`. La respuesta a contactos, el progreso por checkpoints/vueltas, el reloj de carrera y los eventos permanecen en el adaptador actual. No hay salas online disponibles.
+**Todavía no es una carrera completa ni un servidor.** Desde 0.72, geometría/barreras, consultas de terreno y posiciones de checkpoints están en `track-core.js`. Desde 0.74, `race-rules.js` aplica terreno/recuperación, contactos, gates/vueltas y eventos numerados; también consulta el plazo de cierre. El reloj/acumulador, el conjunto completo de estado y clasificación/puntos siguen en el adaptador y se consolidarán en 30.4. No hay salas online disponibles.
 
 ## Una implementación de conducción
 
@@ -40,7 +40,7 @@ El formato clásico/CJS se elige para conservar los scripts estáticos de Pages 
 
 ## Orden conservado en el cliente
 
-El controlador genera comandos; la geometría aporta material/curva; el módulo avanza el vehículo; el adaptador aplica terreno/barreras y progreso; los contactos entre coches se resuelven después del grupo, manteniendo el orden existente. La CPU usa la misma conducción compartida.
+El controlador genera comandos; la geometría aporta material/curva; el módulo avanza el vehículo; `race-rules.js` aplica terreno/barreras y progreso; sus contactos entre coches se resuelven después del grupo, manteniendo el orden existente. La CPU usa la misma conducción compartida.
 
 No se cambian fuerzas, topes, agarre, trayectoria, reglas de reversa, pistas ni récords p6/b1/s1. No hay un derrape lateral nuevo. Las seis funciones matemáticas trasladadas conservan su cuerpo original y las pruebas comparan además la ejecución real, no solo sus textos.
 
@@ -56,7 +56,7 @@ Al cambiar versión de entrega, revisar las URLs del HTML y la versión de depen
 
 1. **30.1 — vehículos compartidos: integrado.** Paridad de este componente, sin declarar cerrado el núcleo de carreras.
 2. **30.2 — pistas/geometría: integrado en 0.72, con verificación detallada en la evidencia de entrega.** Registro de 14 pistas, secciones/materiales, curvas, checkpoints, zonas de grava y barreras sin Canvas/DOM. Contextos por pista/perfil y geometría inmutable; todavía no son carreras completas.
-3. **30.3 — carrera y eventos: pendiente.** Contactos, gates/vueltas, resultados, reloj y eventos numerados. Mantener el orden de decisiones/pasos de cada coche al adaptar los rivales existentes.
+3. **30.3 — reglas y eventos: integrados en 0.74, sin cerrar toda la carrera.** Terreno/recuperación, contactos, gates/vueltas, consulta de cierre y eventos numerados compartidos. El reloj/estado completo y clasificación/puntos siguen para 30.4; orden CPU preservado.
 4. **30.4 — aislamiento de carreras: pendiente.** Dos `RaceState` completos sin globals compartidos, replay/paridad con el juego y pruebas de ciclo de vida. Dos vehículos aislados no acreditan dos salas completas.
 5. **32/33 — salas, sincronización y despliegue: pendiente.** El primer online privado puede empezar con humanos 2–4; los controladores CPU offline pueden seguir como adaptadores sobre la misma física, sin bloquear toda la red por rehacer la IA.
 
@@ -86,6 +86,32 @@ API versión 1:
 
 Las consultas devuelven resultados nuevos donde corresponde; las definiciones, índices y derivados publicados no se pueden editar. Los validadores de entradas de red siguen siendo necesarios: esta API no analiza mensajes ni sustituye controles de autorización.
 
-El cambio de pista activa el nuevo contexto **antes** de planificar la CPU, manteniendo el orden posterior de movimiento/contactos/progreso. Solo los renderizadores de carretera, raster decorativo, Canvas, audio y UI permanecen en el cliente; la respuesta a contactos y las reglas de vueltas/reloj se extraerán en 30.3.
+El cambio de pista activa el nuevo contexto **antes** de planificar la CPU, manteniendo el orden posterior de movimiento/contactos/progreso. Solo los renderizadores de carretera, raster decorativo, Canvas, audio y UI permanecen en el cliente; la respuesta a contactos/progreso se extrae en 0.74; la propiedad del reloj y el estado completo siguen en 30.4.
 
 El bootstrap recupera cualquiera de los dos módulos omitidos por HTML viejo, resolviendo ambas rutas desde la URL del script capturada antes del primer `await`. Falla de forma explícita si no puede cargarlos y bloquea largar. `browser-release` prueba HTML sin ambos módulos y HTML con conducción pero sin pistas, además del fallo individual de cada archivo. Evidencia y límites en [SHARED_TRACKS_072.md](tests/experiments/SHARED_TRACKS_072.md).
+
+
+## Reglas de carrera compartidas — 0.74
+
+`race-rules.js` es clásico/CJS y recibe `world`, `geometry` y `driving`; no usa globals del juego, DOM, almacenamiento, audio, reloj ni aleatoriedad. El navegador lo crea de nuevo al empezar/reiniciar una carrera, y Node lo importa directamente. API versión 1, conservando física p6/b1/s1.
+
+| Método | Contrato |
+|---|---|
+| `create({world, geometry, driving, laps=3, onEvent, onLap})` | Contexto de reglas para una pista/perfil, gates congelados y secuencia propia. Laps debe ser entero 1–99. Hooks opcionales y síncronos. No crea coches ni reloj. |
+| `advanceVehicle(car, controls, dt, elapsed, before?, bend?)` | Muta movimiento, terreno, recuperación, barreras y progreso en orden original. Devuelve terreno/profundidad para efectos visuales. Cliente puede reutilizar su observación previa a decidir la CPU. |
+| `resolveCollisions(cars, dt, elapsed)` | Resuelve contactos del grupo, vuelve a resolver barreras y actualiza gates cruzados por el empuje; mismo orden y disipación anteriores. |
+| `resolveBarrierContact`, `closestSegments`, `gateCrossed`, `updateProgress` | Consultas/adaptadores compartidos para contactos y escenarios; sin otra implementación en el cliente. |
+| `finishState(cars, elapsed)` | Llegados ordenados, plazo de 18 segundos desde el primero y cierre; tiempo siempre proporcionado por el llamador. No avanza ni pausa un reloj. |
+| `checkpoints`, `lastSequence` | Gates inmutables y último número de evento del contexto. No es un historial de eventos ni un snapshot de carrera. |
+
+`onEvent(event, car)` recibe un evento inmutable y serializable con `sequence`, `type`, `pilot`, `time` y campos específicos: checkpoint/passes, lap/lapTime/finished/personalBest o source/strength de impacto. `car` es una referencia transitoria aparte para el adaptador de sonido; no forma parte del evento de red. El módulo no almacena una cola creciente: el consumidor procesa o recoge eventos por paso. No debe mutar el coche ni lanzar errores desde el hook.
+
+`onLap(car, time)` es una anotación opcional de récord humano. El adaptador conserva `saveBestLap` en almacenamiento local; Node puede dejarla en falso o conectar una política propia. Su respuesta solo marca nuevo récord/feedback, no concede una vuelta ni modifica tiempos/fuerzas. Un servidor no aceptará un récord enviado por cliente como verdad.
+
+La secuencia empieza en 1 por contexto y se reinicia al crear otro. Las futuras salas deben identificar eventos con **raceId + sequence**, no con sequence aislada, y gestionar restauración/reconexión. No se inventan UUIDs ni reloj dentro del componente.
+
+Orden actual: la CPU/humano decide controles; `advanceVehicle` aplica el paso y progreso; el adaptador crea efectos y reduce `flash` como antes; después se resuelve el grupo de contactos. La decadencia de flash participa en el límite de eventos de impacto y debe conservar su ubicación al construir el `RaceState`. No moverla ni procesar todos los rivales simultáneamente a ciegas.
+
+Falta consolidar en 30.4 la creación del coche/estado, reloj/contador, cuenta regresiva, pausa/reinicio, clasificación/resultados y replay en una carrera completamente independiente; la CPU offline puede seguir como adaptador de intención. El primer servidor puede empezar con humanos 2–4. Consumir estos componentes desde Node **no demuestra todavía dos carreras aisladas ni una sala online**.
+
+Pruebas y límites en [SHARED_RULES_074.md](tests/experiments/SHARED_RULES_074.md). El bootstrap recupera ahora cualquiera de tres dependencias omitidas por HTML viejo, y las pruebas HTTP sirven el módulo real.

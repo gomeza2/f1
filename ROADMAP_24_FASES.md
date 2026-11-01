@@ -1330,3 +1330,29 @@ Primer bloque: ajustes plegables, modos claros, aviso de preparación real y cam
 Medir tiempos de preparación, uso de memoria y render por dispositivo/calidad antes de mover generación a workers o precalcular recursos. Progreso por tareas reales, cancelación cuando sea viable, errores recuperables y movimiento reducido; no porcentajes ni esperas ficticias. Revisar móvil vertical, superficie de conducción, tamaño de botones y estabilidad con cuatro cámaras. La mejora gráfica retro con más volumen/materiales/escenarios sigue en 36/37, sin duplicar un renderizador por modo.
 
 **Siguiente recomendado:** retomar 30.3 (contactos, progreso/vueltas, reloj y eventos compartidos) y 30.4 (carreras completas aisladas), para implementar 32/33 salas privadas y sincronización reales. Objetivo inicial online 2–4 humanos y número configurable después de medir capacidad; no hay un techo permanente ni servidor desplegado todavía. Alternar después con 39, manejo/derrape, gráficos/audio y comodidad según feedback.
+
+
+## Avance 0.74 — reglas compartidas, tramo 30.3
+
+`race-rules.js` integra avance sobre terreno/recuperación, contactos con coches/vallas/neumáticos, cruces de gates/vueltas y consulta de cierre. Lo consume el juego y Node, sin DOM/audio/storage/reloj/RNG. Eventos numerados inmutables por contexto para checkpoints, vueltas e impactos; adaptadores de sonido y récord local conservados. Sin cola interna creciente. Se mantiene el orden por coche, controles CPU, efectos y contactos del grupo.
+
+Reglas implementadas y comprobadas; no se declara una carrera completa. La propiedad del reloj/acumulador/cuenta regresiva, estado, clasificación/puntos y replay quedan en **30.4**. Después 32/33: salas privadas autoritativas 2–4 y sincronización, ampliables por capacidad. Eventos futuros identificados por raceId + sequence; no usar el número local como identidad global ni el récord local como autoridad.
+
+No cambia manejo, velocidades, rivales, pistas, modos ni récords p6/b1/s1. Bootstrap/recursos actualizados a tres módulos compartidos y conservación de HTML previo. Evidencia y fallos de prueba corregidos en `tests/experiments/SHARED_RULES_074.md`. Siguen abiertas las mejoras humanas de conducción/derrape, más CPU 39, gráficos/3D 36/37, modos 40, audio 26 y comodidad 41; esta entrega prioriza la base real para online.
+
+
+## Nuevo prompt de evolución total — auditoría 0.74 y prioridad móvil
+
+Se incorpora como dirección vigente, sin reiniciar ni descartar trabajo. Estado y cinco oportunidades contrastados en `AUDIT_074.md`; `ROADMAP_13_FASES.md` permanece como historial. Primero se publica el bloque 0.74 ya comprobado. La siguiente entrega de producto prioriza móvil porque actualmente no hay entrada táctil; 30.4 sigue como siguiente requisito técnico antes de servidor/salas.
+
+### 42. Conducción táctil completa — pendiente, prioridad inmediata
+
+Desglosada de 41. Primera entrega: P1 con dirección, acelerador, freno y mano simultáneos por Pointer Events/captura de punteros; no otro motor físico. Elegir botones/palanca mediante prueba de conducción. Ajustes de activación, tamaño y disposición; acción táctil limitada a controles, página/HUD conservan desplazamiento/click normales. Limpiar entradas en pointerup/cancel, pérdida de captura/foco, pausa, menú y reinicio. Conservar teclado, mandos y local 2–4; definir alcance de cada fuente con claridad.
+
+Optimizar horizontal y probar vertical/cámaras con coche legible, sin tapar pista ni telemetría. Probar varios dedos, freno+acelerador, contravolante, mano, reversa, orientación/fullscreen y cancelación real en navegador. Ajustes guardados localmente con esquema/validación/restauración. Teléfono físico y comodidad humana deben quedar separados de emulación.
+
+### 43. Garaje, progresión y resultados compartibles — pendiente
+
+Nuevos modelos con ventajas/contrapartidas y presets validados en las catorce rutas, pinturas/diseños/ruedas cosméticos legibles y sin ventaja de pago. Estadísticas/historial y recompensas locales con persistencia versionada; no inventar desbloqueos ni métricas. Fantasmas/contrarreloj en 31, eliminación/diarios/libre/eventos en 40: implementar bucle completo de cada modo antes de mostrarlo. Desafío diario reproducible/compartible no equivale a ranking online validado; rankings/torneos requieren autoridad y moderación adecuadas cuando existan.
+
+La vista superior 2D sigue como identidad principal. La opción inclinada de 37 complementa esa vista y no se impone para sustituirla. Manejo/derrape, riesgo comprensible, variedad y diversión humana mantienen prioridad; mostrar paridad técnica no cierra esas metas.

@@ -1,13 +1,13 @@
 (async()=>{
-// Cached HTML can omit either shared module. Resolve both relative to this script.
-if(typeof PixelDrivingCore==='undefined'||typeof PixelTrackCore==='undefined'){
+// Cached HTML can omit any shared module. Resolve both relative to this script.
+if(typeof PixelDrivingCore==='undefined'||typeof PixelTrackCore==='undefined'||typeof PixelRaceRules==='undefined'){
  const base=document.currentScript?.src||document.baseURI;
  const startButtons=['soloStart','localStart','catalogueBtn'].map(id=>document.getElementById(id)).filter(Boolean);startButtons.forEach(button=>{button.disabled=true;});
  const summary=document.getElementById('raceSummary');if(summary)summary.textContent='Cargando motor de conducción…';
  try{
-  for(const [name,file,marker] of [['PixelDrivingCore','driving-core.js','drivingCore'],['PixelTrackCore','track-core.js','trackCore']]){
+  for(const [name,file,marker] of [['PixelDrivingCore','driving-core.js','drivingCore'],['PixelTrackCore','track-core.js','trackCore'],['PixelRaceRules','race-rules.js','raceRules']]){
    if(typeof globalThis[name]!=='undefined')continue;
-   const dependency=new URL(file,base);dependency.searchParams.set('v','0.73');
+   const dependency=new URL(file,base);dependency.searchParams.set('v','0.74');
    await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=dependency.href;script.dataset[marker]='fallback';script.onload=resolve;script.onerror=reject;document.head.append(script);});
    if(typeof globalThis[name]?.create!=='function')throw new Error('Shared module unavailable');
   }
@@ -42,6 +42,10 @@ const SURFACE_GRIP=drivingCore.surfaceGrip;
 const ROAD_SHOULDER=trackCore.rules.roadShoulder,GRAVEL_WIDTH=trackCore.rules.gravelWidth,RUNOFF_CELL=2;
 
 let trackWorld=trackCore.createWorld(0);
+let raceRules=createRaceRules();
+function createRaceRules(){return PixelRaceRules.create({world:trackWorld,geometry:trackCore,driving:drivingCore,laps:LAPS_TO_WIN,
+ onLap:(car,time)=>saveBestLap(lapRecordKey(),time),
+ onEvent:(event,car)=>playRaceCue(event.type==='lap'?(event.finished?'finish':event.personalBest?'record':'lap'):event.type,car,event.strength??1)});}
 let cameraMode='near';
 let localViewWidth=1000,localPlayerCount=2,localInputs=['keyboard','keyboard','keyboard','keyboard'];
 let stage=0,mode='solo',track=tracks[0],running=false,paused=false,raf=0,last=0,elapsed=0;
@@ -278,43 +282,8 @@ function barriersForTrack(){return trackWorld.tireBarriers;}
 function projectToSegment(x,y,a,b){return trackCore.projectToSegment(x,y,a,b);}
 function barrierContoursForTrack(){return trackWorld.contours;}
 function buildPhysicalBarriers(){guardrailPaths=trackWorld.guardrailPaths;physicalBarriers=trackWorld.physicalBarriers;}
-function closestSegments(a,b,c,d){
- const candidates=[];
- for(const p of [a,b]){const q=projectToSegment(p.x,p.y,c,d);candidates.push({car:p,wall:q,distanceSq:q.distanceSq});}
- for(const q of [c,d]){const p=projectToSegment(q.x,q.y,a,b);candidates.push({car:p,wall:q,distanceSq:p.distanceSq});}
- const rx=b.x-a.x,ry=b.y-a.y,sx=d.x-c.x,sy=d.y-c.y,den=rx*sy-ry*sx;
- if(Math.abs(den)>1e-8){
-  const t=((c.x-a.x)*sy-(c.y-a.y)*sx)/den,u=((c.x-a.x)*ry-(c.y-a.y)*rx)/den;
-  if(t>=0&&t<=1&&u>=0&&u<=1){const p={x:a.x+rx*t,y:a.y+ry*t};return {car:p,wall:p,distanceSq:0};}
- }
- return candidates.reduce((best,p)=>p.distanceSq<best.distanceSq?p:best);
-}
-function resolveBarrierContact(car,previousX,previousY){
- const incomingSpeed=Math.abs(car.speed),direction=car.speed<0?-1:1;let hit=false,impactFactor=1;
- for(let pass=0;pass<4;pass++){
-  let deepest=null;
-  const hx=Math.cos(car.heading)*5,hy=Math.sin(car.heading)*5;
-  for(const barrier of trackWorld.barriersNear(car.x,car.y)){
-   const contact=closestSegments({x:car.x-hx,y:car.y-hy},{x:car.x+hx,y:car.y+hy},barrier.a,barrier.b);
-   const distance=Math.sqrt(contact.distanceSq),depth=CAR_HALF_WIDTH+barrier.radius-distance;
-   if(depth>1e-4&&(!deepest||depth>deepest.depth))deepest={...contact,depth,distance};
-  }
-  if(!deepest)break;
-  let nx=deepest.car.x-deepest.wall.x,ny=deepest.car.y-deepest.wall.y;
-  if(deepest.distance<1e-6){nx=previousX-deepest.wall.x;ny=previousY-deepest.wall.y;}
-  const length=Math.hypot(nx,ny)||1;nx/=length;ny/=length;
-  car.x+=nx*(deepest.depth+.05);car.y+=ny*(deepest.depth+.05);hit=true;
-  const vx=Math.cos(car.heading)*direction,vy=Math.sin(car.heading)*direction,inward=vx*nx+vy*ny;
-  if(inward<-.02){
-   const reflectedX=vx-1.15*inward*nx,reflectedY=vy-1.15*inward*ny;
-   const angle=Math.atan2(reflectedY,reflectedX);car.heading=direction<0?wrapAngle(angle-Math.PI):angle;
-   impactFactor=Math.min(impactFactor,Math.hypot(reflectedX,reflectedY)*.94);
-  }
- }
- if(impactFactor<1){car.speed*=clamp(impactFactor,.05,1);car.steer*=.65;car.yawRate=(car.yawRate||0)*.3;}
- if(hit&&car.flash<=0){if(incomingSpeed>8&&impactFactor<.99)playRaceCue('impact',car,clamp(incomingSpeed*(1-impactFactor)/150,.15,1));car.flash=.12;}
- return hit;
-}
+function closestSegments(a,b,c,d){return raceRules.closestSegments(a,b,c,d);}
+function resolveBarrierContact(car,previousX,previousY){return raceRules.resolveBarrierContact(car,previousX,previousY,elapsed);}
 
 function checkpointsForTrack(item=track){return trackCore.checkpointsForTrack(item);}
 function drawCheckpoints(context){
@@ -798,7 +767,7 @@ function start(m,s=Number($('stageSelect').value),keepSeason=false){
  if(m!=='solo'&&!validateLocalSetup())return false;
  resetSimulationClock();
  if(!keepSeason){raceFormat=$('eventType')?.value==='quick'?'quick':'championship';resetChampionship();localPlayerCount=selectedLocalCount();localInputs=Array.from({length:4},(_,i)=>$('playerInput'+(i+1)).value||'keyboard');}
- mode=m;stage=s;track=tracks[stage];trackWorld=trackCore.createWorld(stage,$('barrierMode')?.value||'auto');$('stageSelect').value=String(stage);audioResultActive=false;audioResultCue=null;lastAudioImpact=-Infinity;releaseAudioVoices();audioChannels.forEach(channel=>channel.reset());graphics=$('graphics').value;difficulty=$('difficulty').value;
+ mode=m;stage=s;track=tracks[stage];trackWorld=trackCore.createWorld(stage,$('barrierMode')?.value||'auto');raceRules=createRaceRules();$('stageSelect').value=String(stage);audioResultActive=false;audioResultCue=null;lastAudioImpact=-Infinity;releaseAudioVoices();audioChannels.forEach(channel=>channel.reset());graphics=$('graphics').value;difficulty=$('difficulty').value;
  backgroundCache=null;backgroundCacheKey='';trackSurfaceCache=null;trackSurfaceKey='';checkpoints=checkpointsForTrack();aiSpeedPlan=buildAiSpeedPlan();
  cars=[setupCar(0)];
  if(mode==='solo'){const count=clamp(Number($('opponentCount').value)||3,1,3);for(let i=1;i<=count;i++)cars.push(setupCar(i,true));}else for(let i=1;i<localPlayerCount;i++)cars.push(setupCar(i));
@@ -878,41 +847,8 @@ function togglePause(){
  else $('status').textContent='¡A FONDO!';
  updateAudio();drawFrame();if(!paused){last=performance.now();raf=requestAnimationFrame(loop);}
 }
-function gateCrossed(gate,fromX,fromY,toX,toY,heading){
- const tx=Math.cos(gate.angle),ty=Math.sin(gate.angle),nx=-ty,ny=tx;
- const before=(fromX-gate.x)*tx+(fromY-gate.y)*ty;
- const after=(toX-gate.x)*tx+(toY-gate.y)*ty;
- const crosses=before<0&&after>=0,t=crosses?-before/(after-before):0;
- const crossX=fromX+(toX-fromX)*t,crossY=fromY+(toY-fromY)*t;
- const lateral=(crossX-gate.x)*nx+(crossY-gate.y)*ny;
- const forward=Math.cos(wrapAngle(heading-gate.angle))>.12;
- return crosses&&Math.abs(lateral)<=(gate.halfWidth??ROAD_EDGE)+CAR_HALF_WIDTH&&forward;
-}
-function updateProgress(car,loc,fromX,fromY){
- const old=car.progress,newP=loc.progress,delta=newP-old,oldLap=car.lap;
- const finishGate=sampleAt(0);
- const finish={x:finishGate.x,y:finishGate.y,angle:finishGate.angle,halfWidth:roadHalfWidthAt(0)};
- for(let tries=0;tries<checkpoints.length;tries++){
-  const gate=checkpoints[car.nextCheckpoint];
-  if(gate&&gateCrossed(gate,fromX,fromY,car.x,car.y,car.heading)){
-   car.checkpointPasses++;car.nextCheckpoint=(car.nextCheckpoint+1)%checkpoints.length;
-   car.lastCheckpointTime=elapsed;playRaceCue('checkpoint',car);
-  }else break;
- }
- if(gateCrossed(finish,fromX,fromY,car.x,car.y,car.heading)&&car.checkpointPasses===checkpoints.length){
-  const lapTime=elapsed-car.lapStartTime;
-  car.lapTimes.push(lapTime);
-  const improved=!car.isAI&&saveBestLap(lapRecordKey(),lapTime);if(improved)car.newBestLap=true;
-  car.lapStartTime=elapsed;car.lap++;car.checkpointPasses=0;car.nextCheckpoint=0;
-  playRaceCue(car.lap>=LAPS_TO_WIN?'finish':improved?'record':'lap',car);
- }
- if(car.lap>oldLap)car.raceOffset=0;
- else if(delta>track.length/2)car.raceOffset=(car.raceOffset||0)-1;
- else if(delta<-track.length/2&&car.raceOffset<0)car.raceOffset++;
- car.previousProgress=old;car.progress=newP;car.raceProgress=(car.lap+(car.raceOffset||0))*track.length+newP;
- car.offroad=Math.abs(loc.offset);car.roadOffset=loc.offset;car.nearest=loc;
- if(car.lap>=LAPS_TO_WIN&&!car.done){car.done=true;car.finishTime=elapsed;car.speed=0;car.braking=false;}
-}
+function gateCrossed(gate,fromX,fromY,toX,toY,heading){return raceRules.gateCrossed(gate,fromX,fromY,toX,toY,heading);}
+function updateProgress(car,loc,fromX,fromY){return raceRules.updateProgress(car,loc,fromX,fromY,elapsed);}
 // Difficulty changes driving decisions, never the vehicle specifications.
 const AI_DRIVERS={
  easy:{pace:.82,brakingMargin:.62,response:5.8,laneSpeed:15,handbrake:false},
@@ -1184,29 +1120,7 @@ function physics(car,i,dt){
  }else{
   controls=drivingCore.humanControls(car,controlsFor(i),dt);
  }
- const oldProgress=car.progress,previousX=car.x,previousY=car.y;
- const drivingSurface=terrainAt(car.x,car.y,before).material;
- drivingCore.stepVehicle(car,controls,model,drivingSurface,localBend.safeSpeed,dt);
- let after=nearestOnTrack(car.x,car.y);
- // Resistance uses the same material sampled by the visible runoff layer.
- let ground=terrainAt(car.x,car.y,after),roadEdge=ground.offroad?ground.depth:0;
- if(ground.offroad){
-  const material=TERRAIN_MATERIALS[ground.material],drag=material.drag+ground.depth*material.edgeDrag+Math.abs(car.speed)*(material.speedDrag||0);
-  // Preserve a recovery crawl without creating speed from rest or released throttle.
-  car.speed=applyGroundDrag(car.speed,drag*model.grass,dt,14);
-  car.drift=Math.max(car.drift,ground.material==='gravel'?.42:.28);
- }
- // The rendered rails and tires are also the physical collision geometry.
- const hitBarrier=resolveBarrierContact(car,previousX,previousY);
- if(hitBarrier)after=nearestOnTrack(car.x,car.y);
- const side=Math.sign(after.offset)||1,nx=-Math.sin(after.angle),ny=Math.cos(after.angle);
- const recoveryExtra=track.roadProfile?roadHalfWidthAt(after.progress)-ROAD_SHOULDER:0;
- if(!hitBarrier&&Math.abs(after.offset)>92+recoveryExtra){
-  car.speed=applyGroundDrag(car.speed,100+(Math.abs(after.offset)-92-recoveryExtra)*2.2,dt,12);
-  if(Math.abs(after.offset)>112+recoveryExtra){car.x=after.x+nx*side*(108+recoveryExtra);car.y=after.y+ny*side*(108+recoveryExtra);car.speed*=.76;after=nearestOnTrack(car.x,car.y);}
- }
- ground=terrainAt(car.x,car.y,after);roadEdge=ground.offroad?ground.depth:0;
- updateProgress(car,after,previousX,previousY);
+ const {ground,roadEdge}=raceRules.advanceVehicle(car,controls,dt,elapsed,before,localBend);
  car.skidTimer=Math.max(0,(car.skidTimer||0)-dt);
  const skidding=car.speed>58&&drivingSlip(car)>.43;
  if(skidding&&car.skidTimer<=0){const wheels=(CAR_VISUALS[car.model]||CAR_VISUALS.balanced),rearX=car.x+Math.cos(car.heading)*wheels.rearAxle,rearY=car.y+Math.sin(car.heading)*wheels.rearAxle;
@@ -1221,37 +1135,7 @@ function physics(car,i,dt){
  }
  car.particles=car.particles.filter(p=>(p.life-=dt)>0);if(car.flash>0)car.flash-=dt;
 }
-function resolveCollisions(dt){
- const active=cars.filter(car=>!car.done),origins=new Map(active.map(car=>[car,{x:car.x,y:car.y}]));
- const impacted=new Set(),moved=new Set();
- // Iterate the small grid: resolving one pair can overlap another or a wall.
- for(let pass=0;pass<16;pass++){
-  let depth=0;
-  for(let i=0;i<active.length;i++)for(let j=i+1;j<active.length;j++){
-   const a=active[i],b=active[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);
-   if(d>=23)continue;
-   depth=Math.max(depth,23-d);
-   const nx=d>.001?dx/d:Math.cos(a.heading),ny=d>.001?dy/d:Math.sin(a.heading);
-   const key=i+','+j;
-   if(!impacted.has(key)){
-    const av=Math.cos(a.heading)*nx+Math.sin(a.heading)*ny,bv=Math.cos(b.heading)*nx+Math.sin(b.heading)*ny;
-    const closing=Math.max(0,a.speed*av-b.speed*bv);
-    // Dissipate closing motion only; no artificial acceleration or rebound.
-    a.speed=(a.speed<0?-1:1)*Math.max(0,Math.abs(a.speed)-closing*.65*Math.max(0,(a.speed<0?-1:1)*av));
-    b.speed=(b.speed<0?-1:1)*Math.max(0,Math.abs(b.speed)-closing*.65*Math.max(0,(b.speed<0?-1:1)*-bv));
-    if(closing>8){a.flash=.06;b.flash=.06;playRaceCue('impact',!a.isAI?a:b,closing/160);}
-    impacted.add(key);
-   }
-   const push=(23-d+.01)*.5,ax=a.x,ay=a.y,bx=b.x,by=b.y;
-   a.x-=nx*push;a.y-=ny*push;b.x+=nx*push;b.y+=ny*push;
-   // Reuse exactly the same visible rail/tire geometry after a car pushes us.
-   resolveBarrierContact(a,ax,ay);resolveBarrierContact(b,bx,by);moved.add(a);moved.add(b);
-  }
-  if(depth<.01)break;
- }
- // Contact movement may cross a real gate; keep checkpoints and telemetry coherent.
- for(const car of moved){const from=origins.get(car);updateProgress(car,nearestOnTrack(car.x,car.y),from.x,from.y);}
-}
+function resolveCollisions(dt){return raceRules.resolveCollisions(cars,dt,elapsed);}
 const trackPathCache=new WeakMap();
 function getTrackPath(){
  let path=trackPathCache.get(track);
@@ -1452,11 +1336,7 @@ function currentLapTime(car){
  return Math.max(0,elapsed-car.lapStartTime);
 }
 // One deadline and one announcement source for all race-ending paths.
-function raceFinishState(){
- const finishers=cars.filter(car=>car.done&&Number.isFinite(car.finishTime)).sort((a,b)=>a.finishTime-b.finishTime||a.player-b.player);
- const remaining=finishers.length?Math.max(0,18-(elapsed-finishers[0].finishTime)):null;
- return {finishers,remaining,closed:cars.length>0&&(cars.every(car=>car.done)||remaining===0)};
-}
+function raceFinishState(){return raceRules.finishState(cars,elapsed);}
 function updateFinishFeedback(force=false){
  const state=raceFinishState(),clock=$('finishClock');
  $('status').classList.toggle('checkered-status',state.finishers.length>0);

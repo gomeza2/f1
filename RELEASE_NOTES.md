@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.73
+# PIXEL GRAND PRIX — entrega 0.74
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Contactos/progreso compartidos en 0.74
+
+`race-rules.js` aplica terreno/recuperación, contactos entre coches/vallas/neumáticos, gates/vueltas y consulta de cierre en navegador y Node. Eventos numerados/inmutables, adaptador de sonido y récord local, misma conducción/CPU/recorridos y p6/b1/s1. Se conservan rápida/campeonato/local, carga y vista amplia de 0.73.
+
+Tramo 30.3 de reglas, sin cerrar reloj/estado/resultados completos ni servidor. Próximo: 30.4 RaceState aislado/replay; después salas/sincronización. API en `SIMULATION_ARCHITECTURE.md`, resultados y límites en `tests/experiments/SHARED_RULES_074.md`.
 
 ## Modos y experiencia de usuario en 0.73
 

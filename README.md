@@ -45,9 +45,15 @@ El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran t
 
 `driving-core.js` contiene la misma conducción que usa el juego y puede ejecutarse directamente en Node sin navegador. Incluye modelos/materiales, aceleración, freno, reversa, agarre, dirección y movimiento. Cada motor tiene reglas inmutables y cada coche su propio estado; no se mantienen dos físicas distintas.
 
-Esta extracción conserva conducción, CPU, pistas y récords. La geometría ya está compartida desde 0.72; todavía faltan respuesta a contactos, progreso/eventos y un estado completo por carrera para poder crear salas. **No hay online disponible aún.** API, ejemplo Node y siguientes bloques en [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md); evidencia en [SHARED_DRIVING_071.md](tests/experiments/SHARED_DRIVING_071.md).
+Esta extracción conserva conducción, CPU, pistas y récords. La geometría se comparte desde 0.72 y contactos/progreso/eventos desde 0.74; falta consolidar reloj/estado/resultados completos por carrera para crear salas. **No hay online disponible aún.** API, ejemplo Node y siguientes bloques en [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md); evidencia en [SHARED_DRIVING_071.md](tests/experiments/SHARED_DRIVING_071.md).
 
 La carga comprueba el nuevo archivo también ante un HTML anterior en caché y muestra una recarga necesaria si no puede obtenerlo. Se mantienen las rutas de Pages y el juego local sin backend.
+
+## Contactos, vueltas y eventos compartidos — 0.74
+
+El juego ya usa `race-rules.js` también disponible en Node para movimiento sobre terreno/recuperación, colisiones entre coches y con barreras, checkpoints/vueltas y plazo de cierre. Genera eventos numerados de checkpoint, vuelta e impacto. Audio y guardado local consumen esos eventos desde el adaptador, con la misma respuesta de la 0.73.
+
+Se conservan manejo, CPU, 14 pistas, modos rápida/campeonato/local y récords p6/b1/s1. **Online aún no está disponible:** falta agrupar estado/reloj/resultados en una carrera independiente (30.4), y después salas/sincronización. API en [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md); evidencia en [SHARED_RULES_074.md](tests/experiments/SHARED_RULES_074.md).
 
 ## Modos y comodidad — 0.73
 
@@ -65,7 +71,7 @@ Al iniciar desde el paddock o continuar/repetir desde resultados aparece **PREPA
 
 El juego y Node ya usan `track-core.js` para las catorce pistas: recorrido, anchuras/pianos, curvas, materiales y escapatorias, checkpoints, vallas y neumáticos físicos. Registro inmutable y contexto separado para cada pista/perfil; no se mantienen dos geometrías distintas. La entrega conserva las pistas y la conducción anteriores.
 
-Esto completa el bloque de geometría 30.2; **todavía no hay partidas online**. Siguen contactos, vueltas y reloj en el núcleo compartido, aislamiento de carreras y después salas/sincronización. Documentación técnica en [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md) y evidencia en [SHARED_TRACKS_072.md](tests/experiments/SHARED_TRACKS_072.md).
+Esto completa el bloque de geometría 30.2; **todavía no hay partidas online**. 0.74 comparte contactos y vueltas; sigue reloj/estado completo, aislamiento de carreras y después salas/sincronización. Documentación técnica en [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md) y evidencia en [SHARED_TRACKS_072.md](tests/experiments/SHARED_TRACKS_072.md).
 
 La futura vista **3D inclinada opcional** tendrá acceso en **Cámara y gráficos** del paddock y desde pausa, con elección 2D/3D y regreso rápido a 2D. Se mantendrá separada del encuadre cerca/panorámica (`C`). Es una ubicación planificada: el renderizador 3D y ese selector aún no están disponibles.
 
@@ -75,7 +81,7 @@ La futura vista **3D inclinada opcional** tendrá acceso en **Cámara y gráfico
 
 Las fichas modifican los selectores existentes y la siguiente carrera, sin alterar el estado de una carrera anterior. Diálogo con teclado, foco contenido, cierre visible y diseño adaptable. No añade coches, retoca la física ni cambia récords. Pruebas y límites en [CATALOGUE_070.md](tests/experiments/CATALOGUE_070.md).
 
-**Online y vista 3D:** todavía no disponibles. [ONLINE_DESIGN.md](ONLINE_DESIGN.md) concreta salas autoritativas de 2–4, controles, sincronización, reconexión y criterios de despliegue. La conducción y la geometría ya se comparten sin DOM; el próximo hito es extraer contactos, vueltas/reloj y estados completos independientes por carrera. La fase 37 reserva una vista 3D inclinada opcional para más adelante; la 38 continúa catálogo/presentación. Conducción, CPU, audio, cuatro pistas uniformes y gráficos siguen abiertos en [ROADMAP_EVOLUCION.md](ROADMAP_EVOLUCION.md).
+**Online y vista 3D:** todavía no disponibles. [ONLINE_DESIGN.md](ONLINE_DESIGN.md) concreta salas autoritativas de 2–4, controles, sincronización, reconexión y criterios de despliegue. Conducción, geometría y reglas de contactos/vueltas ya se comparten sin DOM; el próximo hito es el reloj/estado/resultados completos independientes por carrera. La fase 37 reserva una vista 3D inclinada opcional para más adelante; la 38 continúa catálogo/presentación. Conducción, CPU, audio, cuatro pistas uniformes y gráficos siguen abiertos en [ROADMAP_EVOLUCION.md](ROADMAP_EVOLUCION.md).
 
 ## Recuperación y motor de movimiento — 0.69
 
@@ -753,3 +759,17 @@ node tests/validate-events.mjs
 node tests/validate-results.mjs
 node tests/browser-events.cjs # Requiere Playwright y Chromium de desarrollo.
 ```
+
+
+Pruebas de reglas compartidas 0.74:
+
+```sh
+node tests/validate-shared-rules.mjs
+node tests/validate-gate-contact.mjs
+node tests/validate-finish.mjs
+```
+
+`RULES_SOURCE_BASELINE` permite comparar el primer test con el script real anterior. Sin esa variable se revierte solo la extracción declarada para fixtures históricos. No confundir casos de componente con carreras completas sin navegador.
+
+
+La auditoría reconciliada del último prompt está en [AUDIT_074.md](AUDIT_074.md). Tras el bloque 0.74 se prioriza habilitar conducción táctil real (fase 42); la fase 43 agrupa ampliaciones de garaje/progresión y las variantes de juego se desarrollan en 31/40. El núcleo independiente 30.4 sigue siendo necesario antes de salas online.
