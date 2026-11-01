@@ -9,7 +9,7 @@ const server=http.createServer((req,res)=>{const file=new URL(req.url,'http://lo
   for(const stage of [0,2,4,10])for(const model of ['balanced','corner','speed','rally']){
    await page.evaluate(([s,m])=>window.sharedProbe.setup(s,m),[stage,model]);const phases=[];for(const [keys,frames] of [[['w'],30],[['w','d',' '],12],[['w'],20],[['s'],90],[['s','a'],25],[['w'],45]]){for(const key of keys)await page.keyboard.down(key);phases.push(await page.evaluate(n=>window.sharedProbe.run(n),frames));for(const key of keys)await page.keyboard.up(key);}results[version][stage+model]=phases;
   }
-  const stats=await page.evaluate(()=>window.sharedStats);if(version==='before'&&!source.includes('drivingCore.stepVehicle('))assert.equal(stats.steps,0);else{assert.equal(stats.factories,1);assert.equal(stats.steps,16*222);}
+  const stats=await page.evaluate(()=>window.sharedStats);if(version==='before'&&!source.includes('PixelDrivingCore.create('))assert.equal(stats.steps,0);else{assert.equal(stats.factories,1);assert.equal(stats.steps,16*222);}
   assert.deepEqual(errors,[]);await page.close();
  }
  assert.deepEqual(results.current,results.before,'Actual browser simulation diverged after module extraction');console.log(`PASS: 16 native keyboard scenarios/96 phase snapshots, four models and asphalt/dirt/ice/coastal routes, reverse/recovery/handbrake, bit-identical motion/progress/times/HUD; observed 3552 calls to the current production shared step and no JS errors (baseline may already use that module). Not a human feel or hardware FPS test.`);

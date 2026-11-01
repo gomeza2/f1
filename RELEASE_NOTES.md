@@ -1,10 +1,16 @@
-# PIXEL GRAND PRIX — entrega 0.74
+# PIXEL GRAND PRIX — entrega 0.75
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Controles táctiles y cámara móvil en 0.75
+
+P1 puede jugar sin teclado: dirección, acelerador, freno/reversa y mano simultáneos mediante captura de punteros. Activación automática/manual, tamaño y disposición persistidos/validados; cancelación, pausa, foco y reinicio limpian entradas. Local P1 táctil + otros teclados/mandos; P1 con mando asignado oculta panel.
+
+Cámara táctil 2D aprovecha altura/anchura, escala de coche legible y anticipación con velocidad. Controles fuera del lienzo/HUD; presets gráficos y presupuesto de buffer conservados. Reglas de conducción/CPU, catorce pistas, rápida/campeonato/local y récords intactos. Sin servidor online ni 3D todavía. Pruebas y límites en `tests/experiments/TOUCH_075.md`.
 
 ## Contactos/progreso compartidos en 0.74
 

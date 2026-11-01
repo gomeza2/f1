@@ -12,6 +12,7 @@ La versión aparece en el pie. JavaScript y CSS llevan una versión en su URL pa
 
 ## Controles
 
+- **Táctil (P1):** automático en teléfono; botón **TÁCTIL** para activar/ocultar, tamaño y disposición. Flechas giran, GAS acelera, FRENO frena/retrocede y MANO derrapa en movimiento. Admite varios dedos.
 - **Jugador 1:** W acelera, S frena, A/D gira, ESPACIO freno de mano. Frenar a fondo tiene prioridad aunque mantengas acelerar (también en P2–P4 y mandos).
 - **Jugador 2:** flechas para acelerar, frenar y girar; ENTER freno de mano.
 - **Jugador 3:** I acelera, K frena, J/L gira; U freno de mano.
@@ -39,7 +40,7 @@ En el paddock, elegí la pista, las barreras y los gráficos. **PREPARAR MULTIJU
 
 Cada persona tiene cámara propia y un panel exterior con posición, velocidad, vuelta, checkpoints, tiempo de vuelta y mejor vuelta de esa carrera. Al terminar aparece su tiempo final; resultados y puntos incluyen a todos. Para tres personas, el cuadrante restante muestra posiciones. Las cámaras y el minimapa usan los mismos rectángulos de vista. En ventanas anchas el área local aprovecha el ancho disponible, sin estirar el coche ni cambiar su física.
 
-El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. La primera versión admite mandos con mapeo estándar del navegador, no remapeo libre ni controles táctiles. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
+El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran todas las combinaciones simultáneas. Se puede mezclar teclado y mandos; un mando no puede asignarse a dos pilotos. Se admiten mandos con mapeo estándar del navegador y P1 táctil desde 0.75; el remapeo libre sigue pendiente. En local el táctil complementa el teclado de P1; al asignarle un mando se oculta. Cuatro personas en un teléfono vertical tienen poca superficie por coche: las pruebas de distribución no sustituyen jugar en una pantalla compartida grande. La comodidad y los mandos físicos requieren comprobación humana.
 
 ## Motor compartido para avanzar al online — 0.71
 
@@ -48,6 +49,20 @@ El teclado tiene cuatro conjuntos distintos, pero muchos teclados no registran t
 Esta extracción conserva conducción, CPU, pistas y récords. La geometría se comparte desde 0.72 y contactos/progreso/eventos desde 0.74; falta consolidar reloj/estado/resultados completos por carrera para crear salas. **No hay online disponible aún.** API, ejemplo Node y siguientes bloques en [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md); evidencia en [SHARED_DRIVING_071.md](tests/experiments/SHARED_DRIVING_071.md).
 
 La carga comprueba el nuevo archivo también ante un HTML anterior en caché y muestra una recarga necesaria si no puede obtenerlo. Se mantienen las rutas de Pages y el juego local sin backend.
+
+## Móvil jugable — 0.75
+
+**TÁCTIL** abre controles/configuración desde el paddock o durante la carrera. Activación automática con puntero principal táctil, manual o desactivada; tres tamaños y disposición normal/invertida, guardados con esquema `pixelGP.touch.v1`. El tamaño se ajusta al espacio disponible. No hay posiciones libres ni palanca virtual en esta primera entrega.
+
+Botones independientes para izquierda/derecha, GAS, FRENO y MANO, con varios dedos, captura al arrastrar fuera del botón y liberación de cada dedo por separado. Gas+freno conserva la prioridad del freno; la reversa usa la misma espera de ~0,35 s; mano permite derrapar en movimiento y no da empuje desde parado. No se alteran las fuerzas ni los récords.
+
+El panel controla P1 en individual o en local con P1 asignado a teclado; P2–P4 conservan teclado/mandos. Un mando asignado a P1 en local oculta el táctil. Los botones están fuera de lienzo y telemetría, con `touch-action` limitado a ellos; menú/HUD conservan sus gestos. Pausa, cancelación/pérdida de captura/foco, cambio de tamaño/fullscreen, preferencias, menú y reinicio limpian pulsaciones retenidas.
+
+La cámara individual táctil llena el rectángulo disponible también en vertical, con escala legible y anticipación según velocidad; al retroceder mira hacia atrás. 2D cercana/panorámica siguen disponibles. Buffer limitado en ambos ejes a 2560, DPR ≤2 y perfiles gráficos conservados. La distribución de teclado/escritorio mantiene sus dimensiones anteriores.
+
+Abrir ajustes durante carrera pausa y exige **SEGUIR** para reanudar. No se requiere teclado para cerrar ajustes/continuar. Configuración corrupta vuelve a valores conocidos; si el navegador bloquea almacenamiento, los controles funcionan durante la sesión sin garantizar persistencia.
+
+Probado con Pointer Events generados por gestos CDP reales de Chromium: varios dedos, giro/maniobra, freno/reversa, captura/cancelación, cambios de pantalla, ajustes, local mixto y fuente de mando. **Teléfonos/mandos físicos, comodidad humana y FPS siguen pendientes.** Detalle en [TOUCH_075.md](tests/experiments/TOUCH_075.md). El núcleo online 30.4 y las mejoras de conducción/CPU/pistas/audio continúan abiertos.
 
 ## Contactos, vueltas y eventos compartidos — 0.74
 
@@ -61,7 +76,7 @@ El paddock separa **PARTIDA RÁPIDA**, **CAMPEONATO** y **MULTIJUGADOR LOCAL**. 
 
 **CONFIGURACIÓN DE CARRERA** es una sección plegable con pista, dificultad, cantidad de CPU, barreras y calidad gráfica. Cerrarla conserva las elecciones; **CAMBIAR PISTA Y COCHE** la abre y lleva el foco a la selección. El catálogo y la mezcla de sonido siguen disponibles.
 
-La carrera individual aprovecha el ancho de las pantallas grandes, ampliando el campo visible con la misma escala de coches y sin estirar el lienzo. Se conserva el límite de resolución del buffer y el HUD exterior. En pantallas verticales sigue pendiente aprovechar mejor el espacio alto y añadir controles táctiles.
+La carrera individual aprovecha el ancho de las pantallas grandes, ampliando el campo visible con la misma escala de coches y sin estirar el lienzo. Se conserva el límite de resolución del buffer y el HUD exterior. Desde 0.75, el modo táctil individual llena también la altura en vertical y conserva el coche legible; la comodidad de cada teléfono requiere prueba humana.
 
 Al iniciar desde el paddock o continuar/repetir desde resultados aparece **PREPARANDO LA PARRILLA** antes del trabajo de pista y gráficos. Sin porcentajes inventados ni demora mínima añadida; se bloquean inicios duplicados y se conserva el desbloqueo de audio dentro del gesto de usuario. Si falla la preparación, se muestra un error con regreso al paddock y posibilidad de reintentar. La generación todavía ocurre en el hilo principal; el aviso no equivale a una optimización ni a un worker. Los reinicios directos por R/botón conservan su comportamiento inmediato.
 
@@ -404,7 +419,7 @@ Todo se sintetiza con Web Audio, sin archivos de sonido externos. Si la API no e
 
 El paddock reúne configuración de carrera, garaje y vista previa. El mapa usa el trazado real, indica checkpoints, meta y sentido, y muestra el perfil de barreras efectivo y el récord de esa versión. El garaje dibuja el modelo y pintura elegidos con el mismo render de carrera. Las vistas previas no modifican la simulación.
 
-Las flechas y Enter funcionan en los selectores y botones del menú; antes el control global de carrera bloqueaba esas teclas. Al correr el foco pasa al lienzo y al volver regresa al título del menú. Los controles secundarios se consultan en un desplegable. En móvil la configuración se apila sin desbordar; todavía se necesita teclado para conducir. No se agregaron controles táctiles.
+Las flechas y Enter funcionan en los selectores y botones del menú; antes el control global de carrera bloqueaba esas teclas. Al correr el foco pasa al lienzo y al volver regresa al título del menú. Los controles secundarios se consultan en un desplegable. En móvil la configuración se apila sin desbordar. Esa entrega todavía necesitaba teclado; 0.75 añade controles táctiles reales para P1.
 
 ## Rivales — build 0.36
 
@@ -478,7 +493,7 @@ La base de CPU de 0.25 superó 42 carreras simuladas (126 vueltas) y pruebas de 
 
 Las barreras de 0.21 siguen contornos cerrados del ancho de pista, sin los pliegues de las curvas interiores. Los segmentos usados para dibujarlas también resuelven los impactos del coche; los neumáticos tienen colisión en los círculos visibles y se descartan pilas que invadan otro ramal. La prueba de barreras comprueba 37 contornos, 11174 puntos y los cinco perfiles en las 14 pistas, además de impactos, coche detenido y rebote moderado.
 
-Pendientes: balance contra personas, contactos residuales en tráfico, tráfico humano impredecible, nuevos perfiles personalizados, audio, rendimiento medido y conducción móvil. El minimapa ya permanece visible en pantallas pequeñas. Todavía no hay controles táctiles; las pruebas móviles comprueban distribución y visibilidad, sin conducción humana en un teléfono.
+Pendientes: balance contra personas, contactos residuales en tráfico, tráfico humano impredecible, nuevos perfiles personalizados, audio, rendimiento medido y conducción móvil. El minimapa ya permanece visible en pantallas pequeñas. En aquella entrega no había controles táctiles. Desde 0.75 hay entrada multitáctil comprobada en Chromium; conducir humanamente en un teléfono físico sigue pendiente.
 
 La fase 5 continúa: Champion Road, Dusty Mesa y Sunset ya tienen rediseños propios; quedan siete originales con estructuras similares por revisar, conservando conducción, CPU, cámara y barreras. El registro detallado está en la hoja de ruta.
 
@@ -772,4 +787,13 @@ node tests/validate-finish.mjs
 `RULES_SOURCE_BASELINE` permite comparar el primer test con el script real anterior. Sin esa variable se revierte solo la extracción declarada para fixtures históricos. No confundir casos de componente con carreras completas sin navegador.
 
 
-La auditoría reconciliada del último prompt está en [AUDIT_074.md](AUDIT_074.md). Tras el bloque 0.74 se prioriza habilitar conducción táctil real (fase 42); la fase 43 agrupa ampliaciones de garaje/progresión y las variantes de juego se desarrollan en 31/40. El núcleo independiente 30.4 sigue siendo necesario antes de salas online.
+La auditoría reconciliada del último prompt está en [AUDIT_074.md](AUDIT_074.md). 0.75 implementa el primer bloque táctil de fase 42; la fase 43 agrupa ampliaciones de garaje/progresión y las variantes de juego se desarrollan en 31/40. El núcleo independiente 30.4 sigue siendo necesario antes de salas online.
+
+
+Prueba nativa de entrada móvil 0.75 (Playwright/Chromium de desarrollo):
+
+```sh
+node tests/browser-touch.cjs
+```
+
+El test usa toques CDP multitáctiles, no cambia los controles por comandos físicos directos. La preparación de escenas/reloj está instrumentada para resultados repetibles.

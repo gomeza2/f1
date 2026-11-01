@@ -26,6 +26,7 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 - 0.70: primer catálogo visual de coches/pistas conectado a la carrera; fase 38 parcial.
 - 0.71: motor de vehículos compartido; 0.72: geometría/materiales/checkpoints/barreras de las catorce pistas compartidos y comprobados. 0.74 integra contactos/progreso/eventos de 30.3; sigue 30.4 con reloj/estado/resultados completos aislados, antes de salas reales. Diseño concreto en [ONLINE_DESIGN.md](ONLINE_DESIGN.md). Online todavía no disponible.
 - 0.73: partida rápida/campeonato/local con selección visual, ajustes plegables, carga previa y vista amplia; ampliaciones de parrilla/modos/configuración en 39–41.
+- 0.75: primera conducción multitáctil P1 y cámara móvil integradas; teléfono físico/calibración humana pendientes.
 - Conducción/derrape, CPU justa, audio, cuatro circuitos uniformes, gráficos y local siguen abiertos y se alternarán por impacto. No reducir todo el trabajo a CPU ni dar por terminada la sensación humana por tests.
 - Vista 3D inclinada opcional en fase 37, solicitada para más adelante; no reemplazará por obligación la vista cenital actual.
 
@@ -432,7 +433,7 @@ No cambia manejo, velocidades, rivales, pistas, modos ni récords p6/b1/s1. Boot
 
 Se incorpora como dirección vigente, sin reiniciar ni descartar trabajo. Estado y cinco oportunidades contrastados en `AUDIT_074.md`; `ROADMAP_13_FASES.md` permanece como historial. Primero se publica el bloque 0.74 ya comprobado. La siguiente entrega de producto prioriza móvil porque actualmente no hay entrada táctil; 30.4 sigue como siguiente requisito técnico antes de servidor/salas.
 
-### 42. Conducción táctil completa — pendiente, prioridad inmediata
+### 42. Conducción táctil completa — parcial 0.75
 
 Desglosada de 41. Primera entrega: P1 con dirección, acelerador, freno y mano simultáneos por Pointer Events/captura de punteros; no otro motor físico. Elegir botones/palanca mediante prueba de conducción. Ajustes de activación, tamaño y disposición; acción táctil limitada a controles, página/HUD conservan desplazamiento/click normales. Limpiar entradas en pointerup/cancel, pérdida de captura/foco, pausa, menú y reinicio. Conservar teclado, mandos y local 2–4; definir alcance de cada fuente con claridad.
 
@@ -443,3 +444,14 @@ Optimizar horizontal y probar vertical/cámaras con coche legible, sin tapar pis
 Nuevos modelos con ventajas/contrapartidas y presets validados en las catorce rutas, pinturas/diseños/ruedas cosméticos legibles y sin ventaja de pago. Estadísticas/historial y recompensas locales con persistencia versionada; no inventar desbloqueos ni métricas. Fantasmas/contrarreloj en 31, eliminación/diarios/libre/eventos en 40: implementar bucle completo de cada modo antes de mostrarlo. Desafío diario reproducible/compartible no equivale a ranking online validado; rankings/torneos requieren autoridad y moderación adecuadas cuando existan.
 
 La vista superior 2D sigue como identidad principal. La opción inclinada de 37 complementa esa vista y no se impone para sustituirla. Manejo/derrape, riesgo comprensible, variedad y diversión humana mantienen prioridad; mostrar paridad técnica no cierra esas metas.
+
+
+## Avance 0.75 — fase 42.1, conducción móvil real
+
+Dirección digital izquierda/derecha, GAS, FRENO/reversa y MANO para P1 con captura independiente de punteros y varios dedos. Se eligen botones por correspondencia con el control arcade existente y área disponible; no se afirma una comparación humana contra joystick. Activación automática/manual/off, tamaños y disposición invertible, persistencia validada/restauración, limpieza de pulsaciones en cancelación/captura/foco/pausa/resize/fullscreen/menú/reinicio. P1 táctil puede compartir local con P2–P4 por teclado/mandos; si P1 usa mando, panel oculto.
+
+Cámara táctil individual ocupa el rectángulo completo, conserva coche legible y anticipa según velocidad, incluso en vertical. Controles fuera de pista/HUD, gesto cancelado solo sobre botones y buffer limitado en ambos ejes. Teclado/escritorio, mandos y rápida/campeonato/local conservados. Fuerzas/CPU/geometría/sonido y claves p6/b1/s1 no cambian.
+
+Entrada/estados implementados y comprobados en Chromium multitáctil y regresiones; evidencia en `tests/experiments/TOUCH_075.md`. La fase 42 sigue parcial: teléfono físico, aceptación humana, calibración más libre, alternativas analógicas y comodidad de más jugadores en dispositivos pequeños no se cierran por emulación. 3D/online, eliminación/libre/diarios/fantasmas, garaje y recompensas siguen pendientes en sus fases.
+
+**Siguiente tramo recomendado:** 30.4 para agrupar estado/reloj/resultados/replay y dos carreras independientes antes de salas 32/33. Alternar con 25 (derrape/maniobras/aceptación humana), 27 (cuatro rutas uniformes), 39 (parrilla y CPU), 26/36 (audio/gráficos) y 40/43 (modos/progresión), conservando controles móviles al evolucionar el manejo.

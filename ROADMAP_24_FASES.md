@@ -1356,3 +1356,14 @@ Optimizar horizontal y probar vertical/cámaras con coche legible, sin tapar pis
 Nuevos modelos con ventajas/contrapartidas y presets validados en las catorce rutas, pinturas/diseños/ruedas cosméticos legibles y sin ventaja de pago. Estadísticas/historial y recompensas locales con persistencia versionada; no inventar desbloqueos ni métricas. Fantasmas/contrarreloj en 31, eliminación/diarios/libre/eventos en 40: implementar bucle completo de cada modo antes de mostrarlo. Desafío diario reproducible/compartible no equivale a ranking online validado; rankings/torneos requieren autoridad y moderación adecuadas cuando existan.
 
 La vista superior 2D sigue como identidad principal. La opción inclinada de 37 complementa esa vista y no se impone para sustituirla. Manejo/derrape, riesgo comprensible, variedad y diversión humana mantienen prioridad; mostrar paridad técnica no cierra esas metas.
+
+
+## Avance 0.75 — fase 42.1, conducción móvil real
+
+Dirección digital izquierda/derecha, GAS, FRENO/reversa y MANO para P1 con captura independiente de punteros y varios dedos. Se eligen botones por correspondencia con el control arcade existente y área disponible; no se afirma una comparación humana contra joystick. Activación automática/manual/off, tamaños y disposición invertible, persistencia validada/restauración, limpieza de pulsaciones en cancelación/captura/foco/pausa/resize/fullscreen/menú/reinicio. P1 táctil puede compartir local con P2–P4 por teclado/mandos; si P1 usa mando, panel oculto.
+
+Cámara táctil individual ocupa el rectángulo completo, conserva coche legible y anticipa según velocidad, incluso en vertical. Controles fuera de pista/HUD, gesto cancelado solo sobre botones y buffer limitado en ambos ejes. Teclado/escritorio, mandos y rápida/campeonato/local conservados. Fuerzas/CPU/geometría/sonido y claves p6/b1/s1 no cambian.
+
+Entrada/estados implementados y comprobados en Chromium multitáctil y regresiones; evidencia en `tests/experiments/TOUCH_075.md`. La fase 42 sigue parcial: teléfono físico, aceptación humana, calibración más libre, alternativas analógicas y comodidad de más jugadores en dispositivos pequeños no se cierran por emulación. 3D/online, eliminación/libre/diarios/fantasmas, garaje y recompensas siguen pendientes en sus fases.
+
+**Siguiente tramo recomendado:** 30.4 para agrupar estado/reloj/resultados/replay y dos carreras independientes antes de salas 32/33. Alternar con 25 (derrape/maniobras/aceptación humana), 27 (cuatro rutas uniformes), 39 (parrilla y CPU), 26/36 (audio/gráficos) y 40/43 (modos/progresión), conservando controles móviles al evolucionar el manejo.

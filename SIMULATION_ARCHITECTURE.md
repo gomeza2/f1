@@ -115,3 +115,10 @@ Orden actual: la CPU/humano decide controles; `advanceVehicle` aplica el paso y 
 Falta consolidar en 30.4 la creación del coche/estado, reloj/contador, cuenta regresiva, pausa/reinicio, clasificación/resultados y replay en una carrera completamente independiente; la CPU offline puede seguir como adaptador de intención. El primer servidor puede empezar con humanos 2–4. Consumir estos componentes desde Node **no demuestra todavía dos carreras aisladas ni una sala online**.
 
 Pruebas y límites en [SHARED_RULES_074.md](tests/experiments/SHARED_RULES_074.md). El bootstrap recupera ahora cualquiera de tres dependencias omitidas por HTML viejo, y las pruebas HTTP sirven el módulo real.
+
+
+## Adaptador táctil — 0.75
+
+El táctil permanece en la capa de entrada/DOM de `script.js`, no en los módulos Node. Normaliza GAS/FRENO/dirección/mano y comparte `humanControls`/`advanceVehicle` con teclado y CPU. P1 puede combinar táctil y teclado; al elegir mando en local solo se usa esa fuente. El resto de asientos conserva su mapeo.
+
+La cámara táctil adapta dimensiones/anticipación sin realimentar la simulación; el estado mundial y los récords p6/b1/s1 permanecen. Limpieza de punteros en ciclo de vida y ajustes evita órdenes pegadas. Al extraer RaceState en 30.4 hay que mantener esa frontera: el adaptador entrega comandos, la carrera posee su estado/reloj. En online, abrir ajustes no podrá pausar globalmente al servidor; seguirá la política de input seguro del diseño de salas.

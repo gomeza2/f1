@@ -29,3 +29,8 @@ Estado comprobado por código/pruebas:
 0.74: 36 vueltas actuales emparejadas con 36 de referencia real, 56 casos/5.600 pasos de componente, contactos y gates, seis vueltas adicionales en Chromium, local/UX/carga y normalización histórica. Detalle en `tests/experiments/SHARED_RULES_074.md`. Son pruebas automáticas/nativas; no escucha humana, conducción humana ni mandos/teléfonos físicos. Pages público no está confirmado por el entorno.
 
 Siguiente entrega de producto: controles táctiles (42, desglosada de 41), con las mismas reglas compartidas. En paralelo de planificación, 30.4 sigue siendo el siguiente requisito para online. Ampliaciones de garaje/progresión y modos especiales se mantienen separadas para no introducir todos los sistemas a la vez.
+
+
+## Seguimiento 0.75
+
+El bloqueo móvil identificado se aborda con controles multitáctiles reales para P1 y cámara que ocupa el panel en vertical/horizontal, usando la misma física. Activación/tamaño/disposición y persistencia validados; teclado, mandos y local conservados. Evidencia en `tests/experiments/TOUCH_075.md`. El diagnóstico anterior describe la base auditada, no niega este avance. Teléfono físico/aceptación humana siguen pendientes.
