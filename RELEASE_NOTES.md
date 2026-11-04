@@ -1,10 +1,18 @@
-# PIXEL GRAND PRIX — entrega 0.76
+# PIXEL GRAND PRIX — entrega 0.77
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Rally Canyon y materiales en 0.77
+
+Fase 27: rediseño propio de Rally Canyon, 9.030,79 unidades frente a 4.005,04, mundo 2.500×1.600, ancho 68–128, tierra, trece checkpoints y abierto por defecto. Rectas largas, retornos y secciones de distinta anchura. Trece trazados restantes conservados por snapshot; no se retocan fuerzas, modelos ni CPU.
+
+Correcciones de material: la vista previa dejaba gris la tierra; ahora usa la paleta compartida. Los circuitos de tierra incorporan grano determinista cacheado y dejan de mostrar pintura de línea central. Se mantienen pianos/asfalto en sus superficies correspondientes y perfiles gráficos.
+
+Corregida la conservación de tiempos de contrarreloj al cambiar versión de ruta: lectura de claves históricas conocidas acotada, sin aplicar sus fantasmas a otro trazado. Se conservan récords generales anteriores. Recursos 0.77 coherentes y hoja de ruta reconciliada. Evidencia: `tests/experiments/RALLY_077.md`; prueba humana de diversión/audio, hardware físico y sitio público siguen pendientes.
 
 ## Contrarreloj y fantasma en 0.76
 

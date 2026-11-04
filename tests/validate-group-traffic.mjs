@@ -1,3 +1,4 @@
+import {withLegacyRally,assertRallyRevision} from './helpers/rally-revision.mjs';
 import {assertOriginalModels} from './helpers/model-balance.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -10,7 +11,7 @@ assert.equal(g.WORLD_SPEED_SCALE,baseline.worldSpeed);
 assertOriginalModels(g.CAR_MODELS,baseline.models);
 for(const [current,previous] of [[g.AI_DRIVERS,baseline.drivers],[g.AI_PERSONALITIES,baseline.personalities]])assert.deepEqual(JSON.parse(JSON.stringify(current)),previous);
 const materials=JSON.parse(JSON.stringify(g.TERRAIN_MATERIALS));delete materials.grass.road;assert.deepEqual(materials,baseline.materials); // Jungle 0.60 adds grass art only.
-for(const t of g.tracks){if(['JUNGLE SPRINT','THUNDER VALLEY','COASTLINE RUN'].includes(t.name)&&t.layoutVersion===3)continue;const signature=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion,surface:t.surface,defaultBarriers:t.defaultBarriers})).digest('hex');assert.equal(signature,baseline.tracks[t.name],t.name+': CPU work changed a course');}
+for(const t of g.tracks){if(['JUNGLE SPRINT','THUNDER VALLEY','COASTLINE RUN'].includes(t.name)&&t.layoutVersion===3)continue;const signature=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion,surface:t.surface,defaultBarriers:t.defaultBarriers})).digest('hex');if(!assertRallyRevision(t))assert.equal(signature,baseline.tracks[t.name],t.name+': CPU work changed a course');}
 function decision(c){return g.aiTraffic(c,g.nearestOnTrack(c.x,c.y),g.driverFor(c),1/30);}
 function set(c,p,l){g.placeCar(c,p,l);c.speed=100;}
 // The nearer leader must not cancel a side reservation, including small distance-order changes.
@@ -32,9 +33,13 @@ for(const width of [34,26]){
 console.log('PASS: mirrored overlap priority despite leader-distance jitter, braking for every rival, finished/reset cleanup, feasible opposing lanes and boxed-in hold/yield using shared physical braking; eleven historical routes/material physics/other model fields/driver settings preserved (Speed b1 checked); Jungle/Thunder/Coast have newer snapshots.');
 if(!process.argv.includes('--focused')){
  let laps=0;const regressions=[];const selected=process.env.GROUP_STAGES?.split(',').map(Number);const cases=(process.argv.includes('--high-rate')?baseline.cases.filter(c=>c.dt):baseline.cases).filter(c=>!selected||selected.includes(c.stage));assert.ok(cases.length,'Empty group selection');
+ const currentGame=g,currentElement=e;
+ const legacy=cases.some(c=>c.stage===11)?loadGame({trackSourceOverride:withLegacyRally(readFileSync(new URL('../track-core.js',import.meta.url),'utf8'))}):null;
  for(const old of cases){
+  const {game:g,element:e}=old.stage===11?legacy:{game:currentGame,element:currentElement};
+  if(old.stage===11){assert.equal(g.tracks[11].layoutVersion,2);assert.ok(Math.abs(g.tracks[11].length-4005.037959361926)<1e-8);}
   const dt=old.dt||baseline.dt;
-  e('difficulty').value=old.level;g.start('solo',old.stage);g.cars[0].isAI=true;let contacts=0,off=0;
+  e('opponentCount').value='3';e('difficulty').value=old.level;g.start('solo',old.stage);assert.equal(g.cars.length,4,'Traffic fixture requires four cars');g.cars[0].isAI=true;let contacts=0,off=0;
   for(let i=0;i<10800&&!g.cars.every(c=>c.done);i++){
    if(g.tick(dt))contacts++;for(const c of g.cars){assert.ok(Number.isFinite(c.speed)&&c.speed<=g.CAR_MODELS[c.model].maxSpeed);if(!c.done&&g.terrainAt(c.x,c.y).offroad)off++;}
   }
@@ -42,7 +47,7 @@ if(!process.argv.includes('--focused')){
   assert.ok(Math.max(...g.cars.map(c=>c.finishTime))-Math.min(...g.cars.map(c=>c.finishTime))<18,'Grid misses normal finish deadline');
   const budget=old.stage===0&&dt===baseline.dt?Math.floor(old.contacts/2):old.contacts;if(contacts>budget)regressions.push(`${old.name}/${1/dt}Hz: contacts ${contacts} > ${budget}`);if(off>old.off)regressions.push(`${old.name}: off-road ${off} > ${old.off}`);
   const times=g.cars.map(c=>c.finishTime/3),mean=a=>a.reduce((x,y)=>x+y,0)/a.length;if(mean(times)>mean(old.times)*1.02)regressions.push(`${old.name}: mean ${mean(times).toFixed(3)} > ${(mean(old.times)*1.02).toFixed(3)} pace limit`);laps+=12;
-  console.log(`GROUP ${old.name}/${old.level}/${Math.round(1/dt)}Hz: contact ${old.contacts} → ${contacts}, off-road ${old.off} → ${off}, mean laps ${times.map(t=>t.toFixed(2)).join('/')}.`);
+  console.log(`GROUP ${old.name}${old.stage===11?' (legacy layout 2)':''}/${old.level}/${Math.round(1/dt)}Hz: contact ${old.contacts} → ${contacts}, off-road ${old.off} → ${off}, mean laps ${times.map(t=>t.toFixed(2)).join('/')}.`);
  }
  assert.deepEqual(regressions,[],'Traffic regressions; original contact/off-road/pace budgets preserved');
  console.log(`PASS: ${cases.length} fixed four-car scenarios/${laps} valid laps, frozen contact bounds including Sunset reduction at 30 Hz and unchanged 60 Hz reference, shared speed caps and <=2% aggregate pace loss per grid. Human competition remains unverified.`);

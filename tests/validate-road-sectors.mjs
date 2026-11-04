@@ -18,7 +18,7 @@ for(const stage of stages){
  let narrow=Infinity,wide=0,kerbs=0,bare=0;
  for(let d=0;d<track.length;d+=5){
   const a=game.roadSectionAt(d),b=game.roadSectionAt(d+5),width=game.roadHalfWidthAt(d);
-  assert.ok(a.halfWidth>=34&&a.halfWidth<=([5,8,10].includes(stage)?58:56));assert.ok(a.kerb>=0&&a.kerb<=6);
+  assert.ok(a.halfWidth>=34&&a.halfWidth<=(stage===11?64:[5,8,10].includes(stage)?58:56));assert.ok(a.kerb>=0&&a.kerb<=6);
   assert.ok(Math.abs(width-game.roadHalfWidthAt(d+5))<1,'Abrupt narrowing');
   narrow=Math.min(narrow,width);wide=Math.max(wide,width);if(a.kerb>3)kerbs++;if(a.kerb<.1)bare++;
   assert.deepEqual(game.roadSectionAt(d+track.length),a,'Cross-section is not periodic');

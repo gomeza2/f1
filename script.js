@@ -7,7 +7,7 @@ if(typeof PixelDrivingCore==='undefined'||typeof PixelTrackCore==='undefined'||t
  try{
   for(const [name,file,marker] of [['PixelDrivingCore','driving-core.js','drivingCore'],['PixelTrackCore','track-core.js','trackCore'],['PixelRaceRules','race-rules.js','raceRules'],['PixelGhostLap','ghost-lap.js','ghostLap']]){
    if(typeof globalThis[name]!=='undefined')continue;
-   const dependency=new URL(file,base);dependency.searchParams.set('v','0.76');
+   const dependency=new URL(file,base);dependency.searchParams.set('v','0.77');
    await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=dependency.href;script.dataset[marker]='fallback';script.onload=resolve;script.onerror=reject;document.head.append(script);});
    if(typeof globalThis[name]?.create!=='function')throw new Error('Shared module unavailable');
   }
@@ -76,12 +76,20 @@ const ghostCore=PixelGhostLap.create(),TRIAL_KEY='pixelGP.timeTrials.v1';
 function trialRecordKey(item=track,model=cars[0]?.model||'balanced',profile=barrierMode){return lapRecordKey(item)+'|'+model+'|'+(profile==='auto'?item.defaultBarriers:profile);}
 const trialIdentities=new Map();
 for(const item of tracks)for(const model of Object.keys(CAR_MODELS))for(const profile of ['open','full','half','corners'])trialIdentities.set(trialRecordKey(item,model,profile),{key:trialRecordKey(item,model,profile),model,worldWidth:item.worldWidth,worldHeight:item.worldHeight});
+// Preserve older route/physics times without making their ghosts active on a new route.
+function historicalTrialKey(key){
+ if(typeof key!=='string'||key.length>128)return false;
+ const match=/^(.+?)(?:@[1-9]\d{0,3})?:p[1-9]\d{0,3}(?::r[1-9]\d{0,3})?:s[1-9]\d{0,3}:b[1-9]\d{0,3}\|([a-z]+)\|(open|full|half|corners)$/.exec(key);
+ return !!match&&tracks.some(item=>item.name===match[1])&&Object.hasOwn(CAR_MODELS,match[2]);
+}
 function readTrialStore(){
  const store={version:1,times:Object.create(null),ghosts:Object.create(null),order:[]};
  try{
   const raw=localStorage.getItem(TRIAL_KEY);if(!raw||raw.length>2000000)return store;
   const saved=JSON.parse(raw);if(saved?.version!==1)return store;
-  for(const [key,identity] of trialIdentities){const time=saved.times?.[key];if(typeof time==='number'&&Number.isFinite(time)&&time>=1&&time<3600)store.times[key]=time;}
+  // Current combinations take priority; up to 512 total current/historical times remain bounded.
+  const keys=[...trialIdentities.keys()].filter(key=>Object.hasOwn(saved.times||{},key)).concat(Object.keys(saved.times||{}).filter(key=>!trialIdentities.has(key)&&historicalTrialKey(key))).slice(0,512);
+  for(const key of keys){const time=saved.times?.[key];if(typeof time==='number'&&Number.isFinite(time)&&time>=1&&time<3600)store.times[key]=time;}
   for(const key of Array.isArray(saved.order)?saved.order.slice(-8):[]){
    const identity=trialIdentities.get(key),ghost=saved.ghosts?.[key];
    if(identity&&!store.order.includes(key)&&ghostCore.valid(ghost,identity)&&ghost.duration===store.times[key]){store.order.push(key);store.ghosts[key]=ghost;}
@@ -372,7 +380,8 @@ function updateMenuPreview(){
  context.setTransform(1,0,0,1,0,0);context.clearRect(0,0,width,height);context.fillStyle='#0c1727';context.fillRect(0,0,width,height);
  context.save();context.translate((width-item.worldWidth*scale)/2,(height-item.worldHeight*scale)/2);context.scale(scale,scale);context.lineJoin='round';context.lineCap='round';
  context.beginPath();context.moveTo(item.samples[0].x,item.samples[0].y);for(const point of item.samples.slice(1))context.lineTo(point.x,point.y);context.closePath();
- if(item.roadProfile){fillRoadRibbon(context,'#1d3447',d=>roadHalfWidthAt(d,item)+2,item);fillRoadRibbon(context,'#667f8e',d=>roadSectionAt(d,item).halfWidth,item);}else{context.strokeStyle='#1d3447';context.lineWidth=ROAD_EDGE*2+10;context.stroke();context.strokeStyle='#667f8e';context.lineWidth=ROAD_EDGE*2-10;context.stroke();}
+ const previewRoad=TERRAIN_MATERIALS[surfaceAtProgress(0,item)]?.road||TERRAIN_MATERIALS.asphalt.road;
+ if(item.roadProfile){fillRoadRibbon(context,previewRoad.edge,d=>roadHalfWidthAt(d,item)+2,item);fillRoadRibbon(context,previewRoad.body,d=>roadSectionAt(d,item).halfWidth,item);}else{context.strokeStyle=previewRoad.edge;context.lineWidth=ROAD_EDGE*2+10;context.stroke();context.strokeStyle=previewRoad.body;context.lineWidth=ROAD_EDGE*2-10;context.stroke();}
  if(usesMaterialRaster(item))drawMixedRoad(context,item);
  context.beginPath();context.moveTo(item.samples[0].x,item.samples[0].y);for(const point of item.samples.slice(1))context.lineTo(point.x,point.y);context.closePath();
  context.strokeStyle=item.accent;context.lineWidth=3;context.setLineDash([14,20]);context.stroke();context.setLineDash([]);
@@ -693,6 +702,7 @@ function fillRoadRibbon(context,color,widthAt,item=track){
 }
 function drawVariableRoad(context){
  const style=TERRAIN_MATERIALS[track.surface]?.road||TERRAIN_MATERIALS.asphalt.road;
+ const grain=style.grain||(track.surface==='dirt'?[style.body,style.border,style.kerb]:null);
  fillRoadRibbon(context,style.edge,d=>roadHalfWidthAt(d)+1);
  fillRoadRibbon(context,style.kerb,d=>roadHalfWidthAt(d));
  if(['asphalt','coastal','mixed'].includes(track.surface)){
@@ -713,7 +723,7 @@ function drawVariableRoad(context){
  fillRoadRibbon(context,style.border,d=>roadSectionAt(d).halfWidth);
  fillRoadRibbon(context,graphics==='high'?style.body:(style.lite||style.body),d=>Math.max(8,roadSectionAt(d).halfWidth-3));
  fillRoadRibbon(context,style.center,d=>Math.max(8,roadSectionAt(d).halfWidth-8));
- if(style.grain){
+ if(grain){
   // Sparse deterministic surface marks stay inside the same native road corridor.
   const step=graphics==='high'?12:graphics==='retro'?20:28;
   for(let d=0;d<track.length;d+=step){
@@ -721,7 +731,7 @@ function drawVariableRoad(context){
     const progress=d+(seed>>>8)%step,p=sampleAt(progress),width=roadSectionAt(progress).halfWidth-6,offset=(seed/4294967296*2-1)*width;
     const x=p.x-Math.sin(p.angle)*offset,y=p.y+Math.cos(p.angle)*offset,loc=nearestOnTrack(x,y);
     if(loc.distance>roadSectionAt(loc.progress).halfWidth-5)continue;
-    if(style.grainKind==='ice'){const length=5+seed%9,angle=p.angle+((seed%11)-5)*.04;context.strokeStyle=style.grain[seed%style.grain.length];context.lineWidth=1;context.beginPath();context.moveTo(x-Math.cos(angle)*length/2,y-Math.sin(angle)*length/2);context.lineTo(x+Math.cos(angle)*length/2,y+Math.sin(angle)*length/2);context.stroke();}else{context.fillStyle=style.grain[seed%style.grain.length];context.fillRect(x-1,y-1,2+(seed%2),2);}
+    if(style.grainKind==='ice'){const length=5+seed%9,angle=p.angle+((seed%11)-5)*.04;context.strokeStyle=grain[seed%grain.length];context.lineWidth=1;context.beginPath();context.moveTo(x-Math.cos(angle)*length/2,y-Math.sin(angle)*length/2);context.lineTo(x+Math.cos(angle)*length/2,y+Math.sin(angle)*length/2);context.stroke();}else{context.fillStyle=grain[seed%grain.length];context.fillRect(x-1,y-1,2+(seed%2),2);}
    }
   }
  }
@@ -1475,7 +1485,7 @@ function drawDrivingView(left,width,player,top=0,height=localViewHeight){
  const view=raceCamera(player,width,height);ctx.save();ctx.beginPath();ctx.rect(left,top,width,height);ctx.clip();
  ctx.translate(left+width/2,top+height/2);ctx.scale(view.zoom,view.zoom);ctx.translate(-view.x,-view.y);drawBackground(ctx);
  const centerLineColor=track.surface==='dirt'?'#ead0a3':track.surface==='grass'?'#cce88d':track.surface==='ice'?'#f4ffff':track.surface==='volcanic'?'#df8060':'#eef0d85c';
- if(!usesMaterialRaster())strokeTrack(ctx,centerLineColor,2.5,[18,22],-elapsed*13);
+ if(!usesMaterialRaster()&&track.surface!=='dirt')strokeTrack(ctx,centerLineColor,2.5,[18,22],-elapsed*13);
  drawGroundEffects(ctx);drawTrialGhost(ctx);cars.map(renderedCar).sort((a,b)=>a.speed-b.speed).forEach(car=>drawCar(ctx,car));ctx.restore();
 }
 function drawFrame(){

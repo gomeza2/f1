@@ -12,7 +12,7 @@ const {game:g,element:e}=loadGame({sourceOverride:baseline});
 const flat=value=>Object.fromEntries(Object.entries(value));
 const plain=value=>JSON.parse(JSON.stringify(value)),hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 assert.equal(api.apiVersion,1);assert.deepEqual(plain(core.tracks),plain(g.tracks),'Circuit registry changed');
-assert.equal(core.tracks.length,14);assert.equal(core.tracks.filter(t=>t.roadProfile).length,10);
+assert.equal(core.tracks.length,14);assert.equal(core.tracks.filter(t=>t.roadProfile).length,11);
 let configurations=0,queries=0,materials=0,segments=0;
 for(let stage=0;stage<14;stage++){
  const item=core.tracks[stage];
@@ -57,4 +57,4 @@ const standalone={module:{exports:{}}};for(const name of ['document','window','l
 vm.createContext(standalone);vm.runInContext(readFileSync(new URL('../track-core.js',import.meta.url),'utf8'),standalone);
 const nodeOnly=standalone.module.exports.create(),world=nodeOnly.createWorld(10,'full');assert.ok(world.physicalBarriers.length);assert.deepEqual(plain(nodeOnly.tracks),plain(core.tracks));
 console.log(JSON.stringify({configurations,queries,materials,segments}));
-console.log('PASS: 14 original registries/70 profiles exactly match actual legacy geometry, sections/materials/checkpoints/contours/visible rails/capsules/spatial queries; immutable owned geometry and independent profile contexts run without browser/storage/clock. Not full race isolation or online rooms.');
+console.log('PASS: 14 registries (declared Rally v3)/70 profiles exactly match the migrated legacy geometry, sections/materials/checkpoints/contours/visible rails/capsules/spatial queries; immutable owned geometry and independent profile contexts run without browser/storage/clock. Not full race isolation or online rooms.');

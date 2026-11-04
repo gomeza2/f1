@@ -30,6 +30,8 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 - Conducción/derrape, CPU justa, audio, cuatro circuitos uniformes, gráficos y local siguen abiertos y se alternarán por impacto. No reducir todo el trabajo a CPU ni dar por terminada la sensación humana por tests.
 - Vista 3D inclinada opcional en fase 37, solicitada para más adelante; no reemplazará por obligación la vista cenital actual.
 
+Estado vigente 0.77: once rutas de ancho variable; Champion Road, Meadow Run e Industrial Mix conservan ancho uniforme. Contrarreloj/fantasma local integrado desde 0.76. Online sigue pendiente de 30.4 y servidor/salas 32/33.
+
 ## Fases abiertas
 
 ### 25. Control arcade fluido y competición con contacto — revisiones 0.42/0.45
@@ -464,3 +466,14 @@ Se prioriza un bucle de juego nuevo tras la entrega táctil, sin cerrar ni salta
 Implementación integrada; pruebas de componente y navegador documentadas en `tests/experiments/TRIAL_076.md`. Las carreras automáticas no validan diversión humana. No es replay de toda una carrera ni ranking online seguro. **31 sigue parcial:** repetir carrera completa con entradas/eventos, importación/exportación validada, sectores/deltas solo cuando se midan realmente y aceptación humana del fantasma. Se conserva la evaluación física/audio pendiente.
 
 **Siguiente entrega técnica recomendada: 30.4**, estado/reloj/cuenta regresiva/clasificación aislados y dos carreras simultáneas independientes, antes de 32/33 salas autoritativas. No confundir una grabación de poses locales con simulación autoritativa. Alternar con fase 27 (Champion/Rally/Meadow/Industrial aún uniformes), 25/26 (manejo/audio) y 36 (gráficos), sin concentrar todo en CPU. Online, 3D opcional y las demás variantes continúan pendientes.
+
+
+## Avance 0.77 — fase 27, Rally Canyon con silueta y ritmo propios
+
+Se alterna el requisito técnico 30.4 con una mejora visible de conducción, después de contrarreloj. El primer candidato se descartó por similitud con Night Run (distancia normalizada 0,145). El conservado difiere del viejo Rally 0,796 y de cualquier otra pista al menos 0,412, considerando escala/rotación/reflejo/dirección. Crece de 4.005 a 9.031 unidades del mundo, con recta de salida y retornos, pasos de 68–128 de ancho y trece gates; abierto por defecto y cinco perfiles disponibles. Geometría variable única, no una ampliación proporcional.
+
+Implementado y comprobado automáticamente: geometría/corredor, 62 vueltas de navegador con coches/perfiles/dificultades/parrillas, píxeles del terreno, récords y regresiones. Evidencia/alcance en `tests/experiments/RALLY_077.md`. La tierra recibe grano cacheado y deja la pintura central; el menú emplea los colores reales de cada material. Se corrige archivo de tiempos de contrarreloj para no borrar el récord anterior de una ruta al versionarla; los fantasmas permanecen ligados a su versión.
+
+Fase 27 continúa parcial: **Champion Road, Meadow Run e Industrial Mix** siguen uniformes; variedad y diversión necesitan conducción humana, no solo medición de formas. Las otras trece rutas y las fuerzas/IA/coches se conservan.
+
+**Siguiente entrega técnica recomendada: 30.4**, estado/reloj/cuenta regresiva/resultados y dos carreras completas independientes. Después servidor autoritativo/salas 32/33. No hay online disponible todavía. Alternar con aceptación de manejo/derrape, timbre del motor y gráficos, sin convertir cada actualización en ajuste de CPU.

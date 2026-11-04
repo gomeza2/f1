@@ -1,3 +1,4 @@
+import {withoutRallyDelivery} from './without-rally-delivery.mjs';
 const edits=[
  [
   "||typeof PixelRaceRules==='undefined'||typeof PixelGhostLap==='undefined')",
@@ -105,6 +106,7 @@ const edits=[
  ]
 ];
 export function withoutTimeTrial(source){
+ source=withoutRallyDelivery(source);
  if(!source.includes("const ghostCore=PixelGhostLap.create()"))return source;
  for(const [current,previous] of [...edits].reverse()){if(!source.includes(current))throw Error("Time trial migration anchor changed: "+current.slice(0,70));source=source.replace(current,previous);}
  return source;

@@ -2,6 +2,16 @@
 
 Juego web arcade de carreras 2D desde arriba, con identidad retro propia, circuitos de formas variadas, rivales controlados por CPU, derrapes, superficies y campeonato.
 
+## Nuevo en 0.77 — Rally Canyon más largo y con otro ritmo
+
+El circuito **12 · RALLY CANYON** conserva su nombre y superficie de tierra, con un trazado nuevo de 9.031 unidades del mundo (antes 4.005), recta larga de salida, dos retornos y una secuencia técnica al sur. El ancho útil varía de 68 a 128 unidades y los trece checkpoints evitan saltarse ramales. Sigue abierto por defecto; admite las cinco opciones de barreras. Las vueltas automatizadas de referencia rondan 48–60 s según coche/dificultad, sin fijar un tiempo objetivo humano.
+
+La tierra ahora tiene grano estático y carece de la línea central de asfalto. El menú utiliza la paleta del material real también para tierra, hielo, pasto y suelo volcánico. Se mantienen las otras trece pistas, los cuatro coches, física/CPU, modos, controles táctiles y local 2–4.
+
+La revisión del trazado usa una clave nueva de récord/fantasma. Los tiempos generales y de contrarreloj anteriores se conservan por separado; un fantasma del trazado anterior no se carga en el nuevo. La lectura de tiempos de contrarreloj admite hasta 512 combinaciones actuales/históricas de pistas/modelos conocidos, priorizando las actuales; se mantienen ocho fantasmas activos como máximo. Solo se trata de datos locales, sin verificación de servidor.
+
+Pruebas y límites en [RALLY_077.md](tests/experiments/RALLY_077.md). Quedan tres pistas de ancho uniforme: Champion Road, Meadow Run e Industrial Mix. La siguiente prioridad técnica sigue siendo 30.4, aislamiento completo de carrera antes de salas online; manejo/derrape, audio y aceptación humana continúan abiertos.
+
 ## Nuevo en 0.76 — contrarreloj con fantasma personal
 
 Elegí **CONTRARRELOJ**, pista, coche y barreras, y pulsá **CORRER CONTRARRELOJ**. Tres vueltas válidas sin CPU: practicá frenadas, trazadas y derrapes contra tu propia mejor vuelta. Los checkpoints y la conducción son los mismos de carrera. La primera vuelta crea una referencia; una mejora válida reemplaza el fantasma para la siguiente vuelta/intento. **FANTASMA ON/OFF** está en la barra exterior y no cambia el coche ni el cronómetro.

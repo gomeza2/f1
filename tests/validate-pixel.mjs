@@ -1,3 +1,4 @@
+import {assertRallyRevision} from './helpers/rally-revision.mjs';
 import {assertOriginalModels} from './helpers/model-balance.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -16,7 +17,7 @@ assert.equal(g.WORLD_SPEED_SCALE,old.worldSpeed);
 const materials=JSON.parse(JSON.stringify(g.TERRAIN_MATERIALS));delete materials.grass.road;assert.deepEqual(materials,old.materials,'Changed terrain physics/other art'); // Jungle 0.60 adds native grass art.
 let nearest=Infinity;
 for(const t of g.tracks.filter(t=>t!==track)){
- const hash=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');if(!(['JUNGLE SPRINT','THUNDER VALLEY','COASTLINE RUN'].includes(t.name)&&t.layoutVersion===3))assert.equal(hash,old.otherTracks[t.name],t.name+' changed');
+ const hash=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion})).digest('hex');if(!(['JUNGLE SPRINT','THUNDER VALLEY','COASTLINE RUN'].includes(t.name)&&t.layoutVersion===3))if(!assertRallyRevision(t))assert.equal(hash,old.otherTracks[t.name],t.name+' changed');
  const distance=normalizedShapeDistance(shape,sampleTrackShape(t));nearest=Math.min(nearest,distance);assert.ok(distance>.23,'Pixel resembles '+t.name);
 }
 const geometry=analyzeTrackWidth(track,d=>g.roadHalfWidthAt(d,track));assert.ok(geometry.roadMargin>45&&geometry.clearance>50);
