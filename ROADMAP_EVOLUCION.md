@@ -30,7 +30,7 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 - Conducción/derrape, CPU justa, audio, cuatro circuitos uniformes, gráficos y local siguen abiertos y se alternarán por impacto. No reducir todo el trabajo a CPU ni dar por terminada la sensación humana por tests.
 - Vista 3D inclinada opcional en fase 37, solicitada para más adelante; no reemplazará por obligación la vista cenital actual.
 
-Estado vigente 0.80: fase 33.1 con cliente online integrado, salas 2–4, cámara/HUD por identidad, interpolación, reconexión y resultados/revancha. Backend 32.1 conservado. **Siguiente 33.2: predicción/reconciliación y pruebas de latencia/hosting**. Hosting propuesto en `HOSTING.md`, sin despliegue público ni servidor predeterminado. Once rutas de ancho variable; tres pendientes. Conducción/derrape, audio, gráficos y aceptación humana siguen abiertos.
+Estado vigente 0.81: primer tramo de 33.2, URL de servidor aportada por el usuario configurada, conexión inicial con espera/reintentos/cancelación y presentación sin retroceso por jitter. Salas/cliente 32.1–33.1 conservados. Verificación pública bloqueada por proxy CONNECT 403. **Siguiente: predicción/reconciliación del coche propio y latencia/hosting reales**. Conducción/derrape, audio, tres pistas uniformes y gráficos siguen abiertos.
 
 ## Fases abiertas
 
@@ -505,3 +505,11 @@ Implementado: panel de salas, conexión a URL configurable, códigos, coche/pint
 Comprobado automáticamente: cuatro contextos Chromium con la UI/Canvas, cuatro modelos y vueltas válidas, inputs de teclado/mando, identidad de cada asiento, reconexión real/token renovado, nombres como texto, resultados equivalentes y regreso a sala/offline. Reglas de URL/TLS/versión/interpolación y núcleo de servidor comprobadas; modos locales/táctil/recursos conservados. Reloj/conducción/mandos instrumentados; no sustituye una partida humana por Internet. Evidencia en `tests/experiments/ONLINE_CLIENT_080.md`.
 
 **Siguiente 33.2:** comparar interpolación con predicción/reconciliación local usando la física compartida, medir jitter/latencia, reanudaciones y finales con red adversa. Después verificar el servicio alojado. Propuesta Render Free para pruebas + Pages en `HOSTING.md`; esperar URL pública para la configuración final, sin dar por contratado/desplegado el hosting. Alternar con conducción/derrape, audio, las tres pistas uniformes y gráficos. No se consideran completados por esta entrega.
+
+## Avance 0.81 — fase 33.2.1, conexión inicial y jitter
+
+Implementado: URL pública del usuario como predeterminada, presupuesto inicial de 90 s con reintentos pre-handshake y cancelación visible/por Escape/cierre; bloquear acciones duplicadas y cancelar al volver a jugar offline. Una creación incierta no se reenvía automáticamente. El plazo de reconexión activa sigue separado, también cuando se espera confirmación tras welcome. Presentación con timeline monotónico ante jitter, sin posiciones futuras y con reset por carrera.
+
+Comprobado: sockets/relojes simulados, WebSocket nativo con puerta HTTP 503 local y cancelación sin salas, cuatro contextos de juego con vueltas válidas y reconexión, paridad de teclado y regresiones locales/núcleo/recursos. Evidencia en `tests/experiments/CONNECTION_081.md`. El servidor público fue informado por el usuario; este entorno no pudo alcanzarlo por rechazo CONNECT del proxy. No se considera terminada toda la fase 33.2 ni aceptada la latencia humana.
+
+**Siguiente:** predicción/reconciliación local mediante la misma física, escenarios con latencia/jitter/pérdida en carrera y validación del hosting público cuando haya acceso. Mantener alternancia con manejo/derrape, audio, pistas y gráficos; no cambiar esas áreas a ciegas para simular progreso online.

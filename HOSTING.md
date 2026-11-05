@@ -1,5 +1,13 @@
 # Alojamiento propuesto para salas privadas
 
+## Dirección configurada en 0.81
+
+El usuario informó que creó el servicio y proporcionó **https://pixel-grand-prix-rooms.onrender.com**. Se guarda como `online-config.json.serverUrl` predeterminado; la UI conserva una dirección personalizada ya guardada. Abrir esa raíz muestra el backend de salas; el juego se abre por separado en Pages y conecta por `/ws` usando WSS.
+
+La comprobación externa desde este entorno falló antes de alcanzar Render: `CONNECT tunnel failed, response 403`, proxy Envoy. No demuestra fallo del servicio ni confirma su salud. Queda pendiente verificar `/health`, handshake y una carrera pública desde un entorno con acceso autorizado. Los módulos físicos/protocolo del servidor no cambian en 0.81; las mejoras son de cliente.
+
+La conexión inicial puede esperar/reintentar hasta 90 s, con cancelación; no es una garantía del tiempo que tarda Render Free en despertar. La reconexión de una carrera activa conserva su plazo corto porque las reglas de abandono del servidor siguen vigentes.
+
 ## Elección para la primera prueba con amigos
 
 **Render · Web Service Node con plan Free**, y frontend estático en **GitHub Pages**. La receta solicita el plan gratuito para las primeras pruebas; no selecciona Starter ni otros recursos pagos. No se contrató ni desplegó un servicio desde aquí. GitHub Pages por sí solo no puede ejecutar las salas.
@@ -35,10 +43,10 @@ Una vez creado, hace falta **la URL pública del servicio**, por ejemplo `https:
 
 1. Confirmar `/health` con `ok:true`, mismo protocolo/huella que `online-config.json` y la versión correcta del proceso desplegado.
 2. Desde el juego en Pages, crear y unir 2–4 navegadores/dispositivos. Comprobar que WSS funciona y el origen está admitido; comparar resultados reales tras una carrera completa.
-3. Medir ping, variación, tráfico y tiempo de paso con jugadores reales. El cliente 0.80 interpola con unos 100 ms de margen y todavía no predice al piloto local: no prometer baja latencia competitiva sin medir.
+3. Medir ping, variación, tráfico y tiempo de paso con jugadores reales. El cliente 0.81 interpola con unos 100 ms de margen y todavía no predice al piloto local: no prometer baja latencia competitiva sin medir.
 4. Comprobar pérdida/retorno de red, DNF, anfitrión que se va y revancha. Reiniciar el servidor pierde salas/resultados: son memoria temporal.
 5. Observar carga antes de aumentar las ocho carreras activas configuradas. Son topes de protección, no capacidad de hosting demostrada. Detrás del proxy, el límite de 16 conexiones por IP puede agrupar usuarios; revisar esto antes de ampliar el servicio.
 
 ## Qué está comprobado aquí
 
-Servidor local, clientes independientes WebSocket y cuatro navegadores con la interfaz del juego. También arranque CLI mediante `PORT` y `PGP_HOST`, health y cierre. **No se creó el servicio externo ni se comprobó Render, ping real, coste o GitHub Pages publicado en esta entrega.** El usuario puede crear el servicio cuando quiera y compartir la URL pública para configurar y validar la conexión final.
+Servidor local, clientes independientes WebSocket y cuatro navegadores con la interfaz del juego. También arranque CLI mediante `PORT` y `PGP_HOST`, health y cierre. **El servicio externo fue informado por el usuario; este entorno no comprobó Render, ping real, coste o GitHub Pages publicado.** La URL ya está configurada. La validación pública sigue pendiente por la restricción de red indicada arriba.

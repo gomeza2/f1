@@ -1,10 +1,18 @@
-# PIXEL GRAND PRIX — entrega 0.80
+# PIXEL GRAND PRIX — entrega 0.81
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Conexión e interpolación en 0.81 — fase 33.2, primer tramo
+
+Dirección de Render del usuario configurada por defecto. La conexión inicial ya no falla a los cinco segundos: presupuesto de 90 s, reintentos pre-handshake, estado de espera, acciones duplicadas bloqueadas y cancelación sin crear salas posteriormente. No se repite una creación después de un welcome si se pierde su confirmación. Plazo de reconexión de carrera independiente; esperar confirmación de sesión también tiene límite.
+
+Corrección de jitter: el tiempo de presentación no retrocede cuando llega tarde un snapshot, conservando clamping a autoridad y reinicio por carrera. Sin predicción local ni nueva física. Recursos/manifiesto 0.81 coherentes; backend/protocolo/huella sin cambios. Se conservan pistas, coches, CPU, audio, modos locales, récords y controles.
+
+Comprobado: pruebas de reloj/socket simulado, navegador nativo ante HTTP 503/cancelación, cuatro clientes con vueltas completas y reconexión, paridad de teclado, local, recursos y núcleo. Detalles: `tests/experiments/CONNECTION_081.md`. Verificación externa de la URL impedida por proxy CONNECT 403, antes del servidor. No se declara validado el servicio público ni la latencia humana. Siguiente: predicción/reconciliación y pruebas de red/hosting reales.
 
 ## Cliente online integrado en 0.80 — fase 33.1
 

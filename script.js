@@ -7,7 +7,7 @@ if(typeof PixelDrivingCore==='undefined'||typeof PixelTrackCore==='undefined'||t
  try{
   for(const [name,file,marker] of [['PixelDrivingCore','driving-core.js','drivingCore'],['PixelTrackCore','track-core.js','trackCore'],['PixelRaceRules','race-rules.js','raceRules'],['PixelGhostLap','ghost-lap.js','ghostLap'],['PixelRaceSession','race-session.js','raceSession']]){
    if(typeof globalThis[name]!=='undefined')continue;
-   const dependency=new URL(file,base);dependency.searchParams.set('v','0.80');
+   const dependency=new URL(file,base);dependency.searchParams.set('v','0.81');
    await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=dependency.href;script.dataset[marker]='fallback';script.onload=resolve;script.onerror=reject;document.head.append(script);});
    if(typeof globalThis[name]?.create!=='function')throw new Error('Shared module unavailable');
   }
@@ -833,6 +833,7 @@ function placeCar(car,progress,lateral){
  car.nextCheckpoint=0;car.checkpointPasses=0;car.lastCheckpointTime=0;car.aiManeuver=null;car.aiTrafficStates={};car.aiLane=lateral;
 }
 function start(m,s=Number($('stageSelect').value),keepSeason=false){
+ cancelOnlineConnect();
  if(online?.transport?.session)leaveOnline();
  $('restartBtn').disabled=false;resetTouch();
  if(m!=='solo'&&!validateLocalSetup())return false;
@@ -1648,16 +1649,16 @@ if(typeof ResizeObserver!=='undefined'){const observer=new ResizeObserver(()=>{i
 // Network adapter: authoritative snapshots feed the existing renderer, never the local step.
 function onlineSelfIndex(){return online?.active?Math.max(0,raceState.cars.findIndex(car=>car.player===online.transport.session?.pilotId)):0;}
 function onlineStatus(state,detail=''){
- if(!online)return;online.connected=state==='connected';
- const labels={connecting:'CONECTANDO…',connected:'CONECTADO · SALAS PRIVADAS',reconnecting:'RECONECTANDO… · EL SERVIDOR FRENA TU COCHE',lost:detail||'SIN CONEXIÓN'};
+ if(!online)return;online.connected=state==='connected';online.connecting=['connecting','warming'].includes(state);
+ const labels={connecting:'CONECTANDO…',warming:'INICIANDO SERVIDOR… · RENDER FREE PUEDE TARDAR HASTA 90 s',idle:detail,connected:'CONECTADO · SALAS PRIVADAS',reconnecting:'RECONECTANDO… · EL SERVIDOR FRENA TU COCHE',lost:detail||'SIN CONEXIÓN'};
  $('onlineStatus').textContent=labels[state]||detail;
  if(state==='lost'){if(online.active)endOnlineView();online.room=null;$('onlineLobby').showModal();}
  renderOnlineRoom();
 }
 function renderOnlineRoom(){
  if(!online)return;const room=online.room,self=room?.players.find(p=>p.pilotId===online.transport.session?.pilotId),host=!!self&&room.hostPilotId===self.pilotId,lobby=room?.phase==='lobby',connected=online.connected;
- $('onlineRoom').classList.toggle('hidden',!self);for(const id of ['onlineCreate','onlineJoin'])$(id).disabled=!!self||!online.loaded;
- $('onlineServer').disabled=!!self;$('onlineName').disabled=!!self;
+ $('onlineRoom').classList.toggle('hidden',!self);for(const id of ['onlineCreate','onlineJoin'])$(id).disabled=!!self||!online.loaded||online.connecting;
+ $('onlineServer').disabled=!!self||online.connecting;$('onlineName').disabled=!!self||online.connecting;$('onlineCancel')?.classList.toggle('hidden',!online.connecting);
  if(!self)return;
  $('onlineRoomCode').textContent=room.code;$('onlinePilots').replaceChildren();
  for(const pilot of room.players){const li=document.createElement('li');li.style.setProperty('--pilot-color',CAR_PAINTS[pilot.paint]?.hex||'#fff');const name=document.createElement('strong');name.textContent=pilot.name+(pilot.pilotId===self.pilotId?' · VOS':'');const info=document.createElement('span');info.textContent=(CAR_MODELS[pilot.model]?.name||pilot.model)+' · '+(!pilot.connected?'RECONECTANDO':pilot.ready?'LISTO':'ELIGIENDO')+(pilot.pilotId===room.hostPilotId?' · ANFITRIÓN':'');li.append(name,info);$('onlinePilots').append(li);}
@@ -1678,8 +1679,8 @@ async function openOnlineLobby(){
  online={active:false,loaded:false,connected:false,room:null,transport:null,raceId:null,roster:[],blocked:false,lastEvent:0};
  $('onlineCreate').disabled=true;$('onlineJoin').disabled=true;$('onlineStatus').textContent='CARGANDO CONEXIÓN…';
  try{
-  if(typeof PixelOnlineClient==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-client.js?v=0.80',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
-  const response=await fetch(new URL('online-config.json?v=0.80',document.baseURI),{cache:'no-store'});if(!response.ok)throw new Error('manifest');const config=await response.json();if(config.build!=='0.80'||config.protocol!==1||!/^[a-f0-9]{64}$/.test(config.simulation))throw new Error('manifest');
+  if(typeof PixelOnlineClient==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-client.js?v=0.81',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
+  const response=await fetch(new URL('online-config.json?v=0.81',document.baseURI),{cache:'no-store'});if(!response.ok)throw new Error('manifest');const config=await response.json();if(config.build!=='0.81'||config.protocol!==1||!/^[a-f0-9]{64}$/.test(config.simulation))throw new Error('manifest');
   online.transport=PixelOnlineClient.create({simulation:config.simulation,onStatus:onlineStatus,onMessage:onlineMessage});online.loaded=true;
   try{$('onlineServer').value=localStorage.getItem('pixelGP.onlineServer.v1')||config.serverUrl||'';}catch(error){$('onlineServer').value=config.serverUrl||'';}
   for(const [id,items] of [['onlineModel',Object.entries(CAR_MODELS).map(([value,item])=>[value,item.name])],['onlinePaint',Object.entries(CAR_PAINTS).map(([value,item])=>[value,item.name])],['onlineTrack',tracks.map((item,i)=>[String(i),item.name])]]){for(const [value,label] of items){const option=document.createElement('option');option.value=value;option.textContent=label;$(id).append(option);}}
@@ -1761,7 +1762,10 @@ function finishOnlineRace(message){
  $('resultText').textContent='Misma clasificación para todos · Sin modificar récords o campeonato locales';$('nextBtn').textContent='VOLVER A LA SALA';$('nextBtn').onclick=openOnlineLobby;$('resultTitle').focus({preventScroll:true});$('restartBtn').disabled=false;
 }
 $('onlineSetupBtn')?.addEventListener('click',openOnlineLobby);
-$('onlineClose')?.addEventListener('click',()=>$('onlineLobby').close());
+function cancelOnlineConnect(){if(online?.connecting){online.transport.close();onlineStatus('idle','CONEXIÓN CANCELADA · PODÉS VOLVER A INTENTAR');}}
+$('onlineCancel')?.addEventListener('click',cancelOnlineConnect);
+$('onlineLobby')?.addEventListener('cancel',cancelOnlineConnect);
+$('onlineClose')?.addEventListener('click',()=>{cancelOnlineConnect();$('onlineLobby').close();});
 $('onlineCreate')?.addEventListener('click',()=>connectOnline('create'));$('onlineJoin')?.addEventListener('click',()=>connectOnline('join'));
 $('onlineChoose')?.addEventListener('click',()=>online?.transport.send({type:'choose',model:$('onlineModel').value,paint:$('onlinePaint').value}));
 $('onlineConfigure')?.addEventListener('click',()=>online?.transport.send({type:'configure',config:{track:Number($('onlineTrack').value),barriers:$('onlineBarriers').value,laps:Number($('onlineLaps').value),maxPlayers:Number($('onlineCapacity').value)}}));

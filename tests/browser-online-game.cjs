@@ -22,7 +22,7 @@ const bridge=`window.onlineUiTest={state(){return {active:online?.active,room:on
    const context=await browser.newContext({viewport:{width:1366,height:900}});contexts.push(context);
    await context.addInitScript(()=>{window.testPad={id:'Standard emulated controller',index:0,connected:true,mapping:'standard',axes:[0,0],buttons:Array.from({length:18},()=>({value:0,pressed:false,touched:false}))};navigator.getGamepads=()=>[window.testPad];});
    await context.route('https://fonts.googleapis.com/**',route=>route.abort());const page=await context.newPage();pages.push(page);page.on('pageerror',e=>errors.push(e.message));
-   await page.goto(base+'/f1/');await page.selectOption('#graphics','lite');await page.click('#onlineSetupBtn');await page.waitForFunction(()=>!document.getElementById('onlineCreate').disabled);await page.fill('#onlineServer',url.http);await page.fill('#onlineName',i===2?'<img src=x onerror=alert(1)>'.slice(0,20):'Piloto '+(i+1));
+   await page.goto(base+'/f1/');await page.selectOption('#graphics','lite');await page.click('#onlineSetupBtn');await page.waitForFunction(()=>!document.getElementById('onlineCreate').disabled);assert.equal(await page.locator('#onlineServer').inputValue(),require('../online-config.json').serverUrl);await page.fill('#onlineServer',url.http);await page.fill('#onlineName',i===2?'<img src=x onerror=alert(1)>'.slice(0,20):'Piloto '+(i+1));
    if(i===0){await page.selectOption('#stageSelect','2');await page.click('#onlineCreate');}
    else{const code=await pages[0].locator('#onlineRoomCode').textContent();await page.fill('#onlineCode',code);await page.click('#onlineJoin');}
    await page.waitForSelector('#onlineRoom:not(.hidden)');await page.selectOption('#onlineInput',i===2?'keyboard':'pad0');

@@ -1,6 +1,6 @@
 # PIXEL GRAND PRIX — diseño de online privado
 
-**Estado en 0.80: backend y cliente del juego integrados; sin hosting público predeterminado.** Salas privadas desde el menú, snapshots representados en Canvas, cámara/HUD por identidad, interpolación, reconexión automática y resultados/revancha. Cuatro navegadores con UI completan vueltas instrumentadas. Predicción/reconciliación y pruebas reales de latencia/hosting siguen abiertas. Ver `HOSTING.md` y `tests/experiments/ONLINE_CLIENT_080.md`.
+**Estado en 0.81: backend/cliente integrados y URL pública aportada por el usuario configurada.** Conexión inicial con 90 s de espera/reintentos cancelables; reconexión activa acotada por separado y timeline de presentación monotónico. El proxy del entorno bloqueó el acceso público con CONNECT 403; no se comprobó handshake ni carrera sobre Render. Predicción/reconciliación y latencia humana aún pendientes.
 
 ## Primera entrega completa que se busca
 
@@ -119,3 +119,11 @@ Interpolación de presentación con margen de seis ticks (≈100 ms), orientaci�
 La huella esperada del cliente está en `online-config.json`, generada/verificada con `server/scripts/client-config.cjs` desde los cuatro archivos canónicos. No se acepta ciegamente la huella anunciada por un servidor diferente. URL configurable, credenciales prohibidas en endpoint, WSS obligatorio desde HTTPS. Cliente/JSON se cargan solo al abrir online; servidor caído no inutiliza los modos offline.
 
 Hosting propuesto: Render Web Service Free para pruebas + Pages estático, receta `render.yaml`; aún sin servicio contratado ni validación pública. Al recibir URL puede fijarse `online-config.json.serverUrl`; no colocar tokens de proveedor en frontend. Siguiente 33.2: latencia/jitter, predicción/reconciliación y despliegue revisado con carreras humanas.
+
+## Primer tramo 33.2 en 0.81
+
+La primera conexión admite 90 s para que un servicio suspendido responda; antes de welcome se puede reintentar sin haber enviado create/join. Después de welcome no se repite una creación incierta. Cancelar limpia timers/socket/acción pendiente y mensajes de un socket anterior no pueden crear una sala posterior. La reconexión activa conserva 8,5 s del cliente, dentro de los diez del servidor; recibir welcome no elimina el plazo de confirmar `session`.
+
+El playhead de interpolación crece monótonamente, se acota al tick más reciente y se reinicia por `raceId`. Un snapshot retrasado no arrastra el render hacia atrás; el movimiento real en reversa sigue permitido. Aún no es predicción del piloto propio ni corrección de estados físicos. Timers inyectables solo para pruebas, sin reloj impuesto al servidor por mensajes del cliente.
+
+URL predeterminada: `https://pixel-grand-prix-rooms.onrender.com`. Sin cambios de protocolo/huella; salud pública no comprobada por restricción del proxy. Ver `HOSTING.md` y `tests/experiments/CONNECTION_081.md`.

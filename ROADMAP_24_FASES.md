@@ -2,7 +2,7 @@
 
 La planificación abierta vigente continúa en [`ROADMAP_EVOLUCION.md`](ROADMAP_EVOLUCION.md), sin límite artificial de fases. Las 24 originales y sus decisiones se conservan aquí como contexto y registro.
 
-> Estado vigente: entrega **0.80**, cliente online integrado en fase 33.1 sobre salas autoritativas 32.1. Hosting/latencia/predicción pendientes en 33.2; modos locales conservados. La sección «Estado real» inferior es histórica (0.62). Ver `ROADMAP_EVOLUCION.md` y `RELEASE_NOTES.md`.
+> Estado vigente: entrega **0.81**, primer tramo 33.2 con URL configurada, espera/cancelación de conexión y corrección de jitter. Predicción/reconciliación y validación pública pendientes; modos locales conservados. El «Estado real» inferior es histórico (0.62). Ver `ROADMAP_EVOLUCION.md` y `RELEASE_NOTES.md`.
 
 ## Objetivo de diseño
 
