@@ -1,8 +1,8 @@
-# Simulación compartida — estado 0.74
+# Simulación compartida — estado 0.78
 
 `driving-core.js` es el primer bloque extraído del motor real. Lo usa `script.js` para conducir en el navegador y puede importarse directamente en Node. No necesita DOM, Canvas, audio, almacenamiento, reloj externo ni dependencias de npm.
 
-**Todavía no es una carrera completa ni un servidor.** Desde 0.72, geometría/barreras, consultas de terreno y posiciones de checkpoints están en `track-core.js`. Desde 0.74, `race-rules.js` aplica terreno/recuperación, contactos, gates/vueltas y eventos numerados; también consulta el plazo de cierre. El reloj/acumulador, el conjunto completo de estado y clasificación/puntos siguen en el adaptador y se consolidarán en 30.4. No hay salas online disponibles.
+**No hay servidor ni salas online disponibles.** Desde 0.72, geometría/barreras, terreno y gates están en `track-core.js`; desde 0.74, contactos/progreso en `race-rules.js`. En 0.78, `race-session.js` posee coches/reloj/ciclo de vida y clasificación/puntos base, se integra en el navegador y ejecuta carreras completas en Node. Cámaras/audio/partículas, entradas de dispositivo, política CPU y temporada/guardado permanecen en sus adaptadores. Dos sesiones de dos coches completan vueltas independientes en las pruebas.
 
 ## Una implementación de conducción
 
@@ -128,3 +128,28 @@ La cámara táctil adapta dimensiones/anticipación sin realimentar la simulaci�
 El contrarreloj de fase 31.1 usa `race-rules.onLap` para aceptar una vuelta y un grabador `ghost-lap.js` sin DOM/reloj. `script.js` posee almacenamiento y playback de poses. El fantasma no pertenece a la lista de coches ni llama a física, colisiones, gates o audio; el tiempo de reproducción se ajusta al retardo visual existente. No hay un segundo modelo dinámico.
 
 Esto no implementa la repetición determinista de entradas/eventos ni el estado completo de carrera de 30.4. Los datos de poses son una referencia local validada por esquema, no evidencia de un resultado competitivo ante un servidor. Siguen pendientes aislamiento del reloj/estado/resultados y dos carreras independientes antes de salas.
+
+
+## RaceSession 0.78 — propiedad y contrato
+
+La fábrica clásica/CJS `PixelRaceSession.create()` recibe `world`, `geometry`, `driving`, `rulesModule`, `laps`, `raceId` y hooks opcionales. Geometría/modelos/reglas son las implementaciones originales compartidas. No importa DOM, Canvas, almacenamiento, fecha, RNG ni red. El host es dueño del estado mutable de cada sesión; los mensajes de un cliente remoto no deben poder escribirlo.
+
+| API | Responsabilidad |
+|---|---|
+| `createVehicle({player,model,isAI})`, `setVehicles(grid)` | Estado inicial canónico, copia de parrilla, modelos/identidades/valores básicos validados; parrilla bloqueada al iniciar. Metadatos de presentación los añade el adaptador. |
+| `start(countdown)`, `restart(countdown)`, `stop(reason)`, `setPaused(value)` | Ciclo de vida y limpieza del acumulador; reinicio desde la copia de salida. El navegador crea otra sesión con otra identidad al reiniciar/cambiar pista. |
+| `frame(dt, inputs)` | Cuenta regresiva o avance; el frame que da GO se consume igual que antes. |
+| `advanceFrame(dt, inputs)` | Solo simulación activa, paso 1/60, máximo seis pasos de recuperación, sin avanzar una carrera cerrada. |
+| `advanceVehicle(car,index,dt)`, `rules` | Componentes de bajo nivel para el adaptador/pruebas; el servidor de partidas debe usar el paso completo. No son un parser de red. |
+| `finishState()`, `classification()`, `points(car,index)`, `results()` | Plazo de cierre original; posición estable; puntos base 25/18/15/12; resultados separados y congelados. La asignación a temporada corresponde al modo/campeonato del adaptador. |
+| `snapshot()` | Copia serializable de configuración/tiempos y campos físicos/de progreso. No incluye partículas ni el estado interno completo del planificador CPU. No es todavía un formato de restauración de replay. |
+
+Cada evento incorpora `raceId` y secuencia de sesión creciente. Los eventos de reglas conservan además `ruleSequence`. El host debe proporcionar identidades únicas para sus salas/partidas; la identidad local no es una credencial. El flujo de callbacks no retiene una cola ilimitada. La cuenta regresiva, pausas y parada producen eventos de ciclo de vida; las señales del audio local siguen reproduciéndose una sola vez.
+
+Sin `controller`, la sesión normaliza acelerador/freno/dirección/mano y utiliza `driving.humanControls`. El adaptador del navegador aporta su controlador actual para teclado/mando/táctil/CPU. La política CPU aún captura el contexto de la única carrera local activa y no se presenta como planificador aislado listo para varias salas con bots. El primer online será humano contra humano.
+
+`beforeStep` permite capturar poses de render; `afterVehicle` conserva efectos; el núcleo descuenta cooldown de impactos después de ese hook y antes de los contactos del grupo. `afterStep` mantiene efectos de suelo/ghost en el navegador. Los generadores visuales aleatorios no se trasladan al motor de servidor.
+
+El código de producción usa `raceState.*`, sin copias paralelas de los antiguos relojes/coches. Las pruebas anteriores instalan aliases únicamente en su script instrumentado mediante `tests/helpers/race-state-bridge.cjs`; esos aliases acceden a la sesión real y no forman parte del HTML publicado. `without-race-session.mjs` revierte solo la migración declarada y se compara con el script auténtico de 0.77 para los fixtures históricos.
+
+Validación: `node tests/validate-race-session.mjs` (opcional `SESSION_SOURCE_BASELINE` con 0.77 auténtico), teclado nativo, contactos, carreras completas CJS e intercaladas y regresiones de modos/entrada. Resultados en `tests/experiments/SESSION_078.md`. Siguen protocolo/autoridad de mensajes, salas, predicción/reconciliación, desconexiones, restauración de replay y despliegue; el snapshot no convierte datos del navegador en resultados confiables.

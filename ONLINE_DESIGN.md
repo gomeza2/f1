@@ -1,6 +1,6 @@
 # PIXEL GRAND PRIX — diseño de online privado
 
-**Estado en 0.74: conducción, geometría y reglas de contactos/progreso compartidas; sin servidor ni carreras online disponibles.** `driving-core.js`, `track-core.js` y `race-rules.js` funcionan en navegador y Node. Eventos numerados y plazo de cierre compartidos. Falta el estado completo/reloj/resultados de una carrera independiente. Ver [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md). Los modos/UX de 0.73 permanecen integrados.
+**Estado en 0.78: sesión de carrera compartida integrada; sin servidor ni salas disponibles.** `race-session.js` posee coches, reloj fijo, ciclo de vida y resultados sobre los módulos originales de conducción/geometría/reglas. Se comprobaron dos carreras completas de dos coches intercaladas en Node, con tiempos y resultados iguales a su ejecución separada. UI, audio, dispositivos y política CPU actual siguen en el adaptador. Ver [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md) y `tests/experiments/SESSION_078.md`.
 
 ## Primera entrega completa que se busca
 
@@ -8,12 +8,20 @@ Salas privadas de 2–4 personas: crear, compartir código, unirse, elegir coche
 
 Pages puede seguir sirviendo el cliente. Las salas necesitan un proceso separado con HTTPS/WSS; Pages por sí solo no ejecuta ese servidor persistente. No se añade un botón ONLINE que no pueda completar una partida.
 
-## Dependencia técnica inmediata — fase 30
+## Base integrada en 0.78
 
-Extraer una única simulación compartida, sin mantener dos físicas distintas:
+El servidor puede construir una instancia `race-session.create({world,geometry,driving,rulesModule,raceId,laps})`, crear/copiar parrilla con `createVehicle`/`setVehicles`, llamar `start(3)` y avanzar `frame(1/60, inputs)` con controles humanos normalizados. Obtiene `snapshot`, `finishState` y `results`; no necesita ejecutar `script.js` ni un DOM simulado. Los participantes no proporcionan posiciones, vueltas, tiempos, modelos físicos ni `dt` como autoridad. El estado es interno del host.
 
-- `createRace(config)` produce un estado por sala, con coches, vueltas, gates, reloj, planes CPU y configuración bloqueada.
-- `stepRace(state, inputs, 1/60)` avanza el mismo núcleo en cliente/Node y devuelve eventos numerados de checkpoint, vuelta, impacto y final.
+El transporte deberá validar tipos/límites/frecuencia/orden de inputs, asignar pilotos y modelos, bloquear la configuración y generar identidades únicas. `raceId + sequence` separa eventos de partidas; no autentica al remitente. Un snapshot es lectura de física/progreso, no un formato de restauración de IA completa ni un resultado firmado. El controlador CPU del cliente todavía no se usa para varias salas de servidor; primer hito con 2–4 humanos.
+
+Siguiente entrega 32.1: servidor local autoritativo y salas/listos/inputs/resultados con contrato probado por clientes independientes. Después integrar navegador, interpolación/reconciliación y reconexión en 33. El despliegue externo y sus costes se preparan cuando exista un artefacto de servidor probado. No se anuncia disponibilidad pública antes de eso.
+
+## Criterios de fase 30 y obligaciones del servidor
+
+La primera sesión integrada cubre estado/reloj/gates/resultados para entradas humanas; el servidor debe conservar estas garantías:
+
+- `race-session.create(config)` produce un estado por partida con coches, vueltas, gates, reloj y configuración bloqueada. Los planes CPU de servidor se incorporarán por un controlador aislado, separado del callback de la única carrera local.
+- `session.frame(1/60, inputs)` avanza el mismo núcleo en cliente/Node; emite eventos numerados y expone cierre/resultados. El host decide cuándo publicar el resultado de la partida.
 - Geometría de pistas/barreras y especificaciones son datos compartidos inmutables; estado de cada carrera es independiente. Ni `stage`, ni `cars`, ni temporizadores globales pueden compartirse entre salas.
 - El cliente identifica su coche por `selfPilotId`; cámara, HUD y controles no deben asumir que su asiento de servidor es el índice cero.
 - Canvas, audio, partículas decorativas y localStorage quedan en el adaptador del navegador. No se ejecutará un DOM falso o un navegador en el servidor.
@@ -92,4 +100,4 @@ La rápida y el campeonato offline ya tienen resultados separados; local 2–4 a
 La preparación local visible no es una sala ni sincroniza salida entre clientes. El lobby de red deberá confirmar configuración/listos y carga de pista de cada participante antes de la cuenta regresiva autoritativa, con timeout/desconexión explícitos. La elección 2D/3D será de presentación por cliente; las variantes arcade que cambien reglas deberán ser acordadas por sala y versionadas.
 
 
-Los eventos compartidos 0.74 tienen secuencia local al contexto. El transporte deberá adjuntar un `raceId` de servidor para deduplicar y evitar mezclar temporadas o reinicios; la secuencia por sí sola no es identidad global. `time` lo proporciona el futuro reloj autoritativo, nunca un timestamp aceptado del cliente. El hook de récord local es solo anotación/feedback y no valida resultados online. Falta implementar esta envoltura de sala, no se presupone disponible por la extracción.
+Los eventos brutos de reglas 0.74 conservan su secuencia local. Desde 0.78 la sesión los envuelve con `raceId + sequence` y conserva `ruleSequence`; el servidor deberá proporcionar identidades únicas por partida y deduplicar esa clave, sin volver a usar la secuencia de reglas como identidad global. `time` lo calcula el reloj de la sesión del servidor, nunca un timestamp aceptado del cliente. El hook de récord local sigue siendo anotación/feedback. Falta el servidor/protocolo de sala: disponer de esta envoltura de eventos no significa que haya conexión online.

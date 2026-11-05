@@ -1,10 +1,18 @@
-# PIXEL GRAND PRIX — entrega 0.77
+# PIXEL GRAND PRIX — entrega 0.78
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Sesión de simulación compartida en 0.78
+
+`race-session.js` integra coches/configuración por instancia, 60 Hz y acumulador acotado, cuenta regresiva/pausa/reinicio, paso de vehículos y grupo, plazo de llegada, clasificación, puntos base, eventos con `raceId + sequence`, snapshots separados y resultados congelados. Navegador y Node consumen exactamente los mismos módulos físicos. El inicio bloquea la parrilla y copia sus datos; la interfaz reemplaza y detiene la sesión anterior al cambiar/reiniciar carrera.
+
+Se trasladan los estados sueltos de `script.js` a la sesión real. Se preserva el orden de efectos, cooldown de impactos y contactos; se evita seguir adelantando el reloj después del cierre. Se mantienen fuerzas/modelos/CPU/pistas/récords, temporada, rápida, contrarreloj, local y táctil. El calendario/guardado/renderer y la política CPU permanecen en sus adaptadores.
+
+Recursos y recuperación ante HTML anterior coherentes 0.78. No se anuncia online ni se agrega un botón de sala: falta servidor/transporte/protocolo/listos/reconexión de 32/33. Evidencia, comparación auténtica con 0.77 y límites en `tests/experiments/SESSION_078.md`.
 
 ## Rally Canyon y materiales en 0.77
 

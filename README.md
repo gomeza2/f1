@@ -2,6 +2,16 @@
 
 Juego web arcade de carreras 2D desde arriba, con identidad retro propia, circuitos de formas variadas, rivales controlados por CPU, derrapes, superficies y campeonato.
 
+## Nuevo en 0.78 — sesiones de carrera independientes
+
+El juego utiliza `race-session.js` para poseer coches, reloj fijo, cuenta regresiva, pausa, contactos, vueltas, clasificación y puntos base de llegada. La misma sesión se ejecuta directamente en Node con `driving-core.js`, `track-core.js` y `race-rules.js`. Se conserva la conducción, el campeonato, contrarreloj/fantasma, local 2–4, táctil, catorce pistas y récords p6/b1/s1.
+
+Cada sesión tiene identidad, eventos ordenados, estado propio, snapshots separados y resultados que no pueden modificarse. Se comprobaron carreras completas intercaladas sin compartir relojes, coches, vueltas o resultados; las carreras cerradas dejan de acumular tiempo aunque el anfitrión vuelva a pedir otro frame. La interfaz conserva cámaras/audio/partículas, entradas locales y temporada; el núcleo no necesita un navegador ficticio para funcionar.
+
+Esto prepara el servidor autoritativo. **Todavía no hay salas online disponibles.** La CPU actual conserva su controlador en el adaptador; las primeras salas se diseñan para humanos. Transporte, salas/listos, desconexión/reconexión, sincronización y validación de mensajes quedan en 32/33. La repetición de poses local no se convierte por esto en replay completo de entradas/eventos ni en ranking seguro.
+
+Arquitectura y API: [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md). Pruebas y límites: [SESSION_078.md](tests/experiments/SESSION_078.md).
+
 ## Nuevo en 0.77 — Rally Canyon más largo y con otro ritmo
 
 El circuito **12 · RALLY CANYON** conserva su nombre y superficie de tierra, con un trazado nuevo de 9.031 unidades del mundo (antes 4.005), recta larga de salida, dos retornos y una secuencia técnica al sur. El ancho útil varía de 68 a 128 unidades y los trece checkpoints evitan saltarse ramales. Sigue abierto por defecto; admite las cinco opciones de barreras. Las vueltas automatizadas de referencia rondan 48–60 s según coche/dificultad, sin fijar un tiempo objetivo humano.

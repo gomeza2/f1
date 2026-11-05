@@ -30,7 +30,7 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 - Conducción/derrape, CPU justa, audio, cuatro circuitos uniformes, gráficos y local siguen abiertos y se alternarán por impacto. No reducir todo el trabajo a CPU ni dar por terminada la sensación humana por tests.
 - Vista 3D inclinada opcional en fase 37, solicitada para más adelante; no reemplazará por obligación la vista cenital actual.
 
-Estado vigente 0.77: once rutas de ancho variable; Champion Road, Meadow Run e Industrial Mix conservan ancho uniforme. Contrarreloj/fantasma local integrado desde 0.76. Online sigue pendiente de 30.4 y servidor/salas 32/33.
+Estado vigente 0.78: sesión de carrera compartida integrada en 30.4, con dos carreras completas independientes verificadas. Siguiente: servidor/salas 32.1 y sincronización 33. Once rutas de ancho variable; Champion Road, Meadow Run e Industrial Mix conservan ancho uniforme. Contrarreloj/fantasma local desde 0.76. No hay online disponible todavía.
 
 ## Fases abiertas
 
@@ -105,7 +105,7 @@ Avance 0.54: prioridad lateral para un rival solapado aunque haya un líder algo
 
 ### 30. Simulación y eventos mantenibles
 
-Estado 0.74: 30.1 conducción, 30.2 geometría y reglas de contactos/progreso/eventos de 30.3 integradas con paridad. Reloj/estado/resultados y aislamiento/replay pendientes en 30.4. El paso fijo/interpolación ya está integrado desde 0.58, sin cerrar el núcleo completo por eso.
+Estado 0.78: 30.1 conducción, 30.2 geometría, 30.3 reglas y primera entrega 30.4 de sesión completa integradas. Coches/reloj/ciclo de vida/resultados propios por instancia, carreras CJS e intercaladas verificadas con paridad. La política CPU y temporada siguen en el adaptador; restauración de replay, protocolo y sincronización pendientes. Primera sala online prevista para humanos, sin planificador de bots de servidor todavía.
 
 - Extraer paso de simulación/controles normalizados sin DOM, Canvas, audio ni localStorage. Emitir eventos de checkpoint/vuelta/choque/final para sus consumidores.
 - Actualización fija con acumulador, límite de recuperación tras pausas y render interpolado; medir antes de elegir frecuencia y presupuesto.
@@ -477,3 +477,14 @@ Implementado y comprobado automáticamente: geometría/corredor, 62 vueltas de n
 Fase 27 continúa parcial: **Champion Road, Meadow Run e Industrial Mix** siguen uniformes; variedad y diversión necesitan conducción humana, no solo medición de formas. Las otras trece rutas y las fuerzas/IA/coches se conservan.
 
 **Siguiente entrega técnica recomendada: 30.4**, estado/reloj/cuenta regresiva/resultados y dos carreras completas independientes. Después servidor autoritativo/salas 32/33. No hay online disponible todavía. Alternar con aceptación de manejo/derrape, timbre del motor y gráficos, sin convertir cada actualización en ajuste de CPU.
+
+
+## Avance 0.78 — fase 30.4, sesión de carrera compartida
+
+Implementado `race-session.js` e integrado en la carrera real: coches/configuración propios, reloj fijo/acumulador, salida/pausa/reinicio/parada, pipeline de vehículos/contactos, plazo de cierre, clasificación/puntos base, snapshots separados y resultados congelados. Eventos `raceId + sequence` y secuencia de reglas conservada. No se duplica física; se respeta la posición del cooldown de impactos antes del contacto del grupo. Una llamada posterior al cierre ya no adelanta el cronómetro.
+
+Comprobado: paridad con 0.77 en 16 casos/modelos/materiales y 22 contactos; dos carreras completas de dos coches en Node intercaladas frente a separadas (24 vueltas válidas), eventos/relojes/coches/resultados/pausa/reinicio independientes. Teclado nativo conserva 96 estados; pasan contrarreloj, Rally, local, táctil, modos y entrega. Evidencia/alcance en `tests/experiments/SESSION_078.md`.
+
+Estado de fase 30: núcleo aislado disponible para partidas humanas; la extracción no cierra planificador CPU de servidor, restauración de replay ni sincronización. La temporada/guardado/renderer son responsabilidades del adaptador. No se declara online terminado ni bots de varias salas por usar dos controladores de prueba.
+
+**Siguiente entrega: 32.1**, servidor autoritativo local con salas privadas, códigos, pilotos/listos, inputs y resultados; comprobar varios clientes independientes antes de integrar/publicar acceso online. Después fase 33 para sincronización/reconexión. Manejo/derrape/audio, tres pistas uniformes y gráficos siguen abiertos, conservando los modos jugables actuales.

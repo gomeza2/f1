@@ -1,3 +1,4 @@
+const raceStateBridge=require('./helpers/race-state-bridge.cjs');
 // Real Chromium keyboard/layout checks. Game state and standard-pad hardware are test-only probes.
 const {chromium}=require('playwright');
 const fs=require('node:fs'),http=require('node:http'),path=require('node:path'),assert=require('node:assert/strict');
@@ -6,9 +7,9 @@ const bridge=`window.localTest={get cars(){return cars.map(c=>({player:c.player,
 const server=http.createServer((req,res)=>{
  const name=new URL(req.url,'http://localhost').pathname.slice(1)||'index.html';
  if(name==='favicon.ico'){res.writeHead(204).end();return}
- if(!['index.html','style.css','driving-core.js','track-core.js','race-rules.js','ghost-lap.js','engine-audio.js','script.js'].includes(name)){res.writeHead(404).end();return}
+ if(!['index.html','style.css','driving-core.js','track-core.js','race-rules.js','race-session.js','ghost-lap.js','engine-audio.js','script.js'].includes(name)){res.writeHead(404).end();return}
  res.setHeader('Content-Type',name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':'text/html');
- let body=fs.readFileSync(path.join(root,name),'utf8');if(name==='script.js')body=body.replace(/\}\)\(\);\s*$/,bridge+'})();');res.end(body);
+ let body=fs.readFileSync(path.join(root,name),'utf8');if(name==='script.js')body=body.replace(/\}\)\(\);\s*$/,raceStateBridge+bridge+'})();');res.end(body);
 });
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));

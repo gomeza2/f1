@@ -1,3 +1,4 @@
+import {withoutRaceSession} from './without-race-session.mjs';
 const edits=[
  [
   "// Preserve older route/physics times without making their ghosts active on a new route.\nfunction historicalTrialKey(key){\n if(typeof key!=='string'||key.length>128)return false;\n const match=/^(.+?)(?:@[1-9]\\d{0,3})?:p[1-9]\\d{0,3}(?::r[1-9]\\d{0,3})?:s[1-9]\\d{0,3}:b[1-9]\\d{0,3}\\|([a-z]+)\\|(open|full|half|corners)$/.exec(key);\n return !!match&&tracks.some(item=>item.name===match[1])&&Object.hasOwn(CAR_MODELS,match[2]);\n}\nfunction readTrialStore(){",
@@ -29,6 +30,7 @@ const edits=[
  ]
 ];
 export function withoutRallyDelivery(source){
+ source=withoutRaceSession(source);
  if(!source.includes('function historicalTrialKey(key)'))return source;
  for(const [current,previous] of [...edits].reverse()){if(!source.includes(current))throw Error('Rally delivery migration anchor changed');source=source.replace(current,previous);}
  return source.replace("set('v','0.77')","set('v','0.76')");
