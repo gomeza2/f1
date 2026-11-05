@@ -1,6 +1,6 @@
 # PIXEL GRAND PRIX — diseño de online privado
 
-**Estado en 0.78: sesión de carrera compartida integrada; sin servidor ni salas disponibles.** `race-session.js` posee coches, reloj fijo, ciclo de vida y resultados sobre los módulos originales de conducción/geometría/reglas. Se comprobaron dos carreras completas de dos coches intercaladas en Node, con tiempos y resultados iguales a su ejecución separada. UI, audio, dispositivos y política CPU actual siguen en el adaptador. Ver [SIMULATION_ARCHITECTURE.md](SIMULATION_ARCHITECTURE.md) y `tests/experiments/SESSION_078.md`.
+**Estado en 0.79: backend autoritativo local implementado; cliente del juego y despliegue pendientes.** `server/` ejecuta `race-session.js` con las reglas originales, sin DOM. Salas/listos/elección/inputs/resultados/reconexión comprobados con sockets reales y cuatro navegadores instrumentados. Contrato operativo: [server/README.md](server/README.md). Evidencia: [ROOMS_079.md](tests/experiments/ROOMS_079.md). No hay botón online en el juego ni servicio público anunciado.
 
 ## Primera entrega completa que se busca
 
@@ -12,9 +12,9 @@ Pages puede seguir sirviendo el cliente. Las salas necesitan un proceso separado
 
 El servidor puede construir una instancia `race-session.create({world,geometry,driving,rulesModule,raceId,laps})`, crear/copiar parrilla con `createVehicle`/`setVehicles`, llamar `start(3)` y avanzar `frame(1/60, inputs)` con controles humanos normalizados. Obtiene `snapshot`, `finishState` y `results`; no necesita ejecutar `script.js` ni un DOM simulado. Los participantes no proporcionan posiciones, vueltas, tiempos, modelos físicos ni `dt` como autoridad. El estado es interno del host.
 
-El transporte deberá validar tipos/límites/frecuencia/orden de inputs, asignar pilotos y modelos, bloquear la configuración y generar identidades únicas. `raceId + sequence` separa eventos de partidas; no autentica al remitente. Un snapshot es lectura de física/progreso, no un formato de restauración de IA completa ni un resultado firmado. El controlador CPU del cliente todavía no se usa para varias salas de servidor; primer hito con 2–4 humanos.
+El transporte 0.79 valida tipos/límites/frecuencia/orden de inputs, asigna pilotos y modelos, bloquea la configuración y genera identidades únicas. `raceId + sequence` separa eventos de partidas; no autentica al remitente. Un snapshot es lectura de física/progreso, no un formato de restauración de IA completa ni un resultado firmado. El controlador CPU del cliente todavía no se usa para varias salas de servidor; primer hito con 2–4 humanos.
 
-Siguiente entrega 32.1: servidor local autoritativo y salas/listos/inputs/resultados con contrato probado por clientes independientes. Después integrar navegador, interpolación/reconciliación y reconexión en 33. El despliegue externo y sus costes se preparan cuando exista un artefacto de servidor probado. No se anuncia disponibilidad pública antes de eso.
+32.1 implementada en 0.79: servidor local autoritativo y salas/listos/inputs/resultados con contrato probado por clientes independientes. Siguiente 33.1: integrar el cliente del juego, interpolación/reconciliación y reconexión visible. El despliegue externo y sus costes se preparan cuando exista un artefacto de servidor probado. No se anuncia disponibilidad pública antes de eso.
 
 ## Criterios de fase 30 y obligaciones del servidor
 
@@ -101,3 +101,11 @@ La preparación local visible no es una sala ni sincroniza salida entre clientes
 
 
 Los eventos brutos de reglas 0.74 conservan su secuencia local. Desde 0.78 la sesión los envuelve con `raceId + sequence` y conserva `ruleSequence`; el servidor deberá proporcionar identidades únicas por partida y deduplicar esa clave, sin volver a usar la secuencia de reglas como identidad global. `time` lo calcula el reloj de la sesión del servidor, nunca un timestamp aceptado del cliente. El hook de récord local sigue siendo anotación/feedback. Falta el servidor/protocolo de sala: disponer de esta envoltura de eventos no significa que haya conexión online.
+
+## Contrato operativo 0.79 (prevalece sobre propuestas anteriores)
+
+Protocolo v1, huella SHA-256 de los cuatro archivos de simulación, JSON estricto por `/ws`. El cliente confirma protocolo/huella antes de crear/unirse/reanudar; es compatibilidad, no autenticación de código confiable. `ready` y `start` incluyen `revision`; todo cambio de parrilla/configuración invalida listos. `configure.config.maxPlayers` admite 2–4 y `laps` 1–9. El servidor crea `raceId`, cronómetro, progreso y resultados; el cliente solo aporta controles normalizados y secuencia ascendente. Snapshots a 20 Hz incluyen tick, ack por piloto y eventos numerados.
+
+El token de reanudación es privado de cada piloto, cambia al reanudar y caduca después de diez segundos sin conexión. No aparece en room/snapshot/resultados/health/URL ni se persiste. Al caducar, DNF sin puntos y sin colisión; no se inventa llegada. Si la red cae durante salida se cancela a lobby. El servidor limita conexiones, salas, carreras, tamaños y frecuencia; frena inputs vencidos sin reversa. El digest de resultados permite comparar el mismo mensaje: **no es firma ni prueba para un ranking externo**.
+
+Servidor en memoria: reinicio pierde salas y resultados; sin cuentas, almacenamiento, ranking ni bots. Pages sirve solo el cliente estático. Antes de publicar: integrar 33.1, medir retrasos/tráfico/carga, definir HTTPS/WSS y orígenes del cliente, revisar alojamiento y costes reales. No hay contratación ni despliegue en esta entrega.

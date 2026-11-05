@@ -84,7 +84,7 @@ function updateProgress(car,loc,fromX,fromY,elapsed){
  if(car.lap>=LAPS_TO_WIN&&!car.done){car.done=true;car.finishTime=elapsed;car.speed=0;car.braking=false;}
 }
 function resolveCollisions(cars,dt,elapsed){
- const active=cars.filter(car=>!car.done),origins=new Map(active.map(car=>[car,{x:car.x,y:car.y}]));
+ const active=cars.filter(car=>!car.done&&!car.retired),origins=new Map(active.map(car=>[car,{x:car.x,y:car.y}]));
  const impacted=new Set(),moved=new Set();
  // Iterate the small grid: resolving one pair can overlap another or a wall.
  for(let pass=0;pass<16;pass++){
@@ -115,9 +115,9 @@ function resolveCollisions(cars,dt,elapsed){
  for(const car of moved){const from=origins.get(car);updateProgress(car,nearestOnTrack(car.x,car.y),from.x,from.y,elapsed);}
 }
 function finishState(cars,elapsed){
- const finishers=cars.filter(car=>car.done&&Number.isFinite(car.finishTime)).sort((a,b)=>a.finishTime-b.finishTime||a.player-b.player);
+ const finishers=cars.filter(car=>car.done&&!car.retired&&Number.isFinite(car.finishTime)).sort((a,b)=>a.finishTime-b.finishTime||a.player-b.player);
  const remaining=finishers.length?Math.max(0,18-(elapsed-finishers[0].finishTime)):null;
- return {finishers,remaining,closed:cars.length>0&&(cars.every(car=>car.done)||remaining===0)};
+ return {finishers,remaining,closed:cars.length>0&&(cars.every(car=>car.done||car.retired)||remaining===0)};
 }
 function advanceVehicle(car,controls,dt,elapsed,before=nearestOnTrack(car.x,car.y),localBend=world.curvatureAt(before.progress)){
  const model=CAR_MODELS[car.model]||CAR_MODELS.balanced;

@@ -30,7 +30,7 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 - Conducción/derrape, CPU justa, audio, cuatro circuitos uniformes, gráficos y local siguen abiertos y se alternarán por impacto. No reducir todo el trabajo a CPU ni dar por terminada la sensación humana por tests.
 - Vista 3D inclinada opcional en fase 37, solicitada para más adelante; no reemplazará por obligación la vista cenital actual.
 
-Estado vigente 0.78: sesión de carrera compartida integrada en 30.4, con dos carreras completas independientes verificadas. Siguiente: servidor/salas 32.1 y sincronización 33. Once rutas de ancho variable; Champion Road, Meadow Run e Industrial Mix conservan ancho uniforme. Contrarreloj/fantasma local desde 0.76. No hay online disponible todavía.
+Estado vigente 0.79: fase 32.1 implementada como backend local autoritativo, con salas privadas 2–4, listos/versiones, reconexión y resultados; pruebas de sockets y cuatro navegadores completas. **Siguiente 33: integrar el cliente real del juego y sincronización**, después validación con latencia y despliegue externo. No hay acceso online desde el menú ni hosting público. Once rutas de ancho variable; tres pendientes. Manejo/derrape, audio y gráficos siguen abiertos.
 
 ## Fases abiertas
 
@@ -134,7 +134,7 @@ Estado 0.78: 30.1 conducción, 30.2 geometría, 30.3 reglas y primera entrega 30
 - Comparar precios vigentes y límites con una configuración concreta antes de contratar/desplegar. Esta entrega no contrata hosting, no crea cuentas y no introduce dependencia de un servidor remoto para jugar localmente.
 - TLS, límites de conexiones/salas/mensajes, limpieza al desconectar, logs sin secretos y respaldo de datos. Resultados persistidos por servidor solo después de carrera validada; cuentas/ranking público más adelante.
 - Prevención básica: autoridad de simulación, límites de entradas y secuencia, estado de gates/vueltas y tiempos del servidor. No prometer invulnerabilidad ni llamar seguro a localStorage.
-- Estado: diseño; no existen salas, servidor ni ranking online en el producto actual.
+- Estado 0.79: backend local de 32.1 implementado y comprobado; cliente del juego/sincronización y despliegue pendientes de 33. No hay ranking online.
 
 ### 34. Progresión y editor
 
@@ -488,3 +488,12 @@ Comprobado: paridad con 0.77 en 16 casos/modelos/materiales y 22 contactos; dos 
 Estado de fase 30: núcleo aislado disponible para partidas humanas; la extracción no cierra planificador CPU de servidor, restauración de replay ni sincronización. La temporada/guardado/renderer son responsabilidades del adaptador. No se declara online terminado ni bots de varias salas por usar dos controladores de prueba.
 
 **Siguiente entrega: 32.1**, servidor autoritativo local con salas privadas, códigos, pilotos/listos, inputs y resultados; comprobar varios clientes independientes antes de integrar/publicar acceso online. Después fase 33 para sincronización/reconexión. Manejo/derrape/audio, tres pistas uniformes y gráficos siguen abiertos, conservando los modos jugables actuales.
+
+## Avance 0.79 — fase 32.1, backend de salas privadas
+
+- Implementado: HTTP/WebSocket, contrato v1 estricto y huella de simulación, salas por código, selección/configuración, listos por revisión, salida, inputs/ack, snapshots y resultados. Una sesión física original por sala, sin estados compartidos ni autoridad de posiciones en el cliente.
+- Implementado: reconexión diez segundos con rotación de token, cambio de anfitrión, freno de seguridad sin reversa, DNF al abandonar/caducar, limpieza y revancha. Límites de carga/mensajes/conexiones y cancelación ante sobrecarga. Sin persistencia del servidor ni bots.
+- Comprobado automáticamente: diez pruebas Node con WebSockets reales y salas simultáneas; cuatro contextos Chromium completan vueltas y reciben resultados idénticos. Regresiones de núcleo, teclado, local 2–4, rutas/recursos y fantasma superadas. Evidencia y límites: `tests/experiments/ROOMS_079.md`.
+- Pendiente de juego real: cliente Canvas online, latencia/jitter, reconexión visible, varios dispositivos y hosting HTTPS/WSS. Los navegadores actuales son clientes de protocolo instrumentados; no equivalen a carreras humanas online.
+
+**Siguiente entrega recomendada: 33.1**, cliente de sala integrado y visualización autoritativa usando el motor existente, cámara/HUD por identidad, interpolación y recuperación de conexión; habilitar acceso solo cuando complete una partida real. Después medir latencia y presupuesto de servidor antes de publicar. Alternar con conducción/derrape (25), audio (26), pistas uniformes (27) y gráficos (36); no se consideran cerrados por avanzar en red.

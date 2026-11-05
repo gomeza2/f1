@@ -2,6 +2,16 @@
 
 Juego web arcade de carreras 2D desde arriba, con identidad retro propia, circuitos de formas variadas, rivales controlados por CPU, derrapes, superficies y campeonato.
 
+## Nuevo en 0.79 — servidor real de salas privadas (fase 32.1)
+
+`server/` incorpora un servidor Node/WebSocket autoritativo para 2–4 humanos: código de invitación, elección de coche/pintura, configuración, confirmación de listos ligada a la revisión de la sala, salida coordinada y resultados compartidos. Ejecuta los mismos módulos físicos y checkpoints del juego, con sesiones independientes. El cliente solo envía pedales/dirección: no puede declarar su posición, vueltas o tiempos.
+
+Incluye reconexión durante diez segundos con credencial privada que se renueva, frenado de seguridad sin marcha atrás al perder entradas, abandono DNF sin puntos y límites de mensajes/conexiones. Una sobrecarga cancela la carrera en lugar de validar tiempos alterados. Se comprobaron salas simultáneas y cuatro navegadores con vueltas completas.
+
+**Esta entrega es el backend de desarrollo; todavía no se puede entrar a una sala desde el menú del juego.** No hay servicio público desplegado. La fase 33 conectará cámaras/HUD/controles con snapshots, interpolación y reconexión visible. Las pruebas de navegadores usan clientes de protocolo, reloj acelerado y conducción automática; no demuestran jugabilidad por Internet.
+
+El juego local sigue siendo estático y no necesita npm. Para probar el servidor por separado: Node >=22, `npm ci --prefix server`, `npm start --prefix server`. Contrato y operación: [server/README.md](server/README.md). Evidencia: [ROOMS_079.md](tests/experiments/ROOMS_079.md). Se conservan las catorce pistas, cuatro modelos, CPU, campeonato, contrarreloj/fantasma, local 2–4, táctil y récords p6/b1/s1. No se cambian fuerzas, audio ni trazados en esta entrega.
+
 ## Nuevo en 0.78 — sesiones de carrera independientes
 
 El juego utiliza `race-session.js` para poseer coches, reloj fijo, cuenta regresiva, pausa, contactos, vueltas, clasificación y puntos base de llegada. La misma sesión se ejecuta directamente en Node con `driving-core.js`, `track-core.js` y `race-rules.js`. Se conserva la conducción, el campeonato, contrarreloj/fantasma, local 2–4, táctil, catorce pistas y récords p6/b1/s1.

@@ -16,7 +16,7 @@
   const rules=rulesModule.create({world,geometry,driving,laps,onLap,onEvent:(event,car)=>emit(event.type,{...event,ruleSequence:event.sequence},car)});
   function createVehicle({player=0,model='balanced',isAI=false}={}){
    if(!Number.isInteger(player)||player<0||player>=32||typeof isAI!=='boolean')throw new TypeError('Invalid pilot');
-   return {player,isAI,...driving.createState(model),done:false,finishTime:null,newBestLap:false,progress:0,previousProgress:0,raceOffset:0,lap:0,lapTimes:[],lapStartTime:0,raceProgress:0,offroad:0,roadOffset:0,flash:0,nextCheckpoint:0,checkpointPasses:0,lastCheckpointTime:0};
+   return {player,isAI,...driving.createState(model),done:false,retired:false,retireReason:null,finishTime:null,newBestLap:false,progress:0,previousProgress:0,raceOffset:0,lap:0,lapTimes:[],lapStartTime:0,raceProgress:0,offroad:0,roadOffset:0,flash:0,nextCheckpoint:0,checkpointPasses:0,lastCheckpointTime:0};
   }
   function setVehicles(grid){
    if(state.running||started)throw new Error('Grid is locked after race start');
@@ -66,13 +66,18 @@
    if(car.flash>0)car.flash-=dt;
    return ground;
   }
+  function retire(player,reason='left'){
+   if(typeof reason!=='string'||!reason.length||reason.length>80)throw new TypeError('Invalid retirement reason');
+   const car=state.cars.find(car=>car.player===player);if(!car||car.done||car.retired)return false;
+   car.retired=true;car.retireReason=reason;car.speed=0;car.steer=0;car.yawRate=0;car.reverseHeld=0;car.handbrake=false;car.braking=false;emit('retired',{pilot:player,reason},car);return true;
+  }
   function finishState(){return rules.finishState(state.cars,state.elapsed);}
   function advanceFrame(frameTime,inputs=[]){
    if(!state.running||state.paused||state.countdownRemaining>0||!Number.isFinite(frameTime)||frameTime<=0||finishState().closed)return 0;
    state.accumulator=Math.min(state.accumulator+frameTime,timing.step*timing.maxSteps);let steps=0;
    while(state.accumulator+1e-9>=timing.step&&steps<timing.maxSteps){
     beforeStep(timing.step);state.elapsed+=timing.step;
-    state.cars.forEach((car,index)=>{if(!car.done)advanceVehicle(car,index,timing.step,inputs);});
+    state.cars.forEach((car,index)=>{if(!car.done&&!car.retired)advanceVehicle(car,index,timing.step,inputs);});
     rules.resolveCollisions(state.cars,timing.step,state.elapsed);afterStep(timing.step);
     state.goFlashRemaining=Math.max(0,state.goFlashRemaining-timing.step);
     state.accumulator=Math.max(0,state.accumulator-timing.step);steps++;
@@ -82,13 +87,13 @@
   }
   // Countdown consumes its display frame, matching the local game's original GO transition.
   function frame(dt,inputs=[]){if(state.countdownRemaining>0){advanceCountdown(dt);return 0;}return advanceFrame(dt,inputs);}
-  function classification(){return [...state.cars].sort((a,b)=>a.done!==b.done?(a.done?-1:1):a.done?(a.finishTime-b.finishTime||a.player-b.player):(b.raceProgress-a.raceProgress||a.player-b.player));}
-  function points(car,index){return car.done?([25,18,15,12][index]||0):0;}
-  function results(){return Object.freeze(classification().map((car,index)=>Object.freeze({player:car.player,isAI:car.isAI,model:car.model,position:index+1,done:car.done,finishTime:car.finishTime,lap:car.lap,lapTimes:Object.freeze([...car.lapTimes]),bestLap:car.lapTimes.length?Math.min(...car.lapTimes):null,points:points(car,index)})));}
-  const snapshotFields=[...new Set([...Object.keys(driving.createState()),'player','isAI','done','finishTime','lap','lapTimes','lapStartTime','progress','previousProgress','raceProgress','raceOffset','offroad','roadOffset','flash','nextCheckpoint','checkpointPasses','lastCheckpointTime'])];
+  function classification(){return [...state.cars].sort((a,b)=>!!a.retired!==!!b.retired?(a.retired?1:-1):a.done!==b.done?(a.done?-1:1):a.done?(a.finishTime-b.finishTime||a.player-b.player):(b.raceProgress-a.raceProgress||a.player-b.player));}
+  function points(car,index){return car.done&&!car.retired?([25,18,15,12][index]||0):0;}
+  function results(){return Object.freeze(classification().map((car,index)=>Object.freeze({player:car.player,isAI:car.isAI,model:car.model,position:index+1,done:car.done,retired:!!car.retired,retireReason:car.retireReason||null,finishTime:car.finishTime,lap:car.lap,lapTimes:Object.freeze([...car.lapTimes]),bestLap:car.lapTimes.length?Math.min(...car.lapTimes):null,points:points(car,index)})));}
+  const snapshotFields=[...new Set([...Object.keys(driving.createState()),'player','isAI','done','retired','retireReason','finishTime','lap','lapTimes','lapStartTime','progress','previousProgress','raceProgress','raceOffset','offroad','roadOffset','flash','nextCheckpoint','checkpointPasses','lastCheckpointTime'])];
   function snapshot(){return {config:{...config},elapsed:state.elapsed,accumulator:state.accumulator,countdownRemaining:state.countdownRemaining,goFlashRemaining:state.goFlashRemaining,running:state.running,paused:state.paused,sequence:state.sequence,cars:state.cars.map(car=>Object.fromEntries(snapshotFields.map(key=>[key,copy(car[key])])))};}
   setVehicles(vehicles);
-  return Object.freeze({config,state,rules,createVehicle,setVehicles,start,restart,stop,setPaused,resetClock,advanceCountdown,advanceVehicle,advanceFrame,frame,finishState,classification,points,results,snapshot});
+  return Object.freeze({config,state,rules,createVehicle,setVehicles,start,restart,stop,setPaused,resetClock,advanceCountdown,advanceVehicle,advanceFrame,frame,retire,finishState,classification,points,results,snapshot});
  }
  return Object.freeze({apiVersion:1,timing,create});
 });

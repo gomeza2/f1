@@ -1,8 +1,8 @@
-# Simulación compartida — estado 0.78
+# Simulación compartida — estado 0.79
 
 `driving-core.js` es el primer bloque extraído del motor real. Lo usa `script.js` para conducir en el navegador y puede importarse directamente en Node. No necesita DOM, Canvas, audio, almacenamiento, reloj externo ni dependencias de npm.
 
-**No hay servidor ni salas online disponibles.** Desde 0.72, geometría/barreras, terreno y gates están en `track-core.js`; desde 0.74, contactos/progreso en `race-rules.js`. En 0.78, `race-session.js` posee coches/reloj/ciclo de vida y clasificación/puntos base, se integra en el navegador y ejecuta carreras completas en Node. Cámaras/audio/partículas, entradas de dispositivo, política CPU y temporada/guardado permanecen en sus adaptadores. Dos sesiones de dos coches completan vueltas independientes en las pruebas.
+**Desde 0.79 hay backend local de salas privadas en `server/`; la interfaz del juego online y el despliegue siguen pendientes.** Desde 0.72, geometría/barreras, terreno y gates están en `track-core.js`; desde 0.74, contactos/progreso en `race-rules.js`. En 0.78, `race-session.js` posee coches/reloj/ciclo de vida y clasificación/puntos base, se integra en el navegador y ejecuta carreras completas en Node. Cámaras/audio/partículas, entradas de dispositivo, política CPU y temporada/guardado permanecen en sus adaptadores. Dos sesiones de dos coches completan vueltas independientes en las pruebas.
 
 ## Una implementación de conducción
 
@@ -153,3 +153,9 @@ Sin `controller`, la sesión normaliza acelerador/freno/dirección/mano y utiliz
 El código de producción usa `raceState.*`, sin copias paralelas de los antiguos relojes/coches. Las pruebas anteriores instalan aliases únicamente en su script instrumentado mediante `tests/helpers/race-state-bridge.cjs`; esos aliases acceden a la sesión real y no forman parte del HTML publicado. `without-race-session.mjs` revierte solo la migración declarada y se compara con el script auténtico de 0.77 para los fixtures históricos.
 
 Validación: `node tests/validate-race-session.mjs` (opcional `SESSION_SOURCE_BASELINE` con 0.77 auténtico), teclado nativo, contactos, carreras completas CJS e intercaladas y regresiones de modos/entrada. Resultados en `tests/experiments/SESSION_078.md`. Siguen protocolo/autoridad de mensajes, salas, predicción/reconciliación, desconexiones, restauración de replay y despliegue; el snapshot no convierte datos del navegador en resultados confiables.
+
+## Abandono de red en 0.79
+
+`session.retire(player, reason)` marca `retired`, conserva `done=false` y los tiempos/vueltas realmente obtenidos, detiene el coche y emite evento. No avanza ni colisiona después del abandono. Clasificación coloca DNF detrás de participantes activos/finalizados; puntos solo para finalizados sin abandono. `finishState` cierra también cuando todos terminaron o abandonaron. Snapshots/resultados incluyen `retired` y `retireReason`; la API permanece en 1 por ser una ampliación.
+
+Los vehículos locales nacen con `retired=false`; no se cambia aceleración, dirección, frenado, agarre, contactos normales ni versión p6/b1/s1. Las comparativas offline conservan los estados físicos y eventos originales. La ausencia temporal de input de red la resuelve el controlador del servidor con `humanControls(..., false)`, sin fórmula física paralela ni reversa involuntaria. Las sesiones no reciben tiempo desde los mensajes de clientes.

@@ -1,0 +1,9 @@
+{
+  "name": "pixel-grand-prix-server",
+  "version": "0.79.0",
+  "private": true,
+  "description": "Authoritative private-room server using the existing Pixel GP simulation",
+  "engines": {"node": ">=22"},
+  "scripts": {"start": "node index.cjs", "test": "node --test test/*.test.cjs"},
+  "dependencies": {"ws": "8.22.1"}
+}

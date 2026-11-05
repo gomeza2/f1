@@ -1,10 +1,20 @@
-# PIXEL GRAND PRIX — entrega 0.78
+# PIXEL GRAND PRIX — entrega 0.79
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Servidor de salas privadas en 0.79
+
+Fase 32.1: servidor opcional Node >=22 con `ws` 8.22.1 fijado por lockfile. Salas privadas de 2–4 humanos con modelos/pinturas y pista/barreras/vueltas configurables. Listos y salida exigen la revisión actual; parrilla bloqueada al salir. Simulación autoritativa original a 60 Hz y snapshots a 20 Hz, con secuencias/ack y resultados decididos por servidor.
+
+Reanudación de identidad/coche durante diez segundos, rotación de credenciales, sustitución de conexión y traspaso de anfitrión. Entradas ausentes durante 350 ms aplican freno sin reversa; abandono/caducidad son DNF, sin vueltas/tiempos/puntos inventados ni coche que bloquee a los demás. El núcleo añade `retire`; no cambia la física offline. Se rechazan posiciones/resultados/dt enviados por clientes, versiones incompatibles, entradas inválidas/duplicadas, exceso de frecuencia, orígenes ajenos y payloads grandes/binarios. Límite de carrera veinte minutos; sobrecarga aborta sin resultado validado.
+
+Diez pruebas de servidor, carreras de salas simultáneas y carrera completa con cuatro contextos Chromium por WebSocket superadas; regresiones locales y paridad física conservadas. Auditoría npm sin vulnerabilidades conocidas en la dependencia instalada al comprobarla. Recursos 0.79 coherentes. Ver `AUDIT_079.md`, `server/README.md` y `tests/experiments/ROOMS_079.md`.
+
+**Pendiente fase 33:** cliente integrado en el juego, suavizado/corrección, interfaz de reconexión, pruebas con latencia real y alojamiento HTTPS/WSS. No se agrega botón ONLINE ni se presenta este backend como multijugador público terminado. Sin cuentas, persistencia de servidor, ranking firmado ni CPU de servidor.
 
 ## Sesión de simulación compartida en 0.78
 

@@ -2,7 +2,7 @@
 
 La planificación abierta vigente continúa en [`ROADMAP_EVOLUCION.md`](ROADMAP_EVOLUCION.md), sin límite artificial de fases. Las 24 originales y sus decisiones se conservan aquí como contexto y registro.
 
-> Estado vigente: entrega **0.78**, sesión de carrera compartida de fase 30.4; Rally Canyon 0.77 y contrarreloj/fantasma 0.76 conservados. La sección «Estado real» inferior corresponde al registro histórico 0.62; no describe la última build. Ver `ROADMAP_EVOLUCION.md` y `RELEASE_NOTES.md`.
+> Estado vigente: entrega **0.79**, backend local de salas privadas de fase 32.1 comprobado. Cliente del juego online y despliegue pendientes en 33; modos locales conservados. La sección «Estado real» inferior es histórica (0.62). Ver `ROADMAP_EVOLUCION.md` y `RELEASE_NOTES.md`.
 
 ## Objetivo de diseño
 

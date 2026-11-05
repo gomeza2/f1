@@ -105,5 +105,6 @@ export function withoutRaceSession(source){
  if(!source.includes('let raceSession=createRaceSession()'))return source;
  source=source.replace(/\braceState\.(cars|elapsed|running|paused|countdownRemaining|goFlashRemaining|accumulator)\b/g,(_,name)=>names[name]);
  for(const [current,previous] of [...edits].reverse()){if(!source.includes(current))throw Error('Race session migration anchor changed: '+current.slice(0,80));source=source.replace(current,previous);}
- return source.replace("set('v','0.78')","set('v','0.77')");
+ // Asset cache versions do not alter the preserved physical reference.
+ return source.replace(/dependency\.searchParams\.set\('v','[0-9.]+'\)/,"dependency.searchParams.set('v','0.77')");
 }
