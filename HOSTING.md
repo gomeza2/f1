@@ -2,9 +2,11 @@
 
 ## Elección para la primera prueba con amigos
 
-**Render · Web Service Node en plan sin suspensión**, y frontend estático en **GitHub Pages**. Es una propuesta lista para configurar, no un servicio contratado ni desplegado. WebSocket requiere un proceso persistente: GitHub Pages por sí solo no puede ejecutar las salas. Evitar un plan que duerma la instancia mientras se esperan participantes.
+**Render · Web Service Node con plan Free**, y frontend estático en **GitHub Pages**. La receta solicita el plan gratuito para las primeras pruebas; no selecciona Starter ni otros recursos pagos. No se contrató ni desplegó un servicio desde aquí. GitHub Pages por sí solo no puede ejecutar las salas.
 
-La receta `render.yaml` propone Starter/Virginia, Node 24.19.0, health check y despliegue automático desactivado. La región es una propuesta, no una medición de ping desde Argentina. Confirmar en el panel los planes/regiones/precios vigentes antes de crear el servicio; no se fija un precio mensual ni se garantiza ese catálogo. Si la latencia resulta molesta, evaluar una instancia cercana a los jugadores (por ejemplo Fly.io en São Paulo, sujeto a disponibilidad) después de medir. No hay cuentas, base de datos ni pagos incorporados al juego.
+`render.yaml` propone Free/Virginia, Node 24.19.0, health check y despliegue automático desactivado. Free puede suspenderse por inactividad y tardar en arrancar de nuevo; si el proceso se reinicia se pierden las salas en memoria. Es apropiado para probar, sin prometer disponibilidad continua. La región no implica un ping medido desde Argentina. La disponibilidad de Free, sus límites y cualquier verificación de tarjeta dependen de Render y de la cuenta; cambiar el YAML no elimina requisitos propios del proveedor.
+
+Si ya existe un servicio creado manualmente con Starter, cambiar este archivo no cambia automáticamente su plan. Revisar **Instance Type → Free** en el panel, o volver a crear/sincronizar el Blueprint desde `main` y comprobar que indique **Free** antes de continuar. No aceptar una opción paga para realizar esta prueba.
 
 ## Datos de configuración
 
@@ -14,6 +16,7 @@ En [Render Dashboard](https://dashboard.render.com/), conectar el repositorio `g
 |---|---|
 | Rama | `main` |
 | Directorio raíz | Raíz del repositorio; **no `server/`**, porque importa los módulos físicos del padre. |
+| Plan / Instance Type | **Free** |
 | Runtime | Node >=22 (receta: 24.19.0) |
 | Build | `node server/scripts/client-config.cjs --check && npm ci --prefix server --omit=dev` |
 | Start | `node server/index.cjs` |

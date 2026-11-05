@@ -10,7 +10,7 @@ El servidor decide movimiento/contactos/vueltas/resultado usando el motor origin
 
 Para jugar hace falta ejecutar/configurar un servidor compatible: no hay servicio público predeterminado todavía. El juego recuerda la dirección pública que ingresás; la credencial de reanudación vive solo en memoria y no se comparte con los rivales. HTTPS exige WSS. Si las versiones físicas no coinciden, se rechaza la conexión. En local: servir los archivos por HTTP, iniciar el backend y autorizar el origen de ese frontend; ver [server/README.md](server/README.md).
 
-**Hosting propuesto: Render Web Service en plan sin suspensión + GitHub Pages**, con receta y datos en [HOSTING.md](HOSTING.md). No se contrató ni desplegó un servidor. La URL pública se puede pegar directamente en la sala y configurar como valor predeterminado cuando exista.
+**Hosting propuesto: Render Web Service Free para pruebas + GitHub Pages**, con receta y datos en [HOSTING.md](HOSTING.md). No se contrató ni desplegó un servidor. La URL pública se puede pegar directamente en la sala y configurar como valor predeterminado cuando exista.
 
 Pruebas: cuatro navegadores con UI/Canvas y controles completan vueltas con resultados del servidor, reconexión real y cámara/HUD por identidad; modos locales/táctil/recursos conservados. Es una primera integración, sin predicción local: latencia competitiva, dispositivos humanos y alojamiento público siguen pendientes en 33.2. No se cambian físicas, CPU, audio de motor, pistas ni récords p6/b1/s1. Evidencia en [ONLINE_CLIENT_080.md](tests/experiments/ONLINE_CLIENT_080.md).
 
