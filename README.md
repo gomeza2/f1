@@ -2,13 +2,25 @@
 
 Juego web arcade de carreras 2D desde arriba, con identidad retro propia, circuitos de formas variadas, rivales controlados por CPU, derrapes, superficies y campeonato.
 
+## Nuevo en 0.80 — primeras carreras online desde el juego
+
+**ONLINE PRIVADO · 2–4 PILOTOS** abre la sala integrada: dirección de servidor, código de invitación, nombre, coche/pintura/control, configuración del anfitrión y confirmación de listos. Cada cambio reinicia la confirmación. La misma pantalla de conducción muestra el coche del piloto conectado con cámara propia, velocidad, posición, vueltas, checkpoints, tiempo y minimapa; usa teclado, mando o táctil.
+
+El servidor decide movimiento/contactos/vueltas/resultado usando el motor original. El cliente envía controles y representa snapshots con interpolación acotada, sin extrapolar posiciones indefinidamente ni guardar esos tiempos como récords locales. Cuenta regresiva, efectos visuales/audio existentes, reconexión automática con la misma identidad, resultados compartidos y regreso a la sala para revancha. Escape libera tus controles: **no pausa la carrera de los demás**. Abrir ajustes, ocultar la pestaña o perder datos recientes aplica freno de seguridad.
+
+Para jugar hace falta ejecutar/configurar un servidor compatible: no hay servicio público predeterminado todavía. El juego recuerda la dirección pública que ingresás; la credencial de reanudación vive solo en memoria y no se comparte con los rivales. HTTPS exige WSS. Si las versiones físicas no coinciden, se rechaza la conexión. En local: servir los archivos por HTTP, iniciar el backend y autorizar el origen de ese frontend; ver [server/README.md](server/README.md).
+
+**Hosting propuesto: Render Web Service en plan sin suspensión + GitHub Pages**, con receta y datos en [HOSTING.md](HOSTING.md). No se contrató ni desplegó un servidor. La URL pública se puede pegar directamente en la sala y configurar como valor predeterminado cuando exista.
+
+Pruebas: cuatro navegadores con UI/Canvas y controles completan vueltas con resultados del servidor, reconexión real y cámara/HUD por identidad; modos locales/táctil/recursos conservados. Es una primera integración, sin predicción local: latencia competitiva, dispositivos humanos y alojamiento público siguen pendientes en 33.2. No se cambian físicas, CPU, audio de motor, pistas ni récords p6/b1/s1. Evidencia en [ONLINE_CLIENT_080.md](tests/experiments/ONLINE_CLIENT_080.md).
+
 ## Nuevo en 0.79 — servidor real de salas privadas (fase 32.1)
 
 `server/` incorpora un servidor Node/WebSocket autoritativo para 2–4 humanos: código de invitación, elección de coche/pintura, configuración, confirmación de listos ligada a la revisión de la sala, salida coordinada y resultados compartidos. Ejecuta los mismos módulos físicos y checkpoints del juego, con sesiones independientes. El cliente solo envía pedales/dirección: no puede declarar su posición, vueltas o tiempos.
 
 Incluye reconexión durante diez segundos con credencial privada que se renueva, frenado de seguridad sin marcha atrás al perder entradas, abandono DNF sin puntos y límites de mensajes/conexiones. Una sobrecarga cancela la carrera en lugar de validar tiempos alterados. Se comprobaron salas simultáneas y cuatro navegadores con vueltas completas.
 
-**Esta entrega es el backend de desarrollo; todavía no se puede entrar a una sala desde el menú del juego.** No hay servicio público desplegado. La fase 33 conectará cámaras/HUD/controles con snapshots, interpolación y reconexión visible. Las pruebas de navegadores usan clientes de protocolo, reloj acelerado y conducción automática; no demuestran jugabilidad por Internet.
+**En 0.79 se entregó solo el backend; la interfaz se integró después, en 0.80.** Todavía no hay servicio público desplegado. Las pruebas de navegadores usan clientes de protocolo, reloj acelerado y conducción automática; no demuestran jugabilidad por Internet.
 
 El juego local sigue siendo estático y no necesita npm. Para probar el servidor por separado: Node >=22, `npm ci --prefix server`, `npm start --prefix server`. Contrato y operación: [server/README.md](server/README.md). Evidencia: [ROOMS_079.md](tests/experiments/ROOMS_079.md). Se conservan las catorce pistas, cuatro modelos, CPU, campeonato, contrarreloj/fantasma, local 2–4, táctil y récords p6/b1/s1. No se cambian fuerzas, audio ni trazados en esta entrega.
 

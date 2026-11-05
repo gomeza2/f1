@@ -1,8 +1,8 @@
-# Simulación compartida — estado 0.79
+# Simulación compartida — estado 0.80
 
 `driving-core.js` es el primer bloque extraído del motor real. Lo usa `script.js` para conducir en el navegador y puede importarse directamente en Node. No necesita DOM, Canvas, audio, almacenamiento, reloj externo ni dependencias de npm.
 
-**Desde 0.79 hay backend local de salas privadas en `server/`; la interfaz del juego online y el despliegue siguen pendientes.** Desde 0.72, geometría/barreras, terreno y gates están en `track-core.js`; desde 0.74, contactos/progreso en `race-rules.js`. En 0.78, `race-session.js` posee coches/reloj/ciclo de vida y clasificación/puntos base, se integra en el navegador y ejecuta carreras completas en Node. Cámaras/audio/partículas, entradas de dispositivo, política CPU y temporada/guardado permanecen en sus adaptadores. Dos sesiones de dos coches completan vueltas independientes en las pruebas.
+**Desde 0.79 hay backend local de salas privadas en `server/`; desde 0.80 el cliente online ya se integra con Canvas/HUD; el despliegue y pruebas humanas de latencia siguen pendientes.** Desde 0.72, geometría/barreras, terreno y gates están en `track-core.js`; desde 0.74, contactos/progreso en `race-rules.js`. En 0.78, `race-session.js` posee coches/reloj/ciclo de vida y clasificación/puntos base, se integra en el navegador y ejecuta carreras completas en Node. Cámaras/audio/partículas, entradas de dispositivo, política CPU y temporada/guardado permanecen en sus adaptadores. Dos sesiones de dos coches completan vueltas independientes en las pruebas.
 
 ## Una implementación de conducción
 
@@ -159,3 +159,9 @@ Validación: `node tests/validate-race-session.mjs` (opcional `SESSION_SOURCE_BA
 `session.retire(player, reason)` marca `retired`, conserva `done=false` y los tiempos/vueltas realmente obtenidos, detiene el coche y emite evento. No avanza ni colisiona después del abandono. Clasificación coloca DNF detrás de participantes activos/finalizados; puntos solo para finalizados sin abandono. `finishState` cierra también cuando todos terminaron o abandonaron. Snapshots/resultados incluyen `retired` y `retireReason`; la API permanece en 1 por ser una ampliación.
 
 Los vehículos locales nacen con `retired=false`; no se cambia aceleración, dirección, frenado, agarre, contactos normales ni versión p6/b1/s1. Las comparativas offline conservan los estados físicos y eventos originales. La ausencia temporal de input de red la resuelve el controlador del servidor con `humanControls(..., false)`, sin fórmula física paralela ni reversa involuntaria. Las sesiones no reciben tiempo desde los mensajes de clientes.
+
+## Adaptador de snapshots 0.80
+
+La carrera online avanza exclusivamente en el servidor. `online-client.js` recibe snapshots, interpola poses con historial acotado y confirma la huella de compatibilidad; no redefine aceleración/giro/frenado. El adaptador de `script.js` conserva estado visual (partículas/marcas) separado de lo transmitido y selecciona cámara/HUD por identidad del piloto. No persiste esos tiempos en récords locales ni llama al paso físico de su sesión de presentación.
+
+El transporte no envía controles durante reconexión hasta recibir el nuevo `session`; socket abierto/`welcome` por sí solos no significan que el servidor haya restaurado la pertenencia a sala. Una regresión específica cubre ese orden, además del corte/reanudación real con cuatro navegadores. Predicción/reconciliación del coche propio aún pendientes de 33.2.

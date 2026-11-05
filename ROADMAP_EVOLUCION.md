@@ -30,7 +30,7 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 - Conducción/derrape, CPU justa, audio, cuatro circuitos uniformes, gráficos y local siguen abiertos y se alternarán por impacto. No reducir todo el trabajo a CPU ni dar por terminada la sensación humana por tests.
 - Vista 3D inclinada opcional en fase 37, solicitada para más adelante; no reemplazará por obligación la vista cenital actual.
 
-Estado vigente 0.79: fase 32.1 implementada como backend local autoritativo, con salas privadas 2–4, listos/versiones, reconexión y resultados; pruebas de sockets y cuatro navegadores completas. **Siguiente 33: integrar el cliente real del juego y sincronización**, después validación con latencia y despliegue externo. No hay acceso online desde el menú ni hosting público. Once rutas de ancho variable; tres pendientes. Manejo/derrape, audio y gráficos siguen abiertos.
+Estado vigente 0.80: fase 33.1 con cliente online integrado, salas 2–4, cámara/HUD por identidad, interpolación, reconexión y resultados/revancha. Backend 32.1 conservado. **Siguiente 33.2: predicción/reconciliación y pruebas de latencia/hosting**. Hosting propuesto en `HOSTING.md`, sin despliegue público ni servidor predeterminado. Once rutas de ancho variable; tres pendientes. Conducción/derrape, audio, gráficos y aceptación humana siguen abiertos.
 
 ## Fases abiertas
 
@@ -134,7 +134,7 @@ Estado 0.78: 30.1 conducción, 30.2 geometría, 30.3 reglas y primera entrega 30
 - Comparar precios vigentes y límites con una configuración concreta antes de contratar/desplegar. Esta entrega no contrata hosting, no crea cuentas y no introduce dependencia de un servidor remoto para jugar localmente.
 - TLS, límites de conexiones/salas/mensajes, limpieza al desconectar, logs sin secretos y respaldo de datos. Resultados persistidos por servidor solo después de carrera validada; cuentas/ranking público más adelante.
 - Prevención básica: autoridad de simulación, límites de entradas y secuencia, estado de gates/vueltas y tiempos del servidor. No prometer invulnerabilidad ni llamar seguro a localStorage.
-- Estado 0.79: backend local de 32.1 implementado y comprobado; cliente del juego/sincronización y despliegue pendientes de 33. No hay ranking online.
+- Estado 0.80: backend 32.1 y cliente del juego 33.1 integrados; interpolación/reconexión iniciales. Predicción/reconciliación, pruebas de latencia, hosting y ranking público aún pendientes.
 
 ### 34. Progresión y editor
 
@@ -497,3 +497,11 @@ Estado de fase 30: núcleo aislado disponible para partidas humanas; la extracci
 - Pendiente de juego real: cliente Canvas online, latencia/jitter, reconexión visible, varios dispositivos y hosting HTTPS/WSS. Los navegadores actuales son clientes de protocolo instrumentados; no equivalen a carreras humanas online.
 
 **Siguiente entrega recomendada: 33.1**, cliente de sala integrado y visualización autoritativa usando el motor existente, cámara/HUD por identidad, interpolación y recuperación de conexión; habilitar acceso solo cuando complete una partida real. Después medir latencia y presupuesto de servidor antes de publicar. Alternar con conducción/derrape (25), audio (26), pistas uniformes (27) y gráficos (36); no se consideran cerrados por avanzar en red.
+
+## Avance 0.80 — fase 33.1, cliente online en el juego real
+
+Implementado: panel de salas, conexión a URL configurable, códigos, coche/pintura/control, opciones del anfitrión, listos y salida. Adaptador del renderer existente a snapshots autoritativos, cámara/HUD por identidad, interpolación acotada sin extrapolación, eventos/efectos y resultados compartidos; DNF, reconexión automática y revancha. Registros locales/campeonato no se alteran con resultados de red. Escape libera controles sin detener a los demás.
+
+Comprobado automáticamente: cuatro contextos Chromium con la UI/Canvas, cuatro modelos y vueltas válidas, inputs de teclado/mando, identidad de cada asiento, reconexión real/token renovado, nombres como texto, resultados equivalentes y regreso a sala/offline. Reglas de URL/TLS/versión/interpolación y núcleo de servidor comprobadas; modos locales/táctil/recursos conservados. Reloj/conducción/mandos instrumentados; no sustituye una partida humana por Internet. Evidencia en `tests/experiments/ONLINE_CLIENT_080.md`.
+
+**Siguiente 33.2:** comparar interpolación con predicción/reconciliación local usando la física compartida, medir jitter/latencia, reanudaciones y finales con red adversa. Después verificar el servicio alojado. Propuesta Render sin suspensión + Pages en `HOSTING.md`; esperar URL pública para la configuración final, sin dar por contratado/desplegado el hosting. Alternar con conducción/derrape, audio, las tres pistas uniformes y gráficos. No se consideran completados por esta entrega.

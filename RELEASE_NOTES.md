@@ -1,10 +1,20 @@
-# PIXEL GRAND PRIX — entrega 0.79
+# PIXEL GRAND PRIX — entrega 0.80
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Cliente online integrado en 0.80 — fase 33.1
+
+Sala real en el menú: servidor configurable, invitación, nombre/coche/pintura/control, pista/barreras/vueltas/plazas del anfitrión, listos por revisión y salida. El Canvas, cámara, HUD y mapa existentes representan la identidad correcta para los cuatro asientos; resultados server-side compartidos, DNF y revancha. Nombres remotos se insertan como texto. Modos locales, temporada y récords siguen independientes.
+
+`online-client.js` separa transporte e interpolación del renderizador: handshake exige huella física de la entrega; snapshots/ack acotados, sin extrapolación indefinida ni simulación paralela. Reconexión con token privado solo en memoria; datos ausentes, pestaña oculta o controles liberados frenan. Escape/ajustes no detienen la carrera de otros. Cargas de módulo y manifiesto son opcionales al entrar al online: offline conserva su cadena de ocho recursos.
+
+Corregido durante pruebas: renderizador esperaba partículas ausentes en los estados de red. Se crea/preserva ese estado visual en el adaptador sin contaminar la simulación. Avisos de pausa diferenciados para online. Servidor acepta `PORT` de hosting, mantiene `PGP_PORT` preferente y dispone de receta Render sin despliegue automático. Versión de recursos 0.80.
+
+Pruebas y límites: `tests/experiments/ONLINE_CLIENT_080.md`. No se afirma despliegue público ni aceptación humana de latencia/feel. Interpolación inicial ≈100 ms; predicción/reconciliación, jitter y mediciones de hosting en 33.2. No se publican rankings seguros ni se persisten resultados del servidor. No se retocan fuerzas, CPU, audio de motor o rutas.
 
 ## Servidor de salas privadas en 0.79
 

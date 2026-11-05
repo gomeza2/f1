@@ -1,6 +1,6 @@
 # PIXEL GRAND PRIX — diseño de online privado
 
-**Estado en 0.79: backend autoritativo local implementado; cliente del juego y despliegue pendientes.** `server/` ejecuta `race-session.js` con las reglas originales, sin DOM. Salas/listos/elección/inputs/resultados/reconexión comprobados con sockets reales y cuatro navegadores instrumentados. Contrato operativo: [server/README.md](server/README.md). Evidencia: [ROOMS_079.md](tests/experiments/ROOMS_079.md). No hay botón online en el juego ni servicio público anunciado.
+**Estado en 0.80: backend y cliente del juego integrados; sin hosting público predeterminado.** Salas privadas desde el menú, snapshots representados en Canvas, cámara/HUD por identidad, interpolación, reconexión automática y resultados/revancha. Cuatro navegadores con UI completan vueltas instrumentadas. Predicción/reconciliación y pruebas reales de latencia/hosting siguen abiertas. Ver `HOSTING.md` y `tests/experiments/ONLINE_CLIENT_080.md`.
 
 ## Primera entrega completa que se busca
 
@@ -14,7 +14,7 @@ El servidor puede construir una instancia `race-session.create({world,geometry,d
 
 El transporte 0.79 valida tipos/límites/frecuencia/orden de inputs, asigna pilotos y modelos, bloquea la configuración y genera identidades únicas. `raceId + sequence` separa eventos de partidas; no autentica al remitente. Un snapshot es lectura de física/progreso, no un formato de restauración de IA completa ni un resultado firmado. El controlador CPU del cliente todavía no se usa para varias salas de servidor; primer hito con 2–4 humanos.
 
-32.1 implementada en 0.79: servidor local autoritativo y salas/listos/inputs/resultados con contrato probado por clientes independientes. Siguiente 33.1: integrar el cliente del juego, interpolación/reconciliación y reconexión visible. El despliegue externo y sus costes se preparan cuando exista un artefacto de servidor probado. No se anuncia disponibilidad pública antes de eso.
+32.1 implementada en 0.79: servidor local autoritativo y salas/listos/inputs/resultados con contrato probado por clientes independientes. 33.1 integrada en 0.80: cliente del juego, interpolación y reconexión visible. Siguiente 33.2: predicción/reconciliación y validación de latencia/hosting. El despliegue externo y sus costes se preparan cuando exista un artefacto de servidor probado. No se anuncia disponibilidad pública antes de eso.
 
 ## Criterios de fase 30 y obligaciones del servidor
 
@@ -109,3 +109,13 @@ Protocolo v1, huella SHA-256 de los cuatro archivos de simulación, JSON estrict
 El token de reanudación es privado de cada piloto, cambia al reanudar y caduca después de diez segundos sin conexión. No aparece en room/snapshot/resultados/health/URL ni se persiste. Al caducar, DNF sin puntos y sin colisión; no se inventa llegada. Si la red cae durante salida se cancela a lobby. El servidor limita conexiones, salas, carreras, tamaños y frecuencia; frena inputs vencidos sin reversa. El digest de resultados permite comparar el mismo mensaje: **no es firma ni prueba para un ranking externo**.
 
 Servidor en memoria: reinicio pierde salas y resultados; sin cuentas, almacenamiento, ranking ni bots. Pages sirve solo el cliente estático. Antes de publicar: integrar 33.1, medir retrasos/tráfico/carga, definir HTTPS/WSS y orígenes del cliente, revisar alojamiento y costes reales. No hay contratación ni despliegue en esta entrega.
+
+## Adaptador online 0.80
+
+`online-client.js` posee socket, handshake, credencial en memoria, reintentos acotados, secuencias/ack e historial de seis snapshots. `script.js` conserva el renderer/audio/dispositivos y adapta los coches recibidos con propiedades visuales locales; no llama al paso físico para moverlos. No guarda tiempos online en PB/fantasma/temporada locales. Posición propia por `pilotId`, no índice cero. Nombre remoto por `textContent` o dibujo Canvas, nunca HTML ejecutable.
+
+Interpolación de presentación con margen de seis ticks (≈100 ms), orientación por arco corto, clamping al último estado y salto directo ante recuperación grande. No hay predicción local ni promesa de latencia competitiva; medir antes de añadir correcciones físicas. Inputs a 20 Hz, frescura y freno de seguridad al quedar sin datos; estado físico/tiempo de carrera siguen en servidor. La pestaña oculta/ajustes/Escape libera al piloto sin pausar al resto.
+
+La huella esperada del cliente está en `online-config.json`, generada/verificada con `server/scripts/client-config.cjs` desde los cuatro archivos canónicos. No se acepta ciegamente la huella anunciada por un servidor diferente. URL configurable, credenciales prohibidas en endpoint, WSS obligatorio desde HTTPS. Cliente/JSON se cargan solo al abrir online; servidor caído no inutiliza los modos offline.
+
+Hosting propuesto: Render Web Service sin suspensión + Pages estático, receta `render.yaml`; aún sin servicio contratado ni validación pública. Al recibir URL puede fijarse `online-config.json.serverUrl`; no colocar tokens de proveedor en frontend. Siguiente 33.2: latencia/jitter, predicción/reconciliación y despliegue revisado con carreras humanas.

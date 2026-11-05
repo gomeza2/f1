@@ -12,7 +12,7 @@ function createApp({autoTick = true, clock = () => performance.now(), allowedOri
     if (req.method !== 'GET') { res.writeHead(405).end('GET only'); return; }
     if (req.url === '/health') { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ok: !closing, protocol: P.PROTOCOL, simulation: P.SIMULATION, ...service.stats()})); return; }
     if (req.url === '/protocol') { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(service.manifest())); return; }
-    if (req.url === '/') { res.setHeader('Content-Type', 'text/plain; charset=utf-8'); res.end('PIXEL GRAND PRIX — servidor de salas privadas 0.79\nGET /health · GET /protocol · WebSocket /ws\nServidor local de desarrollo. El cliente del juego se integra en la fase 33.\n'); return; }
+    if (req.url === '/') { res.setHeader('Content-Type', 'text/plain; charset=utf-8'); res.end('PIXEL GRAND PRIX — servidor de salas privadas 0.80\nGET /health · GET /protocol · WebSocket /ws\nServidor local de desarrollo. El cliente estático conecta a /ws desde ONLINE PRIVADO.\n'); return; }
     res.writeHead(404).end('Not found');
   });
   const wss = new WebSocketServer({noServer: true, maxPayload: 4096, perMessageDeflate: false});
@@ -87,7 +87,7 @@ function createApp({autoTick = true, clock = () => performance.now(), allowedOri
   return {server, service, listen, close, tick, pump};
 }
 if (require.main === module) {
-  const port = Number(process.env.PGP_PORT || 8787), host = process.env.PGP_HOST || '127.0.0.1';
+  const port = Number(process.env.PGP_PORT || process.env.PORT || 8787), host = process.env.PGP_HOST || '127.0.0.1';
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new RangeError('Invalid PGP_PORT');
   const allowedOrigins = (process.env.PGP_ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
   const app = createApp({allowedOrigins});

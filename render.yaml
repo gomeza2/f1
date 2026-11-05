@@ -1,0 +1,18 @@
+# Optional deployment recipe; creating this file does not deploy a service.
+services:
+  - type: web
+    name: pixel-grand-prix-rooms
+    runtime: node
+    plan: starter
+    region: virginia
+    buildCommand: node server/scripts/client-config.cjs --check && npm ci --prefix server --omit=dev
+    startCommand: node server/index.cjs
+    healthCheckPath: /health
+    autoDeploy: false
+    envVars:
+      - key: NODE_VERSION
+        value: 24.19.0
+      - key: PGP_HOST
+        value: 0.0.0.0
+      - key: PGP_ALLOWED_ORIGINS
+        value: https://gomeza2.github.io

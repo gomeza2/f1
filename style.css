@@ -343,3 +343,17 @@ body.racing.touch-active .brand{display:none}body.racing.touch-active .header-ac
 button:disabled{cursor:default;opacity:.55}
 
 .trial-laps{display:flex;flex-wrap:wrap;gap:12px;padding:0;list-style:none;text-align:left}.trial-laps li{flex:1;min-width:150px;padding:14px;border:1px solid #396973;background:#101e2d}.trial-laps span,.trial-laps small{display:block;color:#aec6d0;font:12px monospace}.trial-laps strong{display:block;margin:8px 0;color:var(--cyan);font:24px monospace}
+
+/* Private-room setup remains outside the driving canvas. */
+.online-open{margin:12px 0;width:100%;border-color:var(--cyan);color:var(--cyan)}
+.online-lobby{width:min(900px,96vw);max-height:92dvh;overflow:auto;background:#10182a;color:#f5f6ff;border:1px solid var(--cyan);padding:24px;box-shadow:0 18px 100px #000a}
+.online-lobby::backdrop{background:#030813d9}.online-lobby header{align-items:flex-start}.online-lobby h2{font:clamp(14px,3vw,22px) 'Press Start 2P',monospace}
+.online-lobby p{line-height:1.5}.online-lobby label{display:flex;flex-direction:column;gap:8px;font-weight:700;font-size:15px;color:#b5c9dd;min-width:0}
+.online-lobby input{width:100%;min-height:44px;background:#08111e;border:1px solid #465875;padding:10px;color:#e8f4ff;font:16px monospace}
+.online-connect,.online-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:20px 0}.online-connect>label:first-child{grid-column:1/-1}
+.online-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.online-actions button{min-height:44px}.online-code strong{color:var(--lime);font:24px monospace;letter-spacing:5px}
+#onlineStatus{padding:12px;border-left:3px solid var(--cyan);background:#08111e;overflow-wrap:anywhere}.online-pilots{list-style:none;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.online-pilots li{border:1px solid #344b63;padding:14px;border-left:4px solid var(--pilot-color);overflow-wrap:anywhere}.online-pilots strong{display:block;font-size:20px}.online-pilots span{color:#b5c9dd}
+#onlineHost{border:1px solid #344b63;padding:16px}#onlineHost legend{color:var(--lime);font-size:13px}#onlineRoomHint{color:#a9c5df}
+@media(max-width:600px){.online-lobby{padding:15px}.online-connect,.online-grid,.online-pilots{grid-template-columns:1fr}.online-lobby header{flex-wrap:wrap}.online-actions button{flex:1 1 130px}}
+
+.online-lobby>header{position:sticky;top:0;z-index:2;background:#10182a}
