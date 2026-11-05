@@ -43,7 +43,7 @@ Una vez creado, hace falta **la URL pública del servicio**, por ejemplo `https:
 
 1. Confirmar `/health` con `ok:true`, mismo protocolo/huella que `online-config.json` y la versión correcta del proceso desplegado.
 2. Desde el juego en Pages, crear y unir 2–4 navegadores/dispositivos. Comprobar que WSS funciona y el origen está admitido; comparar resultados reales tras una carrera completa.
-3. Medir ping, variación, tráfico y tiempo de paso con jugadores reales. El cliente 0.81 interpola con unos 100 ms de margen y todavía no predice al piloto local: no prometer baja latencia competitiva sin medir.
+3. Medir ping, variación, tráfico y tiempo de paso con jugadores reales. En 0.82 los rivales conservan interpolación y el coche propio puede usar anticipación visual acotada (Ágil); no hay replay completo por tick: no prometer baja latencia competitiva sin medir.
 4. Comprobar pérdida/retorno de red, DNF, anfitrión que se va y revancha. Reiniciar el servidor pierde salas/resultados: son memoria temporal.
 5. Observar carga antes de aumentar las ocho carreras activas configuradas. Son topes de protección, no capacidad de hosting demostrada. Detrás del proxy, el límite de 16 conexiones por IP puede agrupar usuarios; revisar esto antes de ampliar el servicio.
 

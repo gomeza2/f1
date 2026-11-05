@@ -8,7 +8,7 @@ const root=path.resolve(__dirname,'..');
  const server=http.createServer((req,res)=>{
   const file=new URL(req.url,'http://local').pathname.slice(1)||'index.html';
   if(file==='favicon.ico'){res.writeHead(204).end();return;}
-  if(!['index.html','style.css','script.js','driving-core.js','track-core.js','race-rules.js','race-session.js','ghost-lap.js','engine-audio.js','online-client.js','online-config.json'].includes(file)){res.writeHead(404).end();return;}
+  if(!['index.html','style.css','script.js','driving-core.js','track-core.js','race-rules.js','race-session.js','ghost-lap.js','engine-audio.js','online-client.js','online-prediction.js','online-config.json'].includes(file)){res.writeHead(404).end();return;}
   res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.json')?'application/json':file.endsWith('.css')?'text/css':'text/html');res.end(fs.readFileSync(path.join(root,file)));
  });
  server.on('upgrade',(req,socket,head)=>{attempts++;if(deny){socket.end('HTTP/1.1 503 Service Unavailable\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');return;}wss.handleUpgrade(req,socket,head,ws=>wss.emit('connection',ws));});

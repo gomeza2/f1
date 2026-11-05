@@ -1,10 +1,20 @@
-# PIXEL GRAND PRIX — entrega 0.81
+# PIXEL GRAND PRIX — entrega 0.82
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Respuesta local online en 0.82 — primer tramo de 33.2.2
+
+Nuevo `online-prediction.js`: copia descartable del coche propio, pasos físicos compartidos a 60 Hz, horizonte máximo 150 ms y reconciliación de presentación acotada. No modifica el estado recibido ni registra vueltas/resultados. Usa conducción, superficies, resistencia, recuperación y barreras originales; no hay fórmulas físicas paralelas. Tráfico cercano, contactos, pausa de controles y final/DNF desactivan la anticipación; con datos antiguos congela el último visual. Los rivales siguen interpolados.
+
+La opción Ágil/Clásica está en la sala. El transporte mide el retraso observado de reconocimiento de controles con historial máximo de 64 entradas; incluye transmisión y batching de snapshots, no es ping. La estimación solo regula un horizonte visual acotado. Mensajes/protocolo/huella física del servidor sin cambios; no requiere una nueva API remota.
+
+Corregida reversa involuntaria al liberar controles online: freno sostenido sin mano activaba la reversa a partir del retardo original. La parada combina freno/mano, también con mando desconectado. Efectos de polvo y neumáticos siguen la pose dibujada. No se alteran física, CPU, trazados, audio de motor, récords ni campeonato/local.
+
+Pruebas: 32 casos frente a pasos reales del núcleo, siete streams con retraso/jitter, WebSocket/Canvas con cuatro vueltas y reconexión, escena adicional de anticipación propia/Clásica/parada/mando y regresiones. Detalles en `tests/experiments/RESPONSE_082.md`. Build/recursos 0.82; dependencia nueva solo al abrir online. No se declara rollback completo, grupos de colisiones predichos, latencia humana aceptada ni validación del servidor público desde este entorno.
 
 ## Conexión e interpolación en 0.81 — fase 33.2, primer tramo
 

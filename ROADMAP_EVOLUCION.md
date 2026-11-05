@@ -30,7 +30,7 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 - Conducción/derrape, CPU justa, audio, cuatro circuitos uniformes, gráficos y local siguen abiertos y se alternarán por impacto. No reducir todo el trabajo a CPU ni dar por terminada la sensación humana por tests.
 - Vista 3D inclinada opcional en fase 37, solicitada para más adelante; no reemplazará por obligación la vista cenital actual.
 
-Estado vigente 0.81: primer tramo de 33.2, URL de servidor aportada por el usuario configurada, conexión inicial con espera/reintentos/cancelación y presentación sin retroceso por jitter. Salas/cliente 32.1–33.1 conservados. Verificación pública bloqueada por proxy CONNECT 403. **Siguiente: predicción/reconciliación del coche propio y latencia/hosting reales**. Conducción/derrape, audio, tres pistas uniformes y gráficos siguen abiertos.
+Estado vigente 0.82: primera anticipación/reconciliación visual propia de 33.2.2, elección Ágil/Clásica, guards de contactos y parada sin reversa al liberar controles/perder mando. Conexión Free y URL conservadas; sin cambios de backend/huella. La fase 33.2 sigue parcial: replay de entradas/ticks, grupos de contacto y validación humana/pública pendientes. **Próxima entrega recomendada: alternar con presentación/escenarios de 36**, conservando pruebas online y recogiendo aceptación del manejo. Física/derrape/audio y tres pistas uniformes siguen abiertos.
 
 ## Fases abiertas
 
@@ -513,3 +513,13 @@ Implementado: URL pública del usuario como predeterminada, presupuesto inicial 
 Comprobado: sockets/relojes simulados, WebSocket nativo con puerta HTTP 503 local y cancelación sin salas, cuatro contextos de juego con vueltas válidas y reconexión, paridad de teclado y regresiones locales/núcleo/recursos. Evidencia en `tests/experiments/CONNECTION_081.md`. El servidor público fue informado por el usuario; este entorno no pudo alcanzarlo por rechazo CONNECT del proxy. No se considera terminada toda la fase 33.2 ni aceptada la latencia humana.
 
 **Siguiente:** predicción/reconciliación local mediante la misma física, escenarios con latencia/jitter/pérdida en carrera y validación del hosting público cuando haya acceso. Mantener alternancia con manejo/derrape, audio, pistas y gráficos; no cambiar esas áreas a ciegas para simular progreso online.
+
+## Avance 0.82 — fase 33.2.2, anticipación propia acotada
+
+Implementado: módulo puro de presentación con clones del estado autoritativo, misma conducción/geometría/terreno/barreras, hasta nueve pasos físicos de 60 Hz, pequeñas correcciones suavizadas y guards de tráfico/contacto/recuperación/fin/red. Ágil/Clásica seleccionable. Retardo observado por ack e historial acotado, sin cambios de mensajes. Ni HUD ni gates ni resultados aceptan datos predichos. Efectos online se anclan a las poses dibujadas.
+
+Corregido: freno sostenido al liberar controles activaba reversa; freno + mano mantiene la parada, incluyendo pérdida de mando. Comprobado en los cuatro modelos y en navegador con estado real de servidor. Los modos locales y los parámetros físicos no cambian.
+
+Comprobado automáticamente: 32 combinaciones coche/superficie frente al paso compartido, siete comparativas de streams con retardo/jitter, cuatro navegadores con vueltas completas, reconexión, pose propia aplicada al renderer sin mutar autoridad, opción clásica, parada y mando perdido; regresiones de teclado/local/táctil/recursos/guardado. Ver `tests/experiments/RESPONSE_082.md`. No se considera terminado el online ni aprobada la sensación humana por estas pruebas.
+
+**Siguiente entrega recomendada: 36**, claridad visual/coches/escenarios con presupuesto gráfico y sin alterar física/contrato de servidor; alternar con manejo/audio según evidencia humana. El tramo online posterior requiere timestamps/ticks de entradas aplicadas para replay/reconciliación completa, predicción conjunta de contactos y pruebas públicas con varios dispositivos. La anticipación actual es visual/conservadora, no rollback determinista.

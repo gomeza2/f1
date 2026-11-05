@@ -357,3 +357,5 @@ button:disabled{cursor:default;opacity:.55}
 @media(max-width:600px){.online-lobby{padding:15px}.online-connect,.online-grid,.online-pilots{grid-template-columns:1fr}.online-lobby header{flex-wrap:wrap}.online-actions button{flex:1 1 130px}}
 
 .online-lobby>header{position:sticky;top:0;z-index:2;background:#10182a}
+
+#onlineChoose{grid-column:1/-1}

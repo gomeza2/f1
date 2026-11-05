@@ -2,6 +2,16 @@
 
 Juego web arcade de carreras 2D desde arriba, con identidad retro propia, circuitos de formas variadas, rivales controlados por CPU, derrapes, superficies y campeonato.
 
+## Nuevo en 0.82 — respuesta ágil del coche online
+
+En la sala podés elegir **RESPUESTA ONLINE → ÁGIL** (predeterminada) o **CLÁSICA**. Ágil anticipa brevemente la imagen de tu propio coche con el mismo motor de conducción y terreno; los rivales conservan su interpolación. En zonas libres responde antes al giro, sin cambiar velocidad máxima, agarre o frenado reales. El servidor sigue decidiendo contactos, vueltas, tiempos y resultados.
+
+La anticipación tiene un máximo de nueve pasos de 60 Hz (150 ms). Cerca de tráfico, barreras o impactos vuelve a la presentación del servidor; una pérdida prolongada de datos no permite seguir inventando movimiento. Las correcciones pequeñas se suavizan y las recuperaciones grandes se respetan. Las marcas y partículas online se calculan sobre la pose presentada.
+
+Corregido: liberar controles o abrir ajustes podía sostener el freno y activar reversa al detenerse. La nueva parada usa freno y mano, sin retroceder sola; la pérdida de mando aplica la misma protección. Escape continúa sin pausar la carrera de los demás.
+
+Comparativas con retraso simulado, 32 combinaciones coche/terreno y navegadores reales aprobadas; evidencia y límites en [RESPONSE_082.md](tests/experiments/RESPONSE_082.md). Esto es anticipación/reconciliación **visual**, sin rollback completo de entradas ni predicción de contactos entre varios coches. La aceptación humana y la validación pública siguen pendientes. Backend/protocolo/huella, URL de Render Free, física p6/b1/s1, catorce pistas, cuatro modelos y modos locales conservados.
+
 ## Nuevo en 0.81 — servidor configurado y conexión tolerante a esperas
 
 **ONLINE PRIVADO** carga por defecto `https://pixel-grand-prix-rooms.onrender.com`, la dirección aportada por el usuario. Si este navegador ya guardó otro servidor, se conserva esa elección: podés reemplazarla en el campo SERVIDOR. La dirección raíz de Render es el backend; para conducir se entra al juego en GitHub Pages y se abre ONLINE PRIVADO.

@@ -1,5 +1,5 @@
 {
-  "build": "0.81",
+  "build": "0.82",
   "protocol": 1,
   "simulation": "63cfdf88c6904edf63d78f65dc44d3627a06bd1139fd21229235c4a45f955d6d",
   "serverUrl": "https://pixel-grand-prix-rooms.onrender.com"

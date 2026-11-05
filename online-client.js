@@ -10,10 +10,10 @@
  function create({simulation,WebSocketImpl=globalThis.WebSocket,now=()=>performance.now(),onMessage=()=>{},onStatus=()=>{},timers=null}){
   let socket=null,url='',session=null,room=null,stopped=true,retry=null,handshake=null,deadline=0,seq=0,raceId=null,frames=[],received=-Infinity,lastTick=-1,joined=false;
   const setTimer=(fn,ms)=>timers?timers.setTimeout(fn,ms):setTimeout(fn,ms),clearTimer=id=>timers?timers.clearTimeout(id):clearTimeout(id);
-  let connectDeadline=0,request=null,renderTick=-Infinity;
+  let connectDeadline=0,request=null,renderTick=-Infinity,ackDelayMs=null;const pendingInputs=new Map();
   const notify=(state,detail='')=>onStatus(state,detail);
   function send(message){if(socket?.readyState===1){socket.send(JSON.stringify(message));return true;}return false;}
-  function forget(){joined=false;session=null;room=null;frames=[];raceId=null;seq=0;lastTick=-1;received=-Infinity;renderTick=-Infinity;request=null;connectDeadline=0;}
+  function forget(){joined=false;session=null;room=null;frames=[];raceId=null;seq=0;lastTick=-1;received=-Infinity;renderTick=-Infinity;request=null;connectDeadline=0;ackDelayMs=null;pendingInputs.clear();}
   function close(){stopped=true;clearTimer(retry);clearTimer(handshake);const old=socket;socket=null;old?.close(1000,'left');forget();}
   function connect(value,action){close();url=endpoint(value,globalThis.location?.protocol==='https:');stopped=false;request=action;connectDeadline=now()+90000;notify('connecting');open();}
   function lost(detail){stopped=true;clearTimer(retry);clearTimer(handshake);const old=socket;socket=null;old?.close();forget();notify('lost',detail);}
@@ -29,12 +29,13 @@
      send({type:'hello',protocol:1,simulation});return;
     }
     if(m.type==='welcome'){welcomed=true;clearTimer(handshake);if(session){handshake=setTimer(()=>{if(socket===ws&&!joined)lost('La reconexión venció antes de confirmar la sesión.');},Math.max(0,deadline-now()));send({type:'resume',code:session.code,token:session.resumeToken});}else{notify('connected');const action=request;request=null;if(action)send(action);}return;}
-    if(m.type==='session'){clearTimer(handshake);joined=true;session={code:m.code,pilotId:m.pilotId,resumeToken:m.resumeToken};room=m.room;deadline=0;notify('connected');}
+    if(m.type==='session'){clearTimer(handshake);pendingInputs.clear();joined=true;session={code:m.code,pilotId:m.pilotId,resumeToken:m.resumeToken};room=m.room;deadline=0;notify('connected');}
     if(m.type==='room')room=m.room;
     if(m.type==='snapshot'){
-     if(m.raceId!==raceId){raceId=m.raceId;seq=0;frames=[];lastTick=-1;renderTick=-Infinity;}
+     if(m.raceId!==raceId){raceId=m.raceId;seq=0;frames=[];lastTick=-1;renderTick=-Infinity;pendingInputs.clear();ackDelayMs=null;}
      if(m.tick<lastTick)return;lastTick=m.tick;
      const ack=m.inputs.find(p=>p.pilotId===session?.pilotId)?.seq??-1;seq=Math.max(seq,ack+1);
+     if(pendingInputs.has(ack)){const delay=clampAck(now()-pendingInputs.get(ack));ackDelayMs=ackDelayMs===null?delay:ackDelayMs*.8+delay*.2;}for(const id of pendingInputs.keys())if(id<=ack)pendingInputs.delete(id);
      const at=now();if(frames.at(-1)?.tick===m.tick)frames.pop();frames.push({tick:m.tick,cars:m.state.cars});frames=frames.slice(-6);received=at;
     }
     if(m.type==='error'&&['bad_token','version_mismatch','not_in_room'].includes(m.code)){lost(m.code==='bad_token'?'La reconexión venció. Volvé a unirte desde la sala.':'La sesión dejó de estar disponible.');return;}
@@ -50,7 +51,8 @@
     notify('reconnecting');retry=setTimer(open,Math.min(500,deadline-now()));
    };
   }
-  function input(controls){if(!joined||!session||!raceId||!['countdown','running'].includes(room?.phase))return false;return send({type:'input',raceId,seq:seq++,controls});}
+  function clampAck(value){return Math.max(0,Math.min(1000,value));}
+  function input(controls){if(!joined||!session||!raceId||!['countdown','running'].includes(room?.phase))return false;const id=seq++,sent=send({type:'input',raceId,seq:id,controls});if(sent){pendingInputs.set(id,now());if(pendingInputs.size>64)pendingInputs.delete(pendingInputs.keys().next().value);}return sent;}
   function pose(car,at=now()){
    if(frames.length<2||car.retired||car.done)return car;
    const latest=frames.at(-1),target=Math.min(latest.tick,Math.max(frames[0].tick,renderTick,latest.tick-6+Math.max(0,at-received)/(1000/60)));renderTick=target;
@@ -61,7 +63,7 @@
    const delta=Math.atan2(Math.sin(b.heading-a.heading),Math.cos(b.heading-a.heading));
    return {...car,x:a.x+(b.x-a.x)*fraction,y:a.y+(b.y-a.y)*fraction,heading:a.heading+delta*fraction};
   }
-  return {connect,close,send,input,pose,get session(){return session&&{...session};},get room(){return room;},get tick(){return lastTick;},get stale(){return now()-received>500;}};
+  return {connect,close,send,input,pose,get session(){return session&&{...session};},get room(){return room;},get tick(){return lastTick;},get metrics(){return {ackDelayMs,pendingInputs:pendingInputs.size};},get stale(){return now()-received>500;}};
  }
  return {create,endpoint};
 });

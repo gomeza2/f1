@@ -1,4 +1,4 @@
-# Simulación compartida — estado 0.80
+# Simulación compartida — estado 0.82
 
 `driving-core.js` es el primer bloque extraído del motor real. Lo usa `script.js` para conducir en el navegador y puede importarse directamente en Node. No necesita DOM, Canvas, audio, almacenamiento, reloj externo ni dependencias de npm.
 
@@ -165,3 +165,11 @@ Los vehículos locales nacen con `retired=false`; no se cambia aceleración, dir
 La carrera online avanza exclusivamente en el servidor. `online-client.js` recibe snapshots, interpola poses con historial acotado y confirma la huella de compatibilidad; no redefine aceleración/giro/frenado. El adaptador de `script.js` conserva estado visual (partículas/marcas) separado de lo transmitido y selecciona cámara/HUD por identidad del piloto. No persiste esos tiempos en récords locales ni llama al paso físico de su sesión de presentación.
 
 El transporte no envía controles durante reconexión hasta recibir el nuevo `session`; socket abierto/`welcome` por sí solos no significan que el servidor haya restaurado la pertenencia a sala. Una regresión específica cubre ese orden, además del corte/reanudación real con cuatro navegadores. Predicción/reconciliación del coche propio aún pendientes de 33.2.
+
+## Presentación anticipada del coche propio en 0.82
+
+`online-prediction.js` es otro consumidor del mismo núcleo, no un motor de fuerzas alternativo. Posee un clon por snapshot y lo avanza hasta nueve pasos de 1/60 usando controles actuales, terreno/barreras/recuperación canónicos. Sus callbacks no registran récords, eventos de carrera ni resultados. El clon utiliza progreso provisional para poder invocar las reglas compartidas; solo una lista de atributos de dibujo llega a `online.visual`. La sesión recibida conserva coches/progreso/tiempo como autoridad y el HUD la sigue leyendo.
+
+Reconciliación visual acotada, sin replay exacto de controles aplicados por tick. Fallback en tráfico/contactos/barreras/controles liberados/fin; datos antiguos congelan la pose. Se reinicia ante otra carrera, desconexión o recuperación grande. El transporte agrega métricas locales de ack e historial máximo 64, sin campos nuevos en mensajes ni cambio de huella física.
+
+Parada de controles: usar freno + mano evita que el retardo de reversa se cumpla mientras la interfaz mantiene un freno de seguridad. Se verificó en cuatro modelos y en navegador con mandos emulados. No modifica la reversa normal de un piloto conduciendo.

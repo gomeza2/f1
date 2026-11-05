@@ -1,6 +1,6 @@
 # PIXEL GRAND PRIX — diseño de online privado
 
-**Estado en 0.81: backend/cliente integrados y URL pública aportada por el usuario configurada.** Conexión inicial con 90 s de espera/reintentos cancelables; reconexión activa acotada por separado y timeline de presentación monotónico. El proxy del entorno bloqueó el acceso público con CONNECT 403; no se comprobó handshake ni carrera sobre Render. Predicción/reconciliación y latencia humana aún pendientes.
+**Estado en 0.82: salas/cliente y URL configurados, anticipación visual del coche propio con física compartida y modo Clásico.** Guard de tráfico/contactos, reconciliación de errores visuales pequeños, límite de horizonte y parada sin reversa; backend/protocolo sin cambios. No equivale a replay completo de inputs ni predicción de colisiones grupales. La validación pública y humana sigue pendiente; el bloqueo CONNECT 403 observado anteriormente no se elude.
 
 ## Primera entrega completa que se busca
 
@@ -127,3 +127,13 @@ La primera conexión admite 90 s para que un servicio suspendido responda; antes
 El playhead de interpolación crece monótonamente, se acota al tick más reciente y se reinicia por `raceId`. Un snapshot retrasado no arrastra el render hacia atrás; el movimiento real en reversa sigue permitido. Aún no es predicción del piloto propio ni corrección de estados físicos. Timers inyectables solo para pruebas, sin reloj impuesto al servidor por mensajes del cliente.
 
 URL predeterminada: `https://pixel-grand-prix-rooms.onrender.com`. Sin cambios de protocolo/huella; salud pública no comprobada por restricción del proxy. Ver `HOSTING.md` y `tests/experiments/CONNECTION_081.md`.
+
+## Tramo 33.2.2 en 0.82: límites de la anticipación
+
+`online-prediction.js` recibe copia de snapshot por piloto y vuelve a usar `driving.humanControls` y `race-rules.advanceVehicle` sobre un clon descartable; movimiento, terreno, drag, recuperación y barreras son los originales. El progreso provisional de ese clon nunca sale al servidor/HUD/almacenamiento. Solo posición/orientación, ruedas y estado visual se aplican al renderer del dueño. El resto de coches mantiene interpolación.
+
+Horizonte de nueve pasos de 60 Hz como máximo, con lead de 0–75 ms derivado de media del retraso observado de ack; este último incluye batching de snapshots y no es un RTT/offset de reloj medido. Historial de entrada máximo 64. Datos de más de 250 ms congelan la última imagen prevista; desconexión/controles bloqueados/fin/contactos vuelven al estado presentado por servidor. Tráfico cercano o contacto previsto con vallas usa fallback. La corrección pequeña se suaviza; recuperación grande reinicia el offset. Barreras y tráfico se revisan también después de aplicar corrección visual.
+
+El servidor sigue recibiendo únicamente controls/raceId/seq y conserva la física, gates, tiempo y resultados. No cambian huella ni protocolo; el backend 0.80 original conserva el mismo contrato. El cliente no realiza todavía replay de pasos después del tick exacto aplicado por servidor: falta ese dato en el protocolo actual. No presentar esta entrega como rollback determinista ni como protección de ranking.
+
+UI Ágil/Clásica permite comparar. Liberar controles/pestaña/mando aplica freno + mano para no activar la reversa al detenerse, con las reglas físicas normales. La futura predicción conjunta de contactos debe evaluarse antes de retirar los guards actuales. Evidencia y mediciones controladas: `tests/experiments/RESPONSE_082.md`.

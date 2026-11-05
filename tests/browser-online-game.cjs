@@ -4,13 +4,13 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),http=require('n
 const {createApp}=require('../server/index.cjs');
 const {navigate,P,immediate}=require('../server/test/helpers.cjs');
 const root=path.resolve(__dirname,'..'),captures=process.env.ONLINE_SCREENSHOTS;if(captures)fs.mkdirSync(captures,{recursive:true});
-const bridge=`window.onlineUiTest={state(){return {active:online?.active,room:online?.room,session:online?.transport?.session?{pilotId:online.transport.session.pilotId}:null,tick:online?.transport?.tick,own:onlineSelfIndex(),camera:raceCamera(onlineSelfIndex()),cars:raceState.cars,elapsed:raceState.elapsed,focus:document.hasFocus()};},pulse(c){window.testPad.axes[0]=Math.abs(c.steering)<.001?0:Math.sign(c.steering)*(.15+Math.abs(c.steering)*.85);window.testPad.buttons[7].value=c.throttle;window.testPad.buttons[6].value=c.brake;window.testPad.buttons[2].value=c.hand?1:0;sendOnlineControls();}};`;
+const bridge=`window.onlineUiTest={state(){return {active:online?.active,room:online?.room,session:online?.transport?.session?{pilotId:online.transport.session.pilotId}:null,tick:online?.transport?.tick,own:onlineSelfIndex(),camera:raceCamera(onlineSelfIndex()),cars:raceState.cars,elapsed:raceState.elapsed,focus:document.hasFocus(),prediction:online?.prediction?.stats,visual:online?.visual,rendered:raceState.cars[onlineSelfIndex()]?renderedCar(raceState.cars[onlineSelfIndex()]):null};},pulse(c){window.testPad.axes[0]=Math.abs(c.steering)<.001?0:Math.sign(c.steering)*(.15+Math.abs(c.steering)*.85);window.testPad.buttons[7].value=c.throttle;window.testPad.buttons[6].value=c.brake;window.testPad.buttons[2].value=c.hand?1:0;sendOnlineControls();}};`;
 (async()=>{
  const errors=[],serverErrors=[],pages=[],contexts=[];const wallStart=performance.now();let now=0,app,browser;
  const staticServer=http.createServer((req,res)=>{
   const name=new URL(req.url,'http://localhost').pathname.replace(/^\/f1\//,'')||'index.html';
   if(name==='favicon.ico'){res.writeHead(204).end();return;}
-  if(!['index.html','style.css','script.js','driving-core.js','track-core.js','race-rules.js','race-session.js','engine-audio.js','ghost-lap.js','online-client.js','online-config.json'].includes(name)){res.writeHead(404).end();return;}
+  if(!['index.html','style.css','script.js','driving-core.js','track-core.js','race-rules.js','race-session.js','engine-audio.js','ghost-lap.js','online-client.js','online-prediction.js','online-config.json'].includes(name)){res.writeHead(404).end();return;}
   res.setHeader('Content-Type',name.endsWith('.js')?'text/javascript':name.endsWith('.json')?'application/json':name.endsWith('.css')?'text/css':'text/html');
   let text=fs.readFileSync(path.join(root,name),'utf8');if(name==='script.js')text=text.replace(/\}\)\(\);\s*$/,bridge+'})();');res.end(text);
  });
@@ -80,8 +80,41 @@ const bridge=`window.onlineUiTest={state(){return {active:online?.active,room:on
   for(const page of pages){assert.equal(await page.evaluate(()=>localStorage.getItem('pixelGP.bestLaps.v1')),null);await page.click('#nextBtn');await page.waitForSelector('#onlineLobby[open]');}
   // Reconnect elected P2 host? P1 remained connected and remains host.
   await pages[0].click('#onlineRematch');await pages[0].waitForFunction(()=>window.onlineUiTest.state().room.phase==='lobby');
+  if(captures){await pages[1].setViewportSize({width:390,height:844});await pages[1].locator('#onlineResponse').scrollIntoViewIfNeeded();await pages[1].screenshot({path:path.join(captures,'response-lobby-mobile.png')});await pages[1].setViewportSize({width:1366,height:900});}
+  // Second grid: isolate front-row P2 without editing positions; exercise the rendered forecast and parking safety.
+  await pages[0].selectOption('#onlineTrack','0');await pages[0].click('#onlineConfigure');
+  await pages[0].waitForFunction(()=>window.onlineUiTest.state().room.config.track===0);
+  for(const page of pages){await page.click('#onlineReady');await page.waitForFunction(()=>document.getElementById('onlineReady').getAttribute('aria-pressed')==='true');}
+  await pages[0].waitForFunction(()=>!document.getElementById('onlineStart').disabled);await pages[0].click('#onlineStart');
+  await Promise.all(pages.map(page=>page.waitForSelector('#game:not(.hidden)')));
+  let predictedFrames=0;const isolationWorld=P.geometry.createWorld(0,'auto');
+  for(let n=0;n<600;n+=3){
+   await Promise.all(pages.map((page,i)=>page.evaluate(c=>window.onlineUiTest.pulse(c),i===1?navigate(room.session.state.cars.find(car=>car.player===1),isolationWorld):{throttle:0,brake:1,steering:0,hand:true})));
+   await immediate();await immediate();await ticks(3);
+   await Promise.all(pages.map(page=>page.waitForFunction(tick=>window.onlineUiTest.state().tick>=tick,room.tick,{polling:5})));
+   const current=await pages[1].evaluate(()=>window.onlineUiTest.state());if(current.prediction?.reason==='predicting'){predictedFrames++;assert.ok(current.prediction.steps<=9);assert.equal(current.own,1);}
+  }
+  if(!predictedFrames)console.log(JSON.stringify({predictionDiagnostic:await pages[1].evaluate(()=>window.onlineUiTest.state().prediction),cars:room.session.state.cars.map(car=>({player:car.player,x:car.x,y:car.y,speed:car.speed,progress:car.progress}))}));
+  assert.ok(predictedFrames>0,'Own-car presentation forecast never ran after separation');
+  await pages[1].waitForFunction(()=>{const state=window.onlineUiTest.state();return state.prediction?.reason==='predicting'&&Math.hypot(state.rendered.x-state.cars[state.own].x,state.rendered.y-state.cars[state.own].y)>.01;});
+  const view=await pages[1].evaluate(()=>window.onlineUiTest.state());assert.equal(view.prediction.reason,'predicting');assert.equal(view.rendered.x,view.visual.x);assert.ok(Math.hypot(view.rendered.x-view.cars[view.own].x,view.rendered.y-view.cars[view.own].y)>.01,'Predicted pose never reached the renderer');assert.equal(view.cars[view.own].x,room.session.state.cars.find(car=>car.player===1).x,'Presentation changed the authoritative car');
+  if(captures)await pages[1].screenshot({path:path.join(captures,'agile-own-car.png')});
+  // Preserve the classic setting, then return to agile without manufacturing a result.
+  await pages[1].evaluate(()=>document.getElementById('onlineResponse').value='classic');
+  await pages[1].waitForFunction(()=>window.onlineUiTest.state().prediction?.reason==='classic');
+  await pages[1].evaluate(()=>document.getElementById('onlineResponse').value='agile');
+  await pages[1].locator('#canvas1').focus();await pages[1].keyboard.press('Escape');
+  for(let n=0;n<180;n+=3){await pages[1].evaluate(()=>window.onlineUiTest.pulse({throttle:1,brake:0,steering:0,hand:false}));await immediate();await immediate();await ticks(3);}
+  assert.equal(room.session.state.cars.find(c=>c.player===2).speed,0);assert.equal(room.session.state.cars.find(c=>c.player===2).reverseHeld,0);
+  await pages[1].keyboard.press('Escape');await pages[1].evaluate(()=>window.testPad.connected=false);
+  for(let n=0;n<90;n+=3){await pages[1].evaluate(()=>window.onlineUiTest.pulse({throttle:1,brake:0,steering:0,hand:false}));await immediate();await immediate();await ticks(3);}
+  assert.equal(room.session.state.cars.find(c=>c.player===2).speed,0);assert.equal(room.players.get(1).input.hand,true);
+  console.log(JSON.stringify({isolatedPilot:1,predictedFrames,classicFallback:true,parkedWithoutReverse:true,missingPadStopped:true}));
+  // Leaving the running grid is explicit DNF; it is not counted as another complete race.
+  for(const page of pages){await page.click('#backBtn');await page.waitForSelector('#menu:not(.hidden)');}
+  for(const page of pages){await page.click('#onlineSetupBtn');await page.waitForSelector('#onlineLobby[open]');}
   await pages[0].setViewportSize({width:390,height:844});if(captures)await pages[0].screenshot({path:path.join(captures,'online-mobile.png')});
-  for(const page of pages){await page.click('#onlineLeave');await page.click('#onlineClose');await page.waitForSelector('#menu:not(.hidden)');}
+  for(const page of pages){await page.click('#onlineClose');await page.waitForSelector('#menu:not(.hidden)');}
   console.log('PASS: actual game UI, four independent browsers, selected models, native P3 keyboard/escape and normalized gamepad input, authoritative gated laps, own camera/HUD identity, real reconnect/token rotation, safe text names, identical results, rematch, mobile lobby and offline exit; clock/navigation/gamepads instrumented, human WAN feel not validated.');
  }finally{await browser?.close();await app?.close();await new Promise(r=>staticServer.close(r));}
 })().catch(error=>{console.error(error);process.exitCode=1;});
