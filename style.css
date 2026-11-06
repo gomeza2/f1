@@ -359,3 +359,10 @@ button:disabled{cursor:default;opacity:.55}
 .online-lobby>header{position:sticky;top:0;z-index:2;background:#10182a}
 
 #onlineChoose{grid-column:1/-1}
+
+/* Sector practice stays outside the driving canvas; hidden modes keep their space. */
+.practice-open{margin:8px 0;width:100%;white-space:normal;line-height:1.7}.practice-open[aria-pressed=true]{border-color:var(--lime);color:var(--lime)}
+.practice-bar{display:grid;grid-template-columns:minmax(130px,220px) minmax(125px,180px) max-content max-content;align-items:end;gap:6px;flex:0 0 auto;padding:6px 8px;background:#111e2b;border:1px solid #3c5268;margin-bottom:6px}
+.practice-bar label{display:grid;gap:3px;color:#a8c5d3;font:10px monospace}.practice-bar select{padding:6px;font:12px monospace}.practice-bar p{grid-column:1/-1;margin:0;color:var(--cyan);font:12px/1.4 monospace}.practice-bar button{min-height:32px}
+@media(max-width:600px){.practice-bar{grid-template-columns:1fr 1fr;padding:5px}.practice-bar label{min-width:0}.practice-bar p{font-size:10px}.practice-bar button{font-size:7px}}
+@media(max-height:520px) and (orientation:landscape){.practice-bar{gap:4px;padding:4px 6px}.practice-bar label{font-size:8px;gap:2px}.practice-bar select{padding:4px;font-size:10px}.practice-bar button{min-height:26px}.practice-bar:not(.practice-complete) p{display:none}.practice-bar.practice-complete p{font-size:10px}}

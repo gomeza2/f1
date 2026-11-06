@@ -1,10 +1,18 @@
-# PIXEL GRAND PRIX — entrega 0.82
+# PIXEL GRAND PRIX — entrega 0.84
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Práctica en 0.84 — herramientas de fase 25 y modos
+
+Nuevo modo integrado de práctica de sectores: 132 intervalos meta/checkpoints de las catorce pistas, cuatro modelos y entradas parado/120/180/máxima. Sin rivales, con cronómetro de intento, velocidad de salida y tiempos de freno/mano/gas suelto, fuera de pista e impactos registrados. Repetir con botón/R y siguiente sector sin reconstruir geometría/fondos; un segundo de preparación y pausa al cruzar el gate real. Límite de 120 s por intento.
+
+Mejor limpio solo en memoria y separado por sector/entrada dentro de la práctica actual. Se bloquea guardado global de vueltas parciales, fantasmas y puntos. No hay ayudas de giro, puntuación ficticia de derrape ni física paralela. Continúa el motor compartido p6/b1/s1 y su limitación actual sin velocidad lateral completa.
+
+Corregido en validación: controles de pausa/táctiles podían seguir deshabilitados después de un intento; reinicio, cambio a local y entrada online restablecen su estado. Panel exterior compactado tras revisar capturas horizontales. Recursos/manifiesto 0.84 coherentes, backend/huella/URL Free intactos. Evidencia y pruebas: `tests/experiments/PRACTICE_084.md`. No se afirma aceptado el manejo humano ni verificado el alojamiento público.
 
 ## Paisajes en 0.83 — fase 36.3
 

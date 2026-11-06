@@ -30,7 +30,7 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 - Conducción/derrape, CPU justa, audio, cuatro circuitos uniformes, gráficos y local siguen abiertos y se alternarán por impacto. No reducir todo el trabajo a CPU ni dar por terminada la sensación humana por tests.
 - Vista 3D inclinada opcional en fase 37, solicitada para más adelante; no reemplazará por obligación la vista cenital actual.
 
-Estado vigente 0.83: tramo de escenarios 36.3 con trece referencias ambientales grandes en cinco circuitos, cacheadas y fuera de la recuperación. Detallado/Retro mejorados; Rendimiento y nueve circuitos conservados. Física/CPU/audio, backend y modos intactos. La fase 33.2 sigue parcial: replay de entradas/ticks, grupos de contacto y validación humana/pública pendientes. **Próxima entrega recomendada: volver a fase 25**, medir entrada/salida de curva, frenado y derrape usando la simulación compartida, antes de cambiar valores. Alternar con iluminación 36.4, audio y las tres pistas uniformes; no dar por aceptado el manejo humano por las pruebas automáticas.
+Estado vigente 0.84: práctica de sectores integrada para medir entrada/frenado/mano y repetir curvas con el núcleo real. 132 intervalos seleccionables, cuatro coches, mejores limpios de sesión y sin récords parciales. Conservados paisajes 0.83, fuerzas/CPU/audio, modos y backend. La fase 25 sigue abierta: no se incorporó el ensayo lateral rechazado ni se afirma aceptada la sensación humana. **Próximo: comparar control de entrada/salida de curva y recuperación con estas referencias**, antes de adoptar cambios de física; alternar con audio 26, iluminación 36.4 y las tres pistas uniformes. Online 33.2 aún requiere replay/contactos conjuntos y validación pública/humana.
 
 ## Fases abiertas
 
@@ -532,3 +532,14 @@ Implementado: dársena de Neon Harbor, mesetas de Dusty Mesa, cráteres de Volca
 Comprobación comparativa en Chromium contra 0.82 auténtica: 42 escenas, diez fondos distintos, 32 idénticos, 42 capas de carretera iguales y 1.611.612 muestras de carretera/recuperación sin cambios; sin nuevos Canvas y sin redibujar paisajes en frames cacheados. Capturas cercanas de los cinco temas revisadas. Regresiones y límites en `tests/experiments/LANDMARKS_083.md`.
 
 La fase gráfica sigue abierta: no es una reconstrucción de los catorce entornos ni iluminación completa. Pendientes valoración humana, teléfonos físicos y perfilado sostenido; el microbenchmark local no acredita FPS reales. **Siguiente: fase 25**, comparar curvas/frenado/derrape con el núcleo compartido y conservar solo variantes que mejoren control sin eliminar consecuencias; después alternar con 36.4/audio/otras pistas. No tocar física únicamente para simular progreso ni repetir el ensayo lateral rechazado sin resolver su planificación.
+
+
+## Avance 0.84 — práctica y medición de conducción
+
+Nuevo modo en el paddock, 132 sectores de las catorce pistas, cuatro coches y cuatro opciones de entrada. Usa sesiones aisladas del mismo núcleo, con un humano, semilla explícita de progreso para el sector y cierre por evento de checkpoint/meta real en sentido correcto. Repetir/R y siguiente conservan geometría/fondos; frenado/mano/retención, salidas e impactos registrados dan feedback exterior. Al terminar se pausa sin continuar acumulando tiempo; un intento sin gate válido expira a 120 s.
+
+No se guardan vueltas parciales ni récords/fantasmas/puntos. Mejor limpio separado por sector y entrada, solo durante esa práctica; cambiar coche/pista reinicia el conjunto. No se introduce una física paralela para el modo. Se preserva el motor p6/b1/s1 y el contrato de Render existente.
+
+Pruebas: 112 sectores físicamente conducidos (primer/último de 14 pistas × cuatro modelos), 132 posiciones iniciales/gates/cachés, regresiones de control/métodos/online y 48 maniobras comparando gas/retención/freno/mano en asfalto/tierra/hielo. Repeticiones afectadas tras corregir controles deshabilitados y compactar el panel móvil; ver `tests/experiments/PRACTICE_084.md`. No equivalen a vueltas completas ni a aceptación humana; sectores interiores jugados exhaustivamente y dispositivos físicos pendientes.
+
+Siguiente: usar referencias comparables para la entrada/salida de derrape y recuperación de fase 25; no repetir el ensayo de 0.63 como si hubiera sido aprobado. Cambiar un módulo compartido exige nueva huella y actualización coordinada del backend, por lo que no se mezcla una nueva física con el servidor anterior. Alternar después con audio/iluminación/pistas según evidencia. No se da por terminado online ni el manejo por añadir este modo.

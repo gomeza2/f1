@@ -2,6 +2,14 @@
 
 Juego web arcade de carreras 2D desde arriba, con identidad retro propia, circuitos de formas variadas, rivales controlados por CPU, derrapes, superficies y campeonato.
 
+## Nuevo en 0.84 — práctica de sectores
+
+Elegí **PRÁCTICA DE SECTORES** y después **PRACTICAR CURVAS**. Sin CPU: seleccioná cualquier tramo entre meta/checkpoints de las catorce pistas y probalo con cualquiera de los cuatro coches. Podés salir desde parado, a 120, a 180 o a la máxima real del modelo. **REPETIR / R** reinicia el mismo sector sin regenerar el paisaje; **SIGUIENTE** recorre los sectores.
+
+Cruzar el checkpoint/meta correcto termina y pausa el intento. El panel exterior muestra tiempo, velocidad de salida, tiempo de freno/mano/gas suelto, salidas de pista e impactos registrados. El mejor intento limpio se compara por sector y velocidad de entrada durante esa práctica; no se mezclan velocidades ni se guardan tiempos parciales como récords de vuelta, fantasmas o puntos. Un intento sin terminar se detiene a los 120 s. Teclado, mando y táctil conservan sus controles.
+
+Es una nueva forma de aprender y comparar el manejo, **sin cambiar todavía las fuerzas de conducción ni añadir una simulación lateral nueva**. Se mantienen CPU, audio, escenarios 0.83, campeonato, rápida, contrarreloj/fantasma, local 2–4 y online. Pruebas y límites en [PRACTICE_084.md](tests/experiments/PRACTICE_084.md); valoración humana, todos los sectores interiores jugados y hardware físico pendientes. Backend/huella online conservados: esta entrega del cliente no requiere actualizar Render.
+
 ## Nuevo en 0.83 — paisajes con volumen y referencias propias
 
 Neon Harbor incorpora una dársena con muelles y embarcación; Dusty Mesa y Rally Canyon, relieves por estratos; Volcano Ring, cráteres de lava; Coastline Run, lagunas con orillas y aguas por capas. Son **13 elementos grandes en cinco circuitos**, dibujados con formas originales, sombras coherentes y detalle escalonado en **Detallado/Retro**. Rendimiento conserva sus escenarios anteriores.
