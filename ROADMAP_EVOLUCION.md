@@ -30,7 +30,7 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 - Conducción/derrape, CPU justa, audio, cuatro circuitos uniformes, gráficos y local siguen abiertos y se alternarán por impacto. No reducir todo el trabajo a CPU ni dar por terminada la sensación humana por tests.
 - Vista 3D inclinada opcional en fase 37, solicitada para más adelante; no reemplazará por obligación la vista cenital actual.
 
-Estado vigente 0.82: primera anticipación/reconciliación visual propia de 33.2.2, elección Ágil/Clásica, guards de contactos y parada sin reversa al liberar controles/perder mando. Conexión Free y URL conservadas; sin cambios de backend/huella. La fase 33.2 sigue parcial: replay de entradas/ticks, grupos de contacto y validación humana/pública pendientes. **Próxima entrega recomendada: alternar con presentación/escenarios de 36**, conservando pruebas online y recogiendo aceptación del manejo. Física/derrape/audio y tres pistas uniformes siguen abiertos.
+Estado vigente 0.83: tramo de escenarios 36.3 con trece referencias ambientales grandes en cinco circuitos, cacheadas y fuera de la recuperación. Detallado/Retro mejorados; Rendimiento y nueve circuitos conservados. Física/CPU/audio, backend y modos intactos. La fase 33.2 sigue parcial: replay de entradas/ticks, grupos de contacto y validación humana/pública pendientes. **Próxima entrega recomendada: volver a fase 25**, medir entrada/salida de curva, frenado y derrape usando la simulación compartida, antes de cambiar valores. Alternar con iluminación 36.4, audio y las tres pistas uniformes; no dar por aceptado el manejo humano por las pruebas automáticas.
 
 ## Fases abiertas
 
@@ -523,3 +523,12 @@ Corregido: freno sostenido al liberar controles activaba reversa; freno + mano m
 Comprobado automáticamente: 32 combinaciones coche/superficie frente al paso compartido, siete comparativas de streams con retardo/jitter, cuatro navegadores con vueltas completas, reconexión, pose propia aplicada al renderer sin mutar autoridad, opción clásica, parada y mando perdido; regresiones de teclado/local/táctil/recursos/guardado. Ver `tests/experiments/RESPONSE_082.md`. No se considera terminado el online ni aprobada la sensación humana por estas pruebas.
 
 **Siguiente entrega recomendada: 36**, claridad visual/coches/escenarios con presupuesto gráfico y sin alterar física/contrato de servidor; alternar con manejo/audio según evidencia humana. El tramo online posterior requiere timestamps/ticks de entradas aplicadas para replay/reconciliación completa, predicción conjunta de contactos y pruebas públicas con varios dispositivos. La anticipación actual es visual/conservadora, no rollback determinista.
+
+
+## Avance 0.83 — fase 36.3, paisajes y referencias de escala
+
+Implementado: dársena de Neon Harbor, mesetas de Dusty Mesa, cráteres de Volcano Ring, lagunas de Coastline Run y relieves de Rally Canyon. Trece elementos grandes en Detallado/Retro, con capas de volumen/material y sombra coherente. La selección reserva huella completa más separación, mantiene objetos pequeños fuera de esas huellas y no ocupa carretera/recuperación. Usa el fondo cacheado y los presupuestos existentes; Rendimiento queda intacto. No añade colisiones ni terrenos jugables.
+
+Comprobación comparativa en Chromium contra 0.82 auténtica: 42 escenas, diez fondos distintos, 32 idénticos, 42 capas de carretera iguales y 1.611.612 muestras de carretera/recuperación sin cambios; sin nuevos Canvas y sin redibujar paisajes en frames cacheados. Capturas cercanas de los cinco temas revisadas. Regresiones y límites en `tests/experiments/LANDMARKS_083.md`.
+
+La fase gráfica sigue abierta: no es una reconstrucción de los catorce entornos ni iluminación completa. Pendientes valoración humana, teléfonos físicos y perfilado sostenido; el microbenchmark local no acredita FPS reales. **Siguiente: fase 25**, comparar curvas/frenado/derrape con el núcleo compartido y conservar solo variantes que mejoren control sin eliminar consecuencias; después alternar con 36.4/audio/otras pistas. No tocar física únicamente para simular progreso ni repetir el ensayo lateral rechazado sin resolver su planificación.

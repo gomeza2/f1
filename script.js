@@ -7,7 +7,7 @@ if(typeof PixelDrivingCore==='undefined'||typeof PixelTrackCore==='undefined'||t
  try{
   for(const [name,file,marker] of [['PixelDrivingCore','driving-core.js','drivingCore'],['PixelTrackCore','track-core.js','trackCore'],['PixelRaceRules','race-rules.js','raceRules'],['PixelGhostLap','ghost-lap.js','ghostLap'],['PixelRaceSession','race-session.js','raceSession']]){
    if(typeof globalThis[name]!=='undefined')continue;
-   const dependency=new URL(file,base);dependency.searchParams.set('v','0.82');
+   const dependency=new URL(file,base);dependency.searchParams.set('v','0.83');
    await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=dependency.href;script.dataset[marker]='fallback';script.onload=resolve;script.onerror=reject;document.head.append(script);});
    if(typeof globalThis[name]?.create!=='function')throw new Error('Shared module unavailable');
   }
@@ -454,17 +454,17 @@ function openCatalogue(){if(raceState.running)return;catalogueKind='cars';$('cat
 const SCENERY_CLEARANCE=124;
 const SCENERY_THEMES={
  park:{kinds:['tree','tree','tent','stands'],leaf:'#327951',light:'#71a66a',stone:'#88917c',roof:'#3cbab5',ground:'#4c694a'},
- harbor:{kinds:['container','warehouse','crane'],leaf:'#275c59',light:'#6ab6af',stone:'#5e7580',roof:'#3cbab5',ground:'#53766e'},
- desert:{kinds:['cactus','mesa','rock'],leaf:'#49704d',light:'#8b9b62',stone:'#99704c',roof:'#d29b61',ground:'#d0ad71'},
+ harbor:{landmarks:['harborBasin'],kinds:['container','warehouse','crane'],leaf:'#275c59',light:'#6ab6af',stone:'#5e7580',roof:'#3cbab5',ground:'#53766e'},
+ desert:{landmarks:['mesaPlateau'],kinds:['cactus','mesa','rock'],leaf:'#49704d',light:'#8b9b62',stone:'#99704c',roof:'#d29b61',ground:'#d0ad71'},
  night:{kinds:['building','building','tent'],leaf:'#25384f',light:'#8194b7',stone:'#34455f',roof:'#b85c8c',ground:'#34465d'},
  snow:{kinds:['pine','pine','cabin','rock'],leaf:'#367f75',light:'#e3f3ef',stone:'#b3cece',roof:'#d4eeee',ground:'#a9c7bd'},
  jungle:{kinds:['canopy','canopy','rock','tent'],leaf:'#196044',light:'#4d925d',stone:'#6d8170',roof:'#aeaa65',ground:'#2a6345'},
- volcano:{kinds:['basalt','basalt','rock'],leaf:'#563d45',light:'#c96545',stone:'#51434e',roof:'#bf6146',ground:'#59444a'},
+ volcano:{landmarks:['lavaCrater'],kinds:['basalt','basalt','rock'],leaf:'#563d45',light:'#c96545',stone:'#51434e',roof:'#bf6146',ground:'#59444a'},
  city:{kinds:['building','warehouse','tent'],leaf:'#347269',light:'#7fa29a',stone:'#435669',roof:'#43ada8',ground:'#4e786e'},
  valley:{kinds:['pine','rock','tree'],leaf:'#326858',light:'#78a088',stone:'#7c898e',roof:'#749e89',ground:'#4e7462'},
  stadium:{kinds:['stands','stands','tent','tree'],leaf:'#3f7955',light:'#81aa64',stone:'#738484',roof:'#398a97',ground:'#547453'},
- coast:{kinds:['palm','palm','rock','tent'],leaf:'#246b57',light:'#61a778',stone:'#d2c59b',roof:'#4ab6bd',ground:'#baad7a'},
- canyon:{kinds:['mesa','rock','cactus','tent'],leaf:'#69764b',light:'#9ba36c',stone:'#a07b56',roof:'#d3915c',ground:'#b09365'},
+ coast:{landmarks:['coastalLagoon'],kinds:['palm','palm','rock','tent'],leaf:'#246b57',light:'#61a778',stone:'#d2c59b',roof:'#4ab6bd',ground:'#baad7a'},
+ canyon:{landmarks:['canyonPlateau'],kinds:['mesa','rock','cactus','tent'],leaf:'#69764b',light:'#9ba36c',stone:'#a07b56',roof:'#d3915c',ground:'#b09365'},
  meadow:{kinds:['tree','flowers','flowers','tent'],leaf:'#397b45',light:'#8bb967',stone:'#8c9779',roof:'#cfb76c',ground:'#648751'},
  industrial:{kinds:['container','tank','crane','warehouse'],leaf:'#41685e',light:'#9eb1a8',stone:'#607076',roof:'#bc9860',ground:'#657565'}
 };
@@ -474,10 +474,56 @@ function sceneryRandom(x,y,salt=0){
  let value=Math.imul(x+stage*131+salt*977,374761393)^Math.imul(y+salt*37,668265263);
  value=Math.imul(value^(value>>>13),1274126177);return ((value^(value>>>16))>>>0)/4294967296;
 }
+// Large static landmarks reserve their complete footprint, including projected shadow.
+// They stay beyond the shared road/recovery envelope and never add collision geometry.
+const LANDMARK_CLEARANCE=SCENERY_CLEARANCE+40,landmarkCache=new WeakMap(),NO_LANDMARKS=Object.freeze([]);
+function landmarksForTrack(){
+ const kind=SCENERY_THEMES[TRACK_SCENERY[stage]].landmarks?.[0];if(!kind||graphics==='lite')return NO_LANDMARKS;
+ if(landmarkCache.has(track))return landmarkCache.get(track);
+ const candidates=[],extra=Math.max(0,roadMaxHalfWidth()-ROAD_SHOULDER),limit=Math.min(180,Math.min(track.worldWidth,track.worldHeight)*.14);
+ for(let row=0,y=84;y<track.worldHeight-84;row++,y+=48)for(let col=0,x=84;x<track.worldWidth-84;col++,x+=48){
+  const distance=nearestOnTrack(x,y).distance,radius=Math.floor(Math.min(limit,distance-LANDMARK_CLEARANCE-extra,x-12,y-12,track.worldWidth-x-12,track.worldHeight-y-12));
+  if(radius<72||distance>LANDMARK_CLEARANCE+extra+radius+56)continue;
+  const variant=sceneryRandom(col,row,81);candidates.push({x,y,radius,size:radius,kind,theme:TRACK_SCENERY[stage],variant,large:true,landmark:true,score:radius*radius*(1+variant*.12)});
+ }
+ candidates.sort((a,b)=>b.score-a.score);const selected=[];
+ for(const item of candidates){if(selected.every(other=>pointDistance(item,other)>=item.radius+other.radius+24))selected.push(item);if(selected.length===3)break;}
+ const result=Object.freeze(selected.map(({score,...item})=>Object.freeze(item)));landmarkCache.set(track,result);return result;
+}
+function drawSceneryLandmark(d,palette,detail,{rect,poly,oval}){
+ const ring=(scale,dy,color)=>{const points=[];for(let i=0;i<12;i++){const angle=i*Math.PI/6,r=.72+Math.sin(i*1.7+d.variant*6)*.045;points.push([Math.cos(angle)*r*scale,Math.sin(angle)*r*.72*scale+dy]);}poly(points,color);};
+ const shadowX=-CAR_LIGHT.x*.13,shadowY=-CAR_LIGHT.y*.13;
+ oval(shadowX,shadowY,.77,.55,'#07152536');
+ if(d.kind==='coastalLagoon'){
+  ring(1.12,.015,'#8d9870');ring(1.06,0,'#e1ce98');ring(.97,-.01,'#b4cba5');ring(.91,-.015,'#428f91');ring(.84,-.018,'#226b7c');ring(.65,.02,'#164e68');
+  if(detail){ring(.48,.045,'#194761');for(let i=0;i<9;i++){const x=Math.sin(i*2.2+d.variant)*.38,y=Math.cos(i*1.5)*.24;rect(x,y,.075+(i%3)*.025,.009,i%2?'#9ce5db70':'#51b9bf90');}}
+  else for(let i=0;i<4;i++)rect(-.28+i*.16,Math.sin(i*2)*.17,.09,.012,'#7acfc5');
+  // Pale shallows and small rocks make the rim readable without a road-like outline.
+  poly([[-.55,-.12],[-.49,-.31],[-.33,-.38],[-.42,-.24]],'#96cfbf');
+  for(let i=0;i<3;i++){const x=.42+i*.055,y=.26-i*.045;oval(x,y,.035,.025,'#596f69');oval(x-.008,y-.012,.026,.016,'#c2c7a0');}
+ }else if(d.kind==='harborBasin'){
+  rect(-.74,-.47,1.48,.94,'#1d3544');rect(-.71,-.45,1.42,.87,'#8c9e9d');rect(-.64,-.38,1.28,.73,'#173f58');rect(-.61,-.35,1.22,.68,'#20566b');rect(-.64,-.38,1.28,.035,'#bcc9b3');rect(.61,-.35,.03,.7,'#415e68');
+  for(const y of [-.23,.17]){rect(-.65,y,.53,.065,'#a28b67');rect(-.65,y+.065,.53,.025,'#263d4a');for(let i=0;i<4;i++)rect(-.6+i*.13,y,.018,.075,'#d1c5a1');}
+  // Static boats are scenery, outside the reachable road and recovery zone.
+  poly([[.12,-.16],[.38,-.16],[.46,-.10],[.38,-.045],[.12,-.045]],'#0b2638');poly([[.11,-.18],[.37,-.18],[.45,-.125],[.37,-.07],[.11,-.07]],'#e7e8d3');rect(.19,-.16,.14,.07,'#3baab4');
+  for(let i=0;i<3;i++){const x=-.58+i*.28;rect(x,-.44,.22,.055,['#d09763','#50aaa9','#a17c9e'][i]);if(detail)for(let j=0;j<4;j++)rect(x+.02+j*.05,-.438,.008,.05,'#172e4555');}
+  if(detail)for(let i=0;i<7;i++)rect(.02+(i%3)*.17,.04+Math.floor(i/3)*.08,.06,.008,'#76b6c455');
+ }else if(d.kind==='lavaCrater'){
+  ring(1.06,.08,'#312c35');ring(1.01,.02,'#77615e');ring(.93,-.05,'#574951');ring(.82,-.09,'#8c6b60');ring(.72,-.065,'#342b35');ring(.63,-.025,'#af4b35');ring(.53,.005,'#e37637');ring(.40,.025,'#f2ac54');ring(.23,.015,'#ffd882');
+  if(detail){for(let i=0;i<5;i++){const angle=i*1.26+d.variant,x=Math.cos(angle)*.5,y=Math.sin(angle)*.35;poly([[x,y],[x+.05,y-.015],[x+.12,y+.035],[x+.035,y+.025]],'#e8934c');}rect(-.13,-.02,.14,.018,'#ffe5a8');}
+ }else{
+  const canyon=d.kind==='canyonPlateau',faces=canyon?['#67473d','#a26849','#bd8158','#cc9467','#deb07d']:['#72533b','#99704b','#b38757','#c89d68','#ddbd84'];
+  ring(1.03,.08,faces[0]);
+  const layers=detail?5:3;for(let i=0;i<layers;i++){const t=i/(layers-1);ring(.96-t*.24,.06-t*.23,faces[Math.round(t*4)]);}
+  ring(.70,-.18,canyon?'#bf9569':'#c8b382');
+  if(detail){poly([[-.42,-.12],[-.15,-.2],[.25,-.18],[.42,-.07],[.13,-.12],[-.16,-.11]],canyon?'#a57959':'#a88c64');for(let i=0;i<4;i++)rect(-.35+i*.2,.10+Math.sin(i)*.06,.10,.012,'#61453666');
+   rect(.1,-.28,.025,.13,palette.leaf);rect(.06,-.24,.06,.021,palette.leaf);rect(.06,-.27,.02,.05,palette.leaf);}
+ }
+}
 function decorationsForTrack(){
  let cached=sceneryCache.get(track);if(!cached){cached=new Map();sceneryCache.set(track,cached);}
  if(cached.has(graphics))return cached.get(graphics);
- const list=[],candidates=[],theme=SCENERY_THEMES[TRACK_SCENERY[stage]],density=graphics==='high'?.86:graphics==='retro'?.63:.4;
+ const list=[...landmarksForTrack()],candidates=[],theme=SCENERY_THEMES[TRACK_SCENERY[stage]],density=graphics==='high'?.86:graphics==='retro'?.63:.4;
  for(let row=0,y=38;y<track.worldHeight-38;row++,y+=48)for(let col=0,x=38;x<track.worldWidth-38;col++,x+=50){
   if(sceneryRandom(col,row)>density)continue;
   const px=x+(sceneryRandom(col,row,1)-.5)*28,py=y+(sceneryRandom(col,row,2)-.5)*28;
@@ -494,7 +540,7 @@ function decorationsForTrack(){
  for(const item of candidates)if(!list.some(other=>Math.hypot(other.x-item.x,other.y-item.y)<other.radius+item.radius+5))list.push(item);
  // Keep the cached scene bounded even when a circuit has a much larger world.
  const budget=graphics==='high'?150:graphics==='retro'?110:80;
- if(list.length>budget){const spread=Array.from({length:budget},(_,i)=>list[Math.floor((i+.5)*list.length/budget)]);list.length=0;list.push(...spread);}
+ if(list.length>budget){const reserved=list.filter(d=>d.landmark),ordinary=list.filter(d=>!d.landmark),slots=budget-reserved.length,spread=Array.from({length:slots},(_,i)=>ordinary[Math.floor((i+.5)*ordinary.length/slots)]);list.length=0;list.push(...reserved,...spread);}
  list.sort((a,b)=>a.y-b.y);cached.set(graphics,list);return list;
 }
 // Static crowns use the same upper-left world light as cars. All geometry stays
@@ -613,6 +659,7 @@ function drawSceneryObject(context,d){
  const rect=(x,y,w,h,color)=>{context.fillStyle=color;context.fillRect(x*s,y*s,w*s,h*s);};
  const poly=(points,color)=>{context.fillStyle=color;context.beginPath();points.forEach(([x,y],i)=>i?context.lineTo(x*s,y*s):context.moveTo(x*s,y*s));context.closePath();context.fill();};
  const oval=(x,y,rx,ry,color)=>{context.fillStyle=color;context.beginPath();context.ellipse(x*s,y*s,rx*s,ry*s,0,0,Math.PI*2);context.fill();};
+ if(d.landmark){drawSceneryLandmark(d,palette,detail,{rect,poly,oval});context.restore();return;}
  if(graphics!=='lite'&&['tree','canopy','palm','pine','cactus'].includes(d.kind)){
   drawVegetation(d,palette,detail,{rect,poly,oval});context.restore();return;
  }
@@ -1680,9 +1727,9 @@ async function openOnlineLobby(){
  online={active:false,loaded:false,connected:false,room:null,transport:null,raceId:null,roster:[],blocked:false,lastEvent:0};
  $('onlineCreate').disabled=true;$('onlineJoin').disabled=true;$('onlineStatus').textContent='CARGANDO CONEXIÓN…';
  try{
-  if(typeof PixelOnlineClient==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-client.js?v=0.82',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
-  if(typeof PixelOnlinePrediction==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-prediction.js?v=0.82',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
-  const response=await fetch(new URL('online-config.json?v=0.82',document.baseURI),{cache:'no-store'});if(!response.ok)throw new Error('manifest');const config=await response.json();if(config.build!=='0.82'||config.protocol!==1||!/^[a-f0-9]{64}$/.test(config.simulation))throw new Error('manifest');
+  if(typeof PixelOnlineClient==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-client.js?v=0.83',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
+  if(typeof PixelOnlinePrediction==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-prediction.js?v=0.83',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
+  const response=await fetch(new URL('online-config.json?v=0.83',document.baseURI),{cache:'no-store'});if(!response.ok)throw new Error('manifest');const config=await response.json();if(config.build!=='0.83'||config.protocol!==1||!/^[a-f0-9]{64}$/.test(config.simulation))throw new Error('manifest');
   online.transport=PixelOnlineClient.create({simulation:config.simulation,onStatus:onlineStatus,onMessage:onlineMessage});online.loaded=true;
   try{$('onlineServer').value=localStorage.getItem('pixelGP.onlineServer.v1')||config.serverUrl||'';}catch(error){$('onlineServer').value=config.serverUrl||'';}
   for(const [id,items] of [['onlineModel',Object.entries(CAR_MODELS).map(([value,item])=>[value,item.name])],['onlinePaint',Object.entries(CAR_PAINTS).map(([value,item])=>[value,item.name])],['onlineTrack',tracks.map((item,i)=>[String(i),item.name])]]){for(const [value,label] of items){const option=document.createElement('option');option.value=value;option.textContent=label;$(id).append(option);}}

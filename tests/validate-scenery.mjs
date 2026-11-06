@@ -25,10 +25,14 @@ for(const graphics of ['high','retro','lite']){
    const quadrants=[0,0,0,0];for(const d of list)quadrants[Number(d.x>game.track.worldWidth/2)+2*Number(d.y>game.track.worldHeight/2)]++;assert.ok(quadrants.every(n=>n>=3),'Budget cropped scenery to one corner of the long world');
   }
   if(graphics==='high'){high+=list.length;fingerprints[stage]=JSON.stringify(list);}
+  const landmarks=list.filter(d=>d.landmark),target=[1,2,6,10,11].includes(stage);
+  assert.equal(landmarks.length>0,target&&graphics!=='lite','Landmark target/quality registration mismatch');assert.ok(landmarks.length<=3);
+  if(graphics==='retro')assert.equal(JSON.stringify(landmarks),JSON.stringify(JSON.parse(fingerprints[stage]).filter(d=>d.landmark)),'Retro moved landmarks');
   if(graphics==='lite')lite+=list.length;
   for(const [i,d] of list.entries()){
    objects++;kinds.add(d.kind);
-   assert.ok(game.SCENERY_THEMES[d.theme].kinds.includes(d.kind));
+   if(d.landmark)assert.ok(game.nearestOnTrack(d.x,d.y).distance-d.radius>=164+Math.max(0,game.roadMaxHalfWidth()-game.ROAD_SHOULDER)-1e-6,'Landmark reaches recovery envelope');
+   assert.ok([...game.SCENERY_THEMES[d.theme].kinds,...(game.SCENERY_THEMES[d.theme].landmarks||[])].includes(d.kind));
    assert.ok(d.x>=d.radius&&d.y>=d.radius&&d.x+d.radius<=game.track.worldWidth&&d.y+d.radius<=game.track.worldHeight);
    assert.ok(game.nearestOnTrack(d.x,d.y).distance-d.radius>=124-1e-6,'Scenery footprint occupies recovery corridor');
    for(const p of recordedPoints(d))assert.ok(Math.hypot(p.x-d.x,p.y-d.y)<=d.radius+1e-6,`${d.kind}: visible geometry exceeds reserved footprint`);

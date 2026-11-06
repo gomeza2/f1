@@ -2,6 +2,14 @@
 
 Juego web arcade de carreras 2D desde arriba, con identidad retro propia, circuitos de formas variadas, rivales controlados por CPU, derrapes, superficies y campeonato.
 
+## Nuevo en 0.83 — paisajes con volumen y referencias propias
+
+Neon Harbor incorpora una dársena con muelles y embarcación; Dusty Mesa y Rally Canyon, relieves por estratos; Volcano Ring, cráteres de lava; Coastline Run, lagunas con orillas y aguas por capas. Son **13 elementos grandes en cinco circuitos**, dibujados con formas originales, sombras coherentes y detalle escalonado en **Detallado/Retro**. Rendimiento conserva sus escenarios anteriores.
+
+La colocación reserva toda la huella visual fuera del recorrido y de la recuperación, separa los objetos pequeños y mantiene los presupuestos existentes. Se dibujan una vez en el fondo cacheado, sin recursos externos, nuevos lienzos ni trabajo de paisaje por frame. Son referencias ambientales: no añaden superficies transitables ni colisiones invisibles.
+
+Se conservan conducción p6/b1/s1, CPU, catorce trazados, cuatro coches, audio, récords, campeonato, contrarreloj/fantasma, local 2–4, táctil y online. Comparación de 42 escenas en Chromium: diez fondos mejorados, 32 fondos de Rendimiento/otros circuitos idénticos y todas las capas de carretera intactas. Evidencia, pruebas y límites en [LANDMARKS_083.md](tests/experiments/LANDMARKS_083.md). La valoración humana y el rendimiento en dispositivos físicos siguen pendientes; no se declara verificado el sitio público.
+
 ## Nuevo en 0.82 — respuesta ágil del coche online
 
 En la sala podés elegir **RESPUESTA ONLINE → ÁGIL** (predeterminada) o **CLÁSICA**. Ágil anticipa brevemente la imagen de tu propio coche con el mismo motor de conducción y terreno; los rivales conservan su interpolación. En zonas libres responde antes al giro, sin cambiar velocidad máxima, agarre o frenado reales. El servidor sigue decidiendo contactos, vueltas, tiempos y resultados.

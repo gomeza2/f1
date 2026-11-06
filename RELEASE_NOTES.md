@@ -6,6 +6,14 @@
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
 
+## Paisajes en 0.83 — fase 36.3
+
+Cinco escenarios reciben referencias ambientales grandes: dársena portuaria, mesetas desérticas, cráteres volcánicos, lagunas costeras y relieves de cañón. Trece elementos originales, con capas de material/volumen y sombras en la dirección de luz de los coches. Detallado y Retro comparten posiciones; Rendimiento y nueve circuitos conservan sus fondos anteriores.
+
+Colocación determinista que reserva huella completa y margen de recuperación de 164 unidades desde la línea central, ampliado por secciones más anchas. Los objetos pequeños respetan esas reservas. Máximo tres elementos grandes por circuito, incluidos en los presupuestos anteriores de decoración; no se crean nuevos Canvas ni capas por frame. Cacheados en el fondo existente.
+
+Sin cambios de reglas, fuerzas, CPU, audio, trazados, récords ni backend. No se simulan agua/lava transitables ni nuevas colisiones. Recursos/manifiesto 0.83, contrato físico online conservado. Pruebas comparativas nativas y regresiones en `tests/experiments/LANDMARKS_083.md`; fase gráfica parcial, aceptación humana/dispositivos y publicación pública pendientes.
+
 ## Respuesta local online en 0.82 — primer tramo de 33.2.2
 
 Nuevo `online-prediction.js`: copia descartable del coche propio, pasos físicos compartidos a 60 Hz, horizonte máximo 150 ms y reconciliación de presentación acotada. No modifica el estado recibido ni registra vueltas/resultados. Usa conducción, superficies, resistencia, recuperación y barreras originales; no hay fórmulas físicas paralelas. Tráfico cercano, contactos, pausa de controles y final/DNF desactivan la anticipación; con datos antiguos congela el último visual. Los rivales siguen interpolados.

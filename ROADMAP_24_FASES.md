@@ -2,7 +2,7 @@
 
 La planificación abierta vigente continúa en [`ROADMAP_EVOLUCION.md`](ROADMAP_EVOLUCION.md), sin límite artificial de fases. Las 24 originales y sus decisiones se conservan aquí como contexto y registro.
 
-> Estado vigente: entrega **0.82**, anticipación visual propia Ágil/Clásica de 33.2.2 y parada online sin reversa; modos locales conservados. Replay/ticks, contactos conjuntos y validación pública pendientes. El «Estado real» inferior es histórico (0.62). Ver `ROADMAP_EVOLUCION.md` y `RELEASE_NOTES.md`.
+> Estado vigente: entrega **0.83**, trece referencias de paisaje en cinco circuitos (36.3), Detallado/Retro, sin alterar conducción ni modos. Online 33.2 y aceptación humana pendientes. El «Estado real» inferior es histórico (0.62). Ver `ROADMAP_EVOLUCION.md` y `RELEASE_NOTES.md`.
 
 ## Objetivo de diseño
 
