@@ -2,7 +2,7 @@
 
 La planificación abierta vigente continúa en [`ROADMAP_EVOLUCION.md`](ROADMAP_EVOLUCION.md), sin límite artificial de fases. Las 24 originales y sus decisiones se conservan aquí como contexto y registro.
 
-> Estado vigente: entrega **0.84**, práctica de sectores integrada con la física real, comparación de intentos y mejores limpios de sesión sin récords parciales. Manejo lateral, aceptación humana y online 33.2 siguen abiertos. El «Estado real» inferior es histórico (0.62). Ver `ROADMAP_EVOLUCION.md` y `RELEASE_NOTES.md`.
+> Estado vigente: entrega **0.85**, dirección fina por piloto y táctil graduable opcional sobre el mismo motor. Práctica y modos conservados; conducción lateral y validación humana/pública siguen abiertas. El «Estado real» inferior es histórico (0.62). Ver `ROADMAP_EVOLUCION.md` y `RELEASE_NOTES.md`.
 
 ## Objetivo de diseño
 

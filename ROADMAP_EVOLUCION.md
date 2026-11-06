@@ -30,7 +30,7 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 - Conducción/derrape, CPU justa, audio, cuatro circuitos uniformes, gráficos y local siguen abiertos y se alternarán por impacto. No reducir todo el trabajo a CPU ni dar por terminada la sensación humana por tests.
 - Vista 3D inclinada opcional en fase 37, solicitada para más adelante; no reemplazará por obligación la vista cenital actual.
 
-Estado vigente 0.84: práctica de sectores integrada para medir entrada/frenado/mano y repetir curvas con el núcleo real. 132 intervalos seleccionables, cuatro coches, mejores limpios de sesión y sin récords parciales. Conservados paisajes 0.83, fuerzas/CPU/audio, modos y backend. La fase 25 sigue abierta: no se incorporó el ensayo lateral rechazado ni se afirma aceptada la sensación humana. **Próximo: comparar control de entrada/salida de curva y recuperación con estas referencias**, antes de adoptar cambios de física; alternar con audio 26, iluminación 36.4 y las tres pistas uniformes. Online 33.2 aún requiere replay/contactos conjuntos y validación pública/humana.
+Estado vigente 0.85: dirección fina opcional en teclado para los cuatro humanos y dirección táctil graduable con deslizamiento, porcentaje y persistencia. Se aprovecha el control analógico del motor existente sin alterar fuerzas/récords/backend. La práctica 0.84 y todos los modos se conservan. Fase 25 sigue parcial: no hay velocidad lateral completa ni aceptación humana del manejo. **Próximo recomendado: fase 27, Champion Road**, una de las tres pistas todavía uniformes, alternando después con audio 26 y gráficos 36. Online 33.2 sigue abierto para replay/contactos conjuntos y validación humana/pública.
 
 ## Fases abiertas
 
@@ -543,3 +543,12 @@ No se guardan vueltas parciales ni récords/fantasmas/puntos. Mejor limpio separ
 Pruebas: 112 sectores físicamente conducidos (primer/último de 14 pistas × cuatro modelos), 132 posiciones iniciales/gates/cachés, regresiones de control/métodos/online y 48 maniobras comparando gas/retención/freno/mano en asfalto/tierra/hielo. Repeticiones afectadas tras corregir controles deshabilitados y compactar el panel móvil; ver `tests/experiments/PRACTICE_084.md`. No equivalen a vueltas completas ni a aceptación humana; sectores interiores jugados exhaustivamente y dispositivos físicos pendientes.
 
 Siguiente: usar referencias comparables para la entrada/salida de derrape y recuperación de fase 25; no repetir el ensayo de 0.63 como si hubiera sido aprobado. Cambiar un módulo compartido exige nueva huella y actualización coordinada del backend, por lo que no se mezcla una nueva física con el servidor anterior. Alternar después con audio/iluminación/pistas según evidencia. No se da por terminado online ni el manejo por añadir este modo.
+
+
+## Avance 0.85 — fase 25, graduar el volante humano
+
+Teclado: modificador de 50 % de dirección con P1 Shift izquierdo/P2 Shift derecho/P3 O/P4 B, sin tocar pedales ni topes físicos. Se diferencian códigos de Shift y se mantiene su liberación independiente. Táctil: modo Graduable opcional con intensidad por posición horizontal, captura/deslizamiento, suma de direcciones y porcentaje de entrada en la flecha. Clásica conserva la conducta anterior y queda predeterminada; guardado compatible con preferencias viejas y lectura validada. No se añade una barra sobre la pista.
+
+Entrada analógica normalizada al mismo núcleo en local/práctica/online; mandos conservados. No es nueva física de derrape, boost ni aumento de adherencia. Se preserva el servidor alojado y su huella; no requiere actualizar Render. Pruebas y límites en `tests/experiments/FINE_STEERING_085.md`.
+
+Siguiente recomendado: fase 27, secciones/ritmo de Champion Road, conservando estos controles; siguen tres rutas uniformes, audio/iluminación y aceptación humana. La conducción y el online no quedan completados por esta entrega. Una futura revisión del núcleo debe comparar tráfico y coordinar su nueva huella con backend, sin publicar fuerzas incompatibles silenciosamente.

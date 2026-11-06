@@ -2,6 +2,14 @@
 
 Juego web arcade de carreras 2D desde arriba, con identidad retro propia, circuitos de formas variadas, rivales controlados por CPU, derrapes, superficies y campeonato.
 
+## Nuevo en 0.85 — dirección fina de teclado y táctil graduable
+
+Mantené **Shift izquierdo** mientras girás para pedir medio volante: permite hacer correcciones pequeñas sin alternar constantemente entre todo/nada. Soltarlo recupera el giro completo. No modifica gas, frenado, agarre, velocidad máxima ni la inercia del chasis. En local cada piloto tiene su tecla independiente: **P1 Shift izquierdo · P2 Shift derecho · P3 O · P4 B**. Los mandos conservan su dirección analógica.
+
+En **TÁCTIL → DIRECCIÓN → GRADUABLE**, el borde interior del botón gira suave y el exterior más fuerte; podés deslizar el dedo manteniendo GAS con el otro. Un porcentaje en la flecha muestra cuánto volante pedís. El modo **CLÁSICA** conserva el giro completo anterior y sigue siendo el predeterminado. La elección se guarda en este navegador; preferencias anteriores siguen siendo válidas.
+
+Funciona con la misma física en práctica, carreras, contrarreloj, local y online. Son controles analógicos enviados al motor existente, sin ayudas invisibles ni un motor físico paralelo. Se conservan pistas, coches, CPU, audio, gráficos, récords y huella de servidor. Evidencia y límites en [FINE_STEERING_085.md](tests/experiments/FINE_STEERING_085.md). Valoración humana y hardware físico pendientes; no requiere actualizar el backend de Render.
+
 ## Nuevo en 0.84 — práctica de sectores
 
 Elegí **PRÁCTICA DE SECTORES** y después **PRACTICAR CURVAS**. Sin CPU: seleccioná cualquier tramo entre meta/checkpoints de las catorce pistas y probalo con cualquiera de los cuatro coches. Podés salir desde parado, a 120, a 180 o a la máxima real del modelo. **REPETIR / R** reinicia el mismo sector sin regenerar el paisaje; **SIGUIENTE** recorre los sectores.

@@ -1,10 +1,18 @@
-# PIXEL GRAND PRIX — entrega 0.84
+# PIXEL GRAND PRIX — entrega 0.85
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Dirección fina en 0.85 — fase 25 y controles móviles
+
+Tecla independiente por piloto para pedir 50 % de dirección: Shift izquierdo/derecho, O y B. Usa códigos físicos para distinguir ambos Shift; liberar uno no suelta el del otro jugador. El resto de pedales/teclas y el giro completo se conservan, con limpieza de estado al pausar/perder foco/reiniciar.
+
+Modo táctil Graduable opcional: posición horizontal del dedo determina entre 25 % y 100 % de giro, simétrico entre flechas, con captura y deslizamiento sin perder el dedo del acelerador. Varios dedos en una flecha usan la mayor intensidad; las direcciones se combinan antes del límite normal. Porcentaje de volante en el botón; Clásica conserva la entrada anterior y es el valor predeterminado. Persistencia compatible con ajustes antiguos y valores inválidos rechazados.
+
+Mismo núcleo p6/b1/s1, sin cambiar aceleración/grip/yaw/CPU, trazados, audio, récords ni protocolo. El servidor ya admite dirección analógica: huella y URL Free intactas. Recursos 0.85 coherentes. Comparación física/nativa, multitouch y regresiones: `tests/experiments/FINE_STEERING_085.md`. Sensación humana y teléfonos/teclados físicos pendientes; no se declara cerrada la conducción lateral ni verificado el alojamiento público.
 
 ## Práctica en 0.84 — herramientas de fase 25 y modos
 

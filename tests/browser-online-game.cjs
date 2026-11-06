@@ -44,6 +44,7 @@ const bridge=`window.onlineUiTest={state(){return {active:online?.active,room:on
   await pages[2].locator('#canvas1').focus();app.service.sendSnapshot(room);await new Promise(r=>setTimeout(r,30));await pages[2].keyboard.down('w');await pages[2].keyboard.down(' ');
   await pages[2].evaluate(()=>window.onlineUiTest.pulse({throttle:0,brake:0,steering:0,hand:false}));await new Promise(r=>setTimeout(r,30));
   assert.equal(room.players.get(2).input.throttle,1);assert.equal(room.players.get(2).input.hand,true);assert.equal(room.players.get(0).input.throttle,0);
+  await pages[2].keyboard.down('d');await pages[2].keyboard.down('ShiftLeft');await pages[2].evaluate(()=>window.onlineUiTest.pulse({throttle:0,brake:0,steering:0,hand:false}));await new Promise(r=>setTimeout(r,30));assert.equal(room.players.get(2).input.steering,.5);assert.equal(room.players.get(2).input.throttle,1);await pages[2].keyboard.up('ShiftLeft');await pages[2].evaluate(()=>window.onlineUiTest.pulse({throttle:0,brake:0,steering:0,hand:false}));await new Promise(r=>setTimeout(r,30));assert.equal(room.players.get(2).input.steering,1);await pages[2].keyboard.up('d');
   await pages[2].keyboard.up('w');await pages[2].keyboard.up(' ');await pages[2].keyboard.press('Escape');
   assert.equal(await pages[2].locator('#pauseBtn').getAttribute('aria-pressed'),'true');assert.equal(room.session.state.paused,false);
   await pages[2].keyboard.press('Escape');

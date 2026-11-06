@@ -366,3 +366,5 @@ button:disabled{cursor:default;opacity:.55}
 .practice-bar label{display:grid;gap:3px;color:#a8c5d3;font:10px monospace}.practice-bar select{padding:6px;font:12px monospace}.practice-bar p{grid-column:1/-1;margin:0;color:var(--cyan);font:12px/1.4 monospace}.practice-bar button{min-height:32px}
 @media(max-width:600px){.practice-bar{grid-template-columns:1fr 1fr;padding:5px}.practice-bar label{min-width:0}.practice-bar p{font-size:10px}.practice-bar button{font-size:7px}}
 @media(max-height:520px) and (orientation:landscape){.practice-bar{gap:4px;padding:4px 6px}.practice-bar label{font-size:8px;gap:2px}.practice-bar select{padding:4px;font-size:10px}.practice-bar button{min-height:26px}.practice-bar:not(.practice-complete) p{display:none}.practice-bar.practice-complete p{font-size:10px}}
+
+.touch-steer button{position:relative}.touch-steer button:not([data-level=""])::after{content:attr(data-level);display:block;min-height:10px;font:9px monospace;color:var(--cyan)}
