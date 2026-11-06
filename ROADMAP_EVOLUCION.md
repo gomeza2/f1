@@ -30,7 +30,7 @@ Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP
 - Conducción/derrape, CPU justa, audio, cuatro circuitos uniformes, gráficos y local siguen abiertos y se alternarán por impacto. No reducir todo el trabajo a CPU ni dar por terminada la sensación humana por tests.
 - Vista 3D inclinada opcional en fase 37, solicitada para más adelante; no reemplazará por obligación la vista cenital actual.
 
-Estado vigente 0.85: dirección fina opcional en teclado para los cuatro humanos y dirección táctil graduable con deslizamiento, porcentaje y persistencia. Se aprovecha el control analógico del motor existente sin alterar fuerzas/récords/backend. La práctica 0.84 y todos los modos se conservan. Fase 25 sigue parcial: no hay velocidad lateral completa ni aceptación humana del manejo. **Próximo recomendado: fase 27, Champion Road**, una de las tres pistas todavía uniformes, alternando después con audio 26 y gráficos 36. Online 33.2 sigue abierto para replay/contactos conjuntos y validación humana/pública.
+Estado vigente 0.86: Champion Road revisado, 8.158 unidades, asfalto 72–120, pianos por sectores y doce checkpoints; doce pistas variables/dos uniformes (Meadow/Industrial). Se conservan manejo/CPU/audio/controles y modos. La geometría compartida cambia su huella: backend 0.86.0 preparado, **despliegue manual en Render pendiente del usuario**; no se declara publicado ni validado el servicio público. **Próximo recomendado: fase 26, audio de motor/superficies**, alternando luego con las dos pistas uniformes y gráficos. Manejo lateral y online 33.2 continúan abiertos a pruebas humanas/públicas.
 
 ## Fases abiertas
 
@@ -552,3 +552,14 @@ Teclado: modificador de 50 % de dirección con P1 Shift izquierdo/P2 Shift derec
 Entrada analógica normalizada al mismo núcleo en local/práctica/online; mandos conservados. No es nueva física de derrape, boost ni aumento de adherencia. Se preserva el servidor alojado y su huella; no requiere actualizar Render. Pruebas y límites en `tests/experiments/FINE_STEERING_085.md`.
 
 Siguiente recomendado: fase 27, secciones/ritmo de Champion Road, conservando estos controles; siguen tres rutas uniformes, audio/iluminación y aceptación humana. La conducción y el online no quedan completados por esta entrega. Una futura revisión del núcleo debe comparar tráfico y coordinar su nueva huella con backend, sin publicar fuerzas incompatibles silenciosamente.
+
+
+## Avance 0.86 — fase 27, Champion Road
+
+Recorrido 10 mantiene su identidad de estadio y asfalto, con centro revisado, recta ancha, retorno este separado del ramal inferior, interior técnico y secciones enlazadas. Mundo 2100×1344, 8.158,07 unidades frente a 4.973,59, ancho asfaltado 72–120 y kerbs 0–6 por lado; doce checkpoints ordenados. Geometría comprobada con todo el ancho, margen al mundo 43,9 y separación entre ramales 55,3. La primera variante se rechazó por superposición. Cinco barreras, automática en curvas; trece rutas conservadas.
+
+Récords/fantasmas @3/r1 separados de @2 sin borrar archivos/tiempos. Se comprueban 62 vueltas nativas, grupos de cuatro y dificultades/modelos/barreras, contrarreloj y las regresiones de modos; evidencia en `tests/experiments/CHAMPION_086.md`. No se cierra el equilibrio humano por una vuelta CPU de unos 44 s. Revisión explícita de fixtures/adaptadores históricos; no se comparan tiempos del trazado viejo con el nuevo para aprobar ritmo.
+
+Núcleo de conducción/IA/audio intacto, pero `track-core.js` cambia la huella de servidor. Versión backend 0.86.0, manifiesto alineado y pruebas online locales: **el usuario debe ejecutar Manual Deploy → Deploy latest commit en su servicio Render** para usar la nueva geometría por Internet. Plan Free y configuración existentes conservados; despliegue público no verificado.
+
+Próximo: fase 26, motor/mezcla/superficies con escucha humana pendiente; alternar con Meadow/Industrial e iluminación. Siguen manejo lateral, aceptación humana, sincronización/replay/hosting y otros frentes ampliables. No hay un número fijo de entregas para cerrar todo.

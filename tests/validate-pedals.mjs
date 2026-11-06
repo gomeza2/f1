@@ -32,5 +32,5 @@ for(const rate of [20,30,60,120,144]){
  const a=probe(now,p,{initial:100,throttle:.4,brake:.2,frames:rate,rate}),b=probe(now,p,{initial:100,throttle:.4,brake:.2,frames:60,rate:60});assert.deepEqual(a,b,'Pedals bypass the fixed simulation clock');
 }
 assert.equal(now.game.PHYSICS_VERSION,6);assert.deepEqual(JSON.parse(JSON.stringify(now.game.CAR_MODELS)),frozen.models);assert.deepEqual(JSON.parse(JSON.stringify(now.game.TERRAIN_MATERIALS)),frozen.materials);
-now.game.bestLapRecords['CHAMPION ROAD@2:p6:s1:b1']=25;now.game.start('solo',9);assert.equal(now.game.lapRecordKey(),'CHAMPION ROAD@2:p6:s1:b1');assert.equal(now.game.bestLapRecords[now.game.lapRecordKey()],25);
+now.game.bestLapRecords['CHAMPION ROAD@2:p6:s1:b1']=25;now.game.start('solo',9);assert.equal(now.game.lapRecordKey(),'CHAMPION ROAD@3:p6:r1:s1:b1');assert.equal(now.game.bestLapRecords['CHAMPION ROAD@2:p6:s1:b1'],25);assert.equal(now.game.bestLapRecords[now.game.lapRecordKey()],undefined);
 console.log(JSON.stringify({rows,endpoints}));console.log('PASS: four-model actual control/physics probes, continuous feathering, proportional brake priority including held handbrake, keyboard parity, 18 unchanged digital terrain/steering paths, identical fixed-step motion at 20–144 Hz, unchanged limits/models/materials/records. No lateral-velocity drift is claimed.');

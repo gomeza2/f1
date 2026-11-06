@@ -1,6 +1,9 @@
-# Servidor privado de Pixel Grand Prix — 0.80
+# Servidor privado de Pixel Grand Prix — 0.86
 
-Backend autoritativo separado del frontend estático. **Desde 0.80 el menú ONLINE PRIVADO conecta a estas salas.** La raíz HTTP del servidor sigue siendo un diagnóstico, no sirve los archivos del juego. No hay servidor público predeterminado. Para alojamiento propuesto ver `../HOSTING.md`; latencia humana/hosting y predicción pendientes en 33.2.
+**Actualización 0.86:** Champion Road tiene nueva geometría compartida. Desplegar este mismo commit en Render mediante **Manual Deploy → Deploy latest commit**; conservar Free/Build/Start/variables. La huella nueva es `ad20dd46ef387058811cdd3072626a264f39238ab9141d9a9c044ff99042c8f0`. Un backend viejo se rechaza por versión. Ver `../HOSTING.md`; aquí no se confirma despliegue público.
+
+
+Backend autoritativo separado del frontend estático. **Desde 0.80 el menú ONLINE PRIVADO conecta a estas salas.** La raíz HTTP del servidor sigue siendo un diagnóstico, no sirve los archivos del juego. El frontend configura por defecto la URL de Render aportada por el usuario. Para alojamiento propuesto ver `../HOSTING.md`; latencia humana/hosting y predicción pendientes en 33.2.
 
 ## Ejecutar y comprobar
 

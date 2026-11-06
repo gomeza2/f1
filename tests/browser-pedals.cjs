@@ -16,7 +16,7 @@ const server=http.createServer((req,res)=>{const file=new URL(req.url,'http://lo
   }
   if(version==='current'){
    for(let i=0;i<8;i+=2)assert.equal(results[version].keys[i+1].distance,results[version].keys[i].distance);assert.ok(results[version].analog[1].speed-results[version].analog[0].speed<.07);
-   assert.equal(await page.evaluate(()=>window.pedalProbe.record()),'CHAMPION ROAD@2:p6:s1:b1');await page.reload();await page.selectOption('#stageSelect','9');assert.equal(await page.locator('#previewRecord').textContent(),'00:24.0');
+   assert.equal(await page.evaluate(()=>window.pedalProbe.record()),'CHAMPION ROAD@3:p6:r1:s1:b1');await page.reload();await page.selectOption('#stageSelect','9');assert.equal(await page.locator('#previewRecord').textContent(),'00:24.0');
   }
   assert.deepEqual(errors,[]);await page.close();
  }

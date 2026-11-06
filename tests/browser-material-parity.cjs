@@ -13,6 +13,7 @@ const server=http.createServer((req,res)=>{const name=req.url.split('?')[0]==='/
   const results={},stages=process.env.PARITY_STAGES?process.env.PARITY_STAGES.split(',').map(Number):[0,1,2,3,4,6];assert.ok(stages.length>0&&new Set(stages).size===stages.length&&stages.every(s=>Number.isInteger(s)&&s>=0&&s<14),'Invalid PARITY_STAGES');
   for(const [version,source] of Object.entries(sources)){
    const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+   if(version==='before'&&process.env.ROAD_TRACK_BASELINE)await page.route(/\/track-core\.js(?:\?.*)?$/,r=>r.fulfill({contentType:'text/javascript',body:fs.readFileSync(process.env.ROAD_TRACK_BASELINE,'utf8')}));
    await page.route(/\/script\.js(?:\?.*)?$/,r=>r.fulfill({contentType:'text/javascript',body:source.replace(/\}\)\(\);\s*$/,raceStateBridge+bridge+'})();')}));await page.goto('http://127.0.0.1:'+server.address().port);results[version]={};
    for(const stage of stages)for(const quality of ['high','retro','lite'])results[version][stage+quality]=await page.evaluate(([stage,quality])=>window.roadParity(stage,quality),[stage,quality]);
    assert.deepEqual(errors,[]);await page.close();

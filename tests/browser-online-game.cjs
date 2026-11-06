@@ -3,7 +3,7 @@ const {chromium}=require('playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs'),http=require('node:http'),path=require('node:path');
 const {createApp}=require('../server/index.cjs');
 const {navigate,P,immediate}=require('../server/test/helpers.cjs');
-const root=path.resolve(__dirname,'..'),captures=process.env.ONLINE_SCREENSHOTS;if(captures)fs.mkdirSync(captures,{recursive:true});
+const root=path.resolve(__dirname,'..'),captures=process.env.ONLINE_SCREENSHOTS,onlineStage=Number(process.env.ONLINE_STAGE??2);assert.ok(Number.isInteger(onlineStage)&&onlineStage>=0&&onlineStage<14);if(captures)fs.mkdirSync(captures,{recursive:true});
 const bridge=`window.onlineUiTest={state(){return {active:online?.active,room:online?.room,session:online?.transport?.session?{pilotId:online.transport.session.pilotId}:null,tick:online?.transport?.tick,own:onlineSelfIndex(),camera:raceCamera(onlineSelfIndex()),cars:raceState.cars,elapsed:raceState.elapsed,focus:document.hasFocus(),prediction:online?.prediction?.stats,visual:online?.visual,rendered:raceState.cars[onlineSelfIndex()]?renderedCar(raceState.cars[onlineSelfIndex()]):null};},pulse(c){window.testPad.axes[0]=Math.abs(c.steering)<.001?0:Math.sign(c.steering)*(.15+Math.abs(c.steering)*.85);window.testPad.buttons[7].value=c.throttle;window.testPad.buttons[6].value=c.brake;window.testPad.buttons[2].value=c.hand?1:0;sendOnlineControls();}};`;
 (async()=>{
  const errors=[],serverErrors=[],pages=[],contexts=[];const wallStart=performance.now();let now=0,app,browser;
@@ -23,14 +23,14 @@ const bridge=`window.onlineUiTest={state(){return {active:online?.active,room:on
    await context.addInitScript(()=>{window.testPad={id:'Standard emulated controller',index:0,connected:true,mapping:'standard',axes:[0,0],buttons:Array.from({length:18},()=>({value:0,pressed:false,touched:false}))};navigator.getGamepads=()=>[window.testPad];});
    await context.route('https://fonts.googleapis.com/**',route=>route.abort());const page=await context.newPage();pages.push(page);page.on('pageerror',e=>errors.push(e.message));
    await page.goto(base+'/f1/');await page.selectOption('#graphics','lite');await page.click('#onlineSetupBtn');await page.waitForFunction(()=>!document.getElementById('onlineCreate').disabled);assert.equal(await page.locator('#onlineServer').inputValue(),require('../online-config.json').serverUrl);await page.fill('#onlineServer',url.http);await page.fill('#onlineName',i===2?'<img src=x onerror=alert(1)>'.slice(0,20):'Piloto '+(i+1));
-   if(i===0){await page.selectOption('#stageSelect','2');await page.click('#onlineCreate');}
+   if(i===0){await page.selectOption('#stageSelect',String(onlineStage));await page.click('#onlineCreate');}
    else{const code=await pages[0].locator('#onlineRoomCode').textContent();await page.fill('#onlineCode',code);await page.click('#onlineJoin');}
    await page.waitForSelector('#onlineRoom:not(.hidden)');await page.selectOption('#onlineInput',i===2?'keyboard':'pad0');
   }
   const code=await pages[0].locator('#onlineRoomCode').textContent();const room=app.service.rooms.get(code);
   await pages[0].waitForFunction(()=>document.querySelectorAll('#onlinePilots li').length===4);
   assert.equal(await pages[1].locator('#onlineConfigure').isDisabled(),true);assert.equal(await pages[0].locator('#onlineStart').isDisabled(),true);
-  await pages[0].selectOption('#onlineTrack','2');await pages[0].selectOption('#onlineLaps','1');await pages[0].click('#onlineConfigure');
+  await pages[0].selectOption('#onlineTrack',String(onlineStage));await pages[0].selectOption('#onlineLaps','1');await pages[0].click('#onlineConfigure');
   await pages[0].waitForFunction(()=>document.getElementById('onlineRoomHint').textContent.includes('Elegí'));
   for(let i=0;i<4;i++){
    await pages[i].selectOption('#onlineModel',['balanced','corner','speed','rally'][i]);await pages[i].click('#onlineChoose');await pages[i].waitForFunction(model=>window.onlineUiTest.state().room.players.find(p=>p.pilotId===window.onlineUiTest.state().session.pilotId)?.model===model,['balanced','corner','speed','rally'][i]);
@@ -50,7 +50,7 @@ const bridge=`window.onlineUiTest={state(){return {active:online?.active,room:on
   await pages[2].keyboard.press('Escape');
   // Switch only the automated test driver to an emulated analog pad after the native keyboard check.
   await pages[2].evaluate(()=>document.getElementById('onlineInput').value='pad0');
-  const world=P.geometry.createWorld(2,'auto');let reconnected=false,captured=false;
+  const world=P.geometry.createWorld(onlineStage,'auto');let reconnected=false,captured=false;
   for(let n=0;n<6000&&room.phase!=='results';n+=3){
    await Promise.all(pages.map(async(page,i)=>{
     const car=room.session.state.cars.find(c=>c.player===i);if(car.done||car.retired)return;

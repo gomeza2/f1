@@ -2,6 +2,16 @@
 
 Juego web arcade de carreras 2D desde arriba, con identidad retro propia, circuitos de formas variadas, rivales controlados por CPU, derrapes, superficies y campeonato.
 
+## Nuevo en 0.86 — Champion Road con otro ritmo
+
+El circuito **10 · CHAMPION ROAD** pasa de 4.974 a **8.158 unidades**: recta principal amplia, retorno este revisado, sector interior técnico y regreso enlazado. Ancho de asfalto variable de **72 a 120**, pianos utilizables por sectores y otros bordes sin piano, doce checkpoints y cinco perfiles de barreras. Mantiene asfalto/ambiente de estadio y protección automática en curvas; podés elegir abierto.
+
+Referencia CPU Normal libre: **45,07 / 43,98 s** en las dos primeras vueltas, sin cambiar coches ni fuerzas. Las catorce pistas, cuatro modelos, CPU, controles finos/táctiles, rápida/campeonato, contrarreloj/fantasma, práctica y local 2–4 se conservan. Los otros trece trazados no cambian. Champion usa récord/fantasma `@3:p6:r1:s1:b1`, conservando sus tiempos antiguos por separado. Quedan dos pistas de ancho uniforme: Meadow Run e Industrial Mix.
+
+**Online: esta entrega sí requiere actualizar el servidor de Render**, porque comparte los trazados. Después de actualizar el frontend, abrí tu servicio `pixel-grand-prix-rooms` en Render y elegí **Manual Deploy → Deploy latest commit**. Conservá Free, Build/Start y variables actuales. Luego recargá el juego. Un servidor anterior se rechaza por versión para evitar físicas/geometrías distintas; no se activan dos motores incompatibles. Instrucciones y comprobación de huella en [HOSTING.md](HOSTING.md).
+
+Pruebas: 62 vueltas nativas de Champion, geometría completa, sectores, barreras, guardado y regresiones; evidencia en [CHAMPION_086.md](tests/experiments/CHAMPION_086.md). Son pruebas automatizadas, no aprobación humana de diversión ni del hosting público. Las secciones inferiores registran entregas anteriores; el estado actual está en el roadmap vigente.
+
 ## Nuevo en 0.85 — dirección fina de teclado y táctil graduable
 
 Mantené **Shift izquierdo** mientras girás para pedir medio volante: permite hacer correcciones pequeñas sin alternar constantemente entre todo/nada. Soltarlo recupera el giro completo. No modifica gas, frenado, agarre, velocidad máxima ni la inercia del chasis. En local cada piloto tiene su tecla independiente: **P1 Shift izquierdo · P2 Shift derecho · P3 O · P4 B**. Los mandos conservan su dirección analógica.
@@ -192,7 +202,7 @@ La futura vista **3D inclinada opcional** tendrá acceso en **Cámara y gráfico
 
 Las fichas modifican los selectores existentes y la siguiente carrera, sin alterar el estado de una carrera anterior. Diálogo con teclado, foco contenido, cierre visible y diseño adaptable. No añade coches, retoca la física ni cambia récords. Pruebas y límites en [CATALOGUE_070.md](tests/experiments/CATALOGUE_070.md).
 
-**Online y vista 3D:** todavía no disponibles. [ONLINE_DESIGN.md](ONLINE_DESIGN.md) concreta salas autoritativas de 2–4, controles, sincronización, reconexión y criterios de despliegue. Conducción, geometría y reglas de contactos/vueltas ya se comparten sin DOM; el próximo hito es el reloj/estado/resultados completos independientes por carrera. La fase 37 reserva una vista 3D inclinada opcional para más adelante; la 38 continúa catálogo/presentación. Conducción, CPU, audio, cuatro pistas uniformes y gráficos siguen abiertos en [ROADMAP_EVOLUCION.md](ROADMAP_EVOLUCION.md).
+**Online y vista 3D:** hay salas privadas con servidor compatible; desde 0.86 hace falta actualizar también Render por la revisión de Champion. La vista 3D opcional continúa planificada. [ONLINE_DESIGN.md](ONLINE_DESIGN.md) concreta salas autoritativas de 2–4, controles, sincronización, reconexión y criterios de despliegue. Conducción, geometría y reglas de contactos/vueltas ya se comparten sin DOM; el próximo hito es el reloj/estado/resultados completos independientes por carrera. La fase 37 reserva una vista 3D inclinada opcional para más adelante; la 38 continúa catálogo/presentación. Conducción, CPU, audio, cuatro pistas uniformes y gráficos siguen abiertos en [ROADMAP_EVOLUCION.md](ROADMAP_EVOLUCION.md).
 
 ## Recuperación y motor de movimiento — 0.69
 

@@ -18,7 +18,7 @@ for(const stage of stages){
  let narrow=Infinity,wide=0,kerbs=0,bare=0;
  for(let d=0;d<track.length;d+=5){
   const a=game.roadSectionAt(d),b=game.roadSectionAt(d+5),width=game.roadHalfWidthAt(d);
-  assert.ok(a.halfWidth>=34&&a.halfWidth<=(stage===11?64:[5,8,10].includes(stage)?58:56));assert.ok(a.kerb>=0&&a.kerb<=6);
+  assert.ok(a.halfWidth>=34&&a.halfWidth<=(stage===11?64:stage===9?60:[5,8,10].includes(stage)?58:56));assert.ok(a.kerb>=0&&a.kerb<=6);
   assert.ok(Math.abs(width-game.roadHalfWidthAt(d+5))<1,'Abrupt narrowing');
   narrow=Math.min(narrow,width);wide=Math.max(wide,width);if(a.kerb>3)kerbs++;if(a.kerb<.1)bare++;
   assert.deepEqual(game.roadSectionAt(d+track.length),a,'Cross-section is not periodic');
@@ -32,7 +32,7 @@ for(const stage of stages){
    assert.equal(game.terrainAt(x,y,loc).offroad,delta>0,`${track.name}: visual/legal edge at ${d}/${offset}`);checks++;
   }
  }
- assert.ok(wide-narrow>15,'Profile does not change usable width');assert.ok(bare>0);if([0,1,3,7,8,10].includes(stage))assert.ok(kerbs>0);
+ assert.ok(wide-narrow>15,'Profile does not change usable width');assert.ok(bare>0);if([0,1,3,7,8,9,10].includes(stage))assert.ok(kerbs>0);
  for(const gate of game.checkpoints)assert.equal(gate.halfWidth,game.roadHalfWidthAt(gate.progress));
  const legacy=track.name+'@'+track.layoutVersion+':p4';game.bestLapRecords[legacy]=18;
  assert.equal(game.lapRecordKey(),legacy.replace(':p4',':p6')+':r1:s1:b1');assert.ok(game.saveBestLap(game.lapRecordKey(),30));assert.equal(game.bestLapRecords[legacy],18);

@@ -1,5 +1,8 @@
 # PIXEL GRAND PRIX — diseño de online privado
 
+**0.86:** revisión compartida de Champion Road, sin nuevas fórmulas de conducción. Cliente y backend deben actualizarse juntos; manifiesto/huella nuevos y backend 0.86.0 preparados. Render requiere despliegue manual del commit de `main`; no se considera verificado públicamente. Las notas de versiones anteriores se conservan como historial.
+
+
 **Estado en 0.82: salas/cliente y URL configurados, anticipación visual del coche propio con física compartida y modo Clásico.** Guard de tráfico/contactos, reconciliación de errores visuales pequeños, límite de horizonte y parada sin reversa; backend/protocolo sin cambios. No equivale a replay completo de inputs ni predicción de colisiones grupales. La validación pública y humana sigue pendiente; el bloqueo CONNECT 403 observado anteriormente no se elude.
 
 ## Primera entrega completa que se busca

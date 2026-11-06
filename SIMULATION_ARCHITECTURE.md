@@ -1,4 +1,7 @@
-# Simulación compartida — estado 0.82
+# Simulación compartida — estado 0.86
+
+**0.86:** revisión compartida de Champion Road, sin nuevas fórmulas de conducción. Cliente y backend deben actualizarse juntos; manifiesto/huella nuevos y backend 0.86.0 preparados. Render requiere despliegue manual del commit de `main`; no se considera verificado públicamente. Las notas de versiones anteriores se conservan como historial.
+
 
 `driving-core.js` es el primer bloque extraído del motor real. Lo usa `script.js` para conducir en el navegador y puede importarse directamente en Node. No necesita DOM, Canvas, audio, almacenamiento, reloj externo ni dependencias de npm.
 

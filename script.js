@@ -7,7 +7,7 @@ if(typeof PixelDrivingCore==='undefined'||typeof PixelTrackCore==='undefined'||t
  try{
   for(const [name,file,marker] of [['PixelDrivingCore','driving-core.js','drivingCore'],['PixelTrackCore','track-core.js','trackCore'],['PixelRaceRules','race-rules.js','raceRules'],['PixelGhostLap','ghost-lap.js','ghostLap'],['PixelRaceSession','race-session.js','raceSession']]){
    if(typeof globalThis[name]!=='undefined')continue;
-   const dependency=new URL(file,base);dependency.searchParams.set('v','0.85');
+   const dependency=new URL(file,base);dependency.searchParams.set('v','0.86');
    await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=dependency.href;script.dataset[marker]='fallback';script.onload=resolve;script.onerror=reject;document.head.append(script);});
    if(typeof globalThis[name]?.create!=='function')throw new Error('Shared module unavailable');
   }
@@ -1815,9 +1815,9 @@ async function openOnlineLobby(){
  online={active:false,loaded:false,connected:false,room:null,transport:null,raceId:null,roster:[],blocked:false,lastEvent:0};
  $('onlineCreate').disabled=true;$('onlineJoin').disabled=true;$('onlineStatus').textContent='CARGANDO CONEXIÓN…';
  try{
-  if(typeof PixelOnlineClient==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-client.js?v=0.85',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
-  if(typeof PixelOnlinePrediction==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-prediction.js?v=0.85',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
-  const response=await fetch(new URL('online-config.json?v=0.85',document.baseURI),{cache:'no-store'});if(!response.ok)throw new Error('manifest');const config=await response.json();if(config.build!=='0.85'||config.protocol!==1||!/^[a-f0-9]{64}$/.test(config.simulation))throw new Error('manifest');
+  if(typeof PixelOnlineClient==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-client.js?v=0.86',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
+  if(typeof PixelOnlinePrediction==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-prediction.js?v=0.86',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
+  const response=await fetch(new URL('online-config.json?v=0.86',document.baseURI),{cache:'no-store'});if(!response.ok)throw new Error('manifest');const config=await response.json();if(config.build!=='0.86'||config.protocol!==1||!/^[a-f0-9]{64}$/.test(config.simulation))throw new Error('manifest');
   online.transport=PixelOnlineClient.create({simulation:config.simulation,onStatus:onlineStatus,onMessage:onlineMessage});online.loaded=true;
   try{$('onlineServer').value=localStorage.getItem('pixelGP.onlineServer.v1')||config.serverUrl||'';}catch(error){$('onlineServer').value=config.serverUrl||'';}
   for(const [id,items] of [['onlineModel',Object.entries(CAR_MODELS).map(([value,item])=>[value,item.name])],['onlinePaint',Object.entries(CAR_PAINTS).map(([value,item])=>[value,item.name])],['onlineTrack',tracks.map((item,i)=>[String(i),item.name])]]){for(const [value,label] of items){const option=document.createElement('option');option.value=value;option.textContent=label;$(id).append(option);}}

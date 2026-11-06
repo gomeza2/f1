@@ -1,4 +1,4 @@
-import {withLegacyRally,assertRallyRevision} from './helpers/rally-revision.mjs';
+import {withLegacyRally,assertKnownTrackRevision} from './helpers/track-revisions.mjs';
 import {assertOriginalModels} from './helpers/model-balance.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -11,7 +11,7 @@ assert.equal(g.WORLD_SPEED_SCALE,baseline.worldSpeed);
 assertOriginalModels(g.CAR_MODELS,baseline.models);
 for(const [current,previous] of [[g.AI_DRIVERS,baseline.drivers],[g.AI_PERSONALITIES,baseline.personalities]])assert.deepEqual(JSON.parse(JSON.stringify(current)),previous);
 const materials=JSON.parse(JSON.stringify(g.TERRAIN_MATERIALS));delete materials.grass.road;assert.deepEqual(materials,baseline.materials); // Jungle 0.60 adds grass art only.
-for(const t of g.tracks){if(['JUNGLE SPRINT','THUNDER VALLEY','COASTLINE RUN'].includes(t.name)&&t.layoutVersion===3)continue;const signature=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion,surface:t.surface,defaultBarriers:t.defaultBarriers})).digest('hex');if(!assertRallyRevision(t))assert.equal(signature,baseline.tracks[t.name],t.name+': CPU work changed a course');}
+for(const t of g.tracks){if(['JUNGLE SPRINT','THUNDER VALLEY','COASTLINE RUN'].includes(t.name)&&t.layoutVersion===3)continue;const signature=createHash('sha256').update(JSON.stringify({points:t.points,samples:t.samples,worldScale:t.worldScale,layoutVersion:t.layoutVersion,roadProfile:t.roadProfile,roadVersion:t.roadVersion,surface:t.surface,defaultBarriers:t.defaultBarriers})).digest('hex');if(!assertKnownTrackRevision(t))assert.equal(signature,baseline.tracks[t.name],t.name+': CPU work changed a course');}
 function decision(c){return g.aiTraffic(c,g.nearestOnTrack(c.x,c.y),g.driverFor(c),1/30);}
 function set(c,p,l){g.placeCar(c,p,l);c.speed=100;}
 // The nearer leader must not cancel a side reservation, including small distance-order changes.

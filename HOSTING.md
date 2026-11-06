@@ -1,5 +1,17 @@
 # Alojamiento propuesto para salas privadas
 
+## Actualizar a 0.86 — necesario por Champion Road
+
+El usuario ya creó `pixel-grand-prix-rooms` en Render. Esta entrega cambia datos de `track-core.js`, por lo que el servidor anterior y el frontend nuevo no son compatibles aunque las fuerzas del coche sean iguales. El protocolo rechaza esa mezcla.
+
+1. Abrí tu servicio de Render **pixel-grand-prix-rooms**.
+2. Elegí **Manual Deploy → Deploy latest commit**, después de que 0.86 esté en `main`.
+3. Conservá **Free**, el Build/Start y las variables actuales. No hace falta agregar una tarjeta por este cambio de código.
+4. Esperá a que Render termine y recargá el juego en Pages (Ctrl+F5 si conserva recursos viejos).
+5. La raíz del backend debería identificar **0.86**. `/health` debe responder `ok: true` y la misma `simulation` de `online-config.json`: `ad20dd46ef387058811cdd3072626a264f39238ab9141d9a9c044ff99042c8f0`.
+
+Es una instrucción de despliegue, no una afirmación de que este entorno lo haya ejecutado. `render.yaml` conserva `autoDeploy: false`; publicar el commit no demuestra por sí solo que Render lo esté ejecutando. Prueba recomendada posterior: dos dispositivos, crear/unirse, correr Champion y comprobar resultados/reconexión.
+
 ## Dirección configurada en 0.81
 
 El usuario informó que creó el servicio y proporcionó **https://pixel-grand-prix-rooms.onrender.com**. Se guarda como `online-config.json.serverUrl` predeterminado; la UI conserva una dirección personalizada ya guardada. Abrir esa raíz muestra el backend de salas; el juego se abre por separado en Pages y conecta por `/ws` usando WSS.

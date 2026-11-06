@@ -1,10 +1,20 @@
-# PIXEL GRAND PRIX — entrega 0.85
+# PIXEL GRAND PRIX — entrega 0.86
 
 ## Qué incluye esta base
 
 14 circuitos, cuatro modelos/seis pinturas, 1–3 rivales con estilos/nombres propios, 2–4 jugadores local, campeonato y tablas de puntos. HUD exterior, cámara cercana/overview/dividida, pistas abiertas por defecto según circuito, superficies, derrape, récords versionados, audio sintetizado y bandera de llegada.
 
 Las últimas correcciones arreglan pausa/reanudación rápida, teclas retenidas, pausa al ocultar pestaña y redondeo de tiempos al minuto. La CPU establece antes el carril reservado ante una convergencia cercana. Los recursos web llevan la misma versión que el HTML para reducir mezclas por caché.
+
+## Champion Road en 0.86 — fase 27
+
+Nuevo trazado revisado de Champion: mundo 2100×1344, 8.158 unidades, asfalto 72–120 de ancho, pianos 0–6 por lado y doce gates. Recta amplia, retorno este despejado del ramal inferior y sector interior más estrecho; tres variantes geométricas iniciales se descartaron por solapamiento/margen insuficiente antes de separar ambos ramales. Trece rutas restantes y algoritmo de geometría intactos.
+
+Física p6/b1/s1, modelos/CPU/audio, dirección fina, modos, táctil y local conservados. Nueva identidad `CHAMPION ROAD@3:p6:r1:s1:b1`; récords y fantasmas del recorrido anterior no compiten en el nuevo ni se borran sus tiempos. Barreras en curvas por defecto y cinco configuraciones disponibles. Quedan Meadow/Industrial uniformes.
+
+Backend 0.86.0 y manifiesto con nueva huella compartida: **requiere Manual Deploy del mismo commit en Render**. No se contrató otro plan ni se cambió Free/variables/autoDeploy. No se afirma desplegado públicamente desde este entorno. Pruebas/resultados/límites en `tests/experiments/CHAMPION_086.md`; controles/reglas de manejo sin cambios.
+
+Se reparan adaptadores de pruebas históricas que habían quedado desfasados por práctica/online; se aceptan revisiones por hash explícito, no borrando fixtures ni ampliando presupuestos de ritmo/contacto. Referencias longitudinales miden distancia sin exigir orientación horizontal del nuevo trazado.
 
 ## Dirección fina en 0.85 — fase 25 y controles móviles
 

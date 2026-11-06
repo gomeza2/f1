@@ -12,7 +12,7 @@ function createApp({autoTick = true, clock = () => performance.now(), allowedOri
     if (req.method !== 'GET') { res.writeHead(405).end('GET only'); return; }
     if (req.url === '/health') { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ok: !closing, protocol: P.PROTOCOL, simulation: P.SIMULATION, ...service.stats()})); return; }
     if (req.url === '/protocol') { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(service.manifest())); return; }
-    if (req.url === '/') { res.setHeader('Content-Type', 'text/plain; charset=utf-8'); res.end('PIXEL GRAND PRIX — servidor de salas privadas 0.80\nGET /health · GET /protocol · WebSocket /ws\nServidor local de desarrollo. El cliente estático conecta a /ws desde ONLINE PRIVADO.\n'); return; }
+    if (req.url === '/') { res.setHeader('Content-Type', 'text/plain; charset=utf-8'); res.end('PIXEL GRAND PRIX — servidor de salas privadas 0.86\nGET /health · GET /protocol · WebSocket /ws\nServidor local de desarrollo. El cliente estático conecta a /ws desde ONLINE PRIVADO.\n'); return; }
     res.writeHead(404).end('Not found');
   });
   const wss = new WebSocketServer({noServer: true, maxPayload: 4096, perMessageDeflate: false});

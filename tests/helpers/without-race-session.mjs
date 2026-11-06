@@ -1,3 +1,4 @@
+import {withoutPracticeSessionHooks} from './without-practice-session-hooks.mjs';
 const edits=[
  [
   "||typeof PixelGhostLap==='undefined'||typeof PixelRaceSession==='undefined')",
@@ -103,6 +104,7 @@ const edits=[
 const names={"cars": "cars", "elapsed": "elapsed", "running": "running", "paused": "paused", "countdownRemaining": "countdownRemaining", "goFlashRemaining": "goFlashRemaining", "accumulator": "simulationAccumulator"};
 export function withoutRaceSession(source){
  if(!source.includes('let raceSession=createRaceSession()'))return source;
+ source=withoutPracticeSessionHooks(source);
  source=source.replace(/\braceState\.(cars|elapsed|running|paused|countdownRemaining|goFlashRemaining|accumulator)\b/g,(_,name)=>names[name]);
  for(const [current,previous] of [...edits].reverse()){if(!source.includes(current))throw Error('Race session migration anchor changed: '+current.slice(0,80));source=source.replace(current,previous);}
  // Asset cache versions do not alter the preserved physical reference.

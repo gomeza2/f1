@@ -107,6 +107,8 @@ const edits=[
 ];
 export function withoutReverseRecovery(source){
  if(!source.includes('function updateDriveSpeed('))return source;
- for(const [current,previous] of edits){if(!source.includes(current))throw new Error('Recovery migration anchor changed');source=source.replace(current,previous);}
+ // Online 0.80 selects remote audio intent; the historic reference is offline only.
+ source=source.replace("online?.active?(car?.player===online.transport.session?.pilotId?controlsFor(0):{throttle:car?.braking?0:1,brake:car?.braking?1:0}):controlsFor(player)",'controlsFor(player)');
+ for(const [current,previous] of edits){if(!source.includes(current))throw new Error('Recovery migration anchor changed: '+current.slice(0,180));source=source.replace(current,previous);}
  return source;
 }

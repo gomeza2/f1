@@ -1,4 +1,4 @@
-import {withRallyRevision} from './rally-revision.mjs';
+import {withTrackRevisions} from './track-revisions.mjs';
 import {withoutSharedRules} from './without-shared-rules.mjs';
 // Undo only the declared 0.72 geometry extraction in legacy regression fixtures.
 const edits=[
@@ -136,5 +136,5 @@ export function withoutSharedTracks(source){
  if(!source.includes('const trackCore=PixelTrackCore.create();'))return source;
  source=source.replace(/dependency\.searchParams\.set\('v','[0-9.]+'\)/,"dependency.searchParams.set('v','0.72')");
  for(const [current,previous] of edits){if(!source.includes(current))throw new Error('Shared-track extraction anchor changed');source=source.replace(current,previous);}
- return withRallyRevision(source);
+ return withTrackRevisions(source);
 }
