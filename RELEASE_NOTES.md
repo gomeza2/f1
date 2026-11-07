@@ -1,4 +1,11 @@
-# PIXEL GRAND PRIX — entrega 0.88
+# PIXEL GRAND PRIX — entrega 0.89
+
+## 0.89 — encontrá tu trazada, después buscá tu duelo
+
+La primera experiencia continúa en tres retos opcionales de una vuelta: Neon Harbor, Dusty Mesa y Sunset, con ritmos de rival 100/110/125. El progreso lleva a carrera rápida normal; no repite eternamente la misma introducción. Flechas de carretera, señal de curva y próximo checkpoint/META ayudan a leer el recorrido. Tres medallas habilitan el diseño LAUREL de P1 offline, equipable y persistente, sin ventajas físicas ni contenido previo bloqueado.
+
+Recorrido de tres carreras completas, transición a tres vueltas, persistencia, cambio visual real del coche y escritorio/táctil comprobados. Física compartida, catorce pistas, modos, récords, IA normal y online conservados. Pruebas y límites humanos en [AUDIT_089.md](AUDIT_089.md). Próximo: evaluación humana de ritmo/claridad y renovación de materiales/coches/iluminación con presupuesto.
+
 
 ## 0.88 — primera rivalidad y medallas de conducción
 

@@ -10,7 +10,7 @@ const wrapper=`function advanceRaceFrame(frameTime){
 export function withoutPracticeSessionHooks(source){
  if(!source.includes('function setupPractice()'))return source;
  if(!source.includes(wrapper))throw Error('Practice frame wrapper changed beyond its declared migration');
- return source.replace(wrapper,'function advanceRaceFrame(frameTime){return raceSession.advanceFrame(frameTime);}')
+ return source.replace('if(raceState.cars[player])drawLearningRoute(ctx,raceState.cars[player]);','').replace(wrapper,'function advanceRaceFrame(frameTime){return raceSession.advanceFrame(frameTime);}')
  .replace('updateGroundEffects(dt);recordTrialFrame();updatePractice(dt);','updateGroundEffects(dt);recordTrialFrame();')
  .replace('onEvent:(event,car)=>{practiceEvent(event,car);','onEvent:(event,car)=>{')
  .replace('if(!raceState.running||practice?.complete)return;','if(!raceState.running)return;')

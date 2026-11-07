@@ -7,7 +7,7 @@ if(typeof PixelDrivingCore==='undefined'||typeof PixelTrackCore==='undefined'||t
  try{
   for(const [name,file,marker] of [['PixelDrivingCore','driving-core.js','drivingCore'],['PixelTrackCore','track-core.js','trackCore'],['PixelRaceRules','race-rules.js','raceRules'],['PixelGhostLap','ghost-lap.js','ghostLap'],['PixelRaceSession','race-session.js','raceSession']]){
    if(typeof globalThis[name]!=='undefined')continue;
-   const dependency=new URL(file,base);dependency.searchParams.set('v','0.88');
+   const dependency=new URL(file,base);dependency.searchParams.set('v','0.89');
    await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=dependency.href;script.dataset[marker]='fallback';script.onload=resolve;script.onerror=reject;document.head.append(script);});
    if(typeof globalThis[name]?.create!=='function')throw new Error('Shared module unavailable');
   }
@@ -393,7 +393,7 @@ function updateGaragePreview(){
  const image=$('carPreview'),context=image.getContext('2d'),width=image.width||480,height=image.height||180;
  context.setTransform(1,0,0,1,0,0);context.clearRect(0,0,width,height);context.fillStyle='#0c1727';context.fillRect(0,0,width,height);
  context.fillStyle=paint.hex+'18';context.beginPath();context.ellipse(width/2,height/2+8,110,48,0,0,Math.PI*2);context.fill();
- context.save();context.translate(width/2,height/2);context.rotate(-.16);context.scale(5,5);drawCarBody(context,{model:id,heading:-.16,color:paint.hex,steer:0,braking:false,wheelTravel:0,done:false,flash:0,offroad:0});context.restore();
+ context.save();context.translate(width/2,height/2);context.rotate(-.16);context.scale(5,5);drawCarBody(context,{player:0,model:id,heading:-.16,color:paint.hex,steer:0,braking:false,wheelTravel:0,done:false,flash:0,offroad:0});context.restore();
  image.setAttribute('aria-label',car.name+', pintura '+paint.name);updateReadySelection();if($('eventType')?.value==='trial')updateMenuPreview();
 }
 function updateMenuPreview(){
@@ -899,7 +899,7 @@ function placeCar(car,progress,lateral){
  car.nextCheckpoint=0;car.checkpointPasses=0;car.lastCheckpointTime=0;car.aiManeuver=null;car.aiTrafficStates={};car.aiLane=lateral;
 }
 function start(m,s=Number($('stageSelect').value),keepSeason=false){
- const useGuide=guidedRequested||keepSeason&&driveCoach?.intro;guidedRequested=false;raceLapTarget=useGuide?1:LAPS_TO_WIN;
+ const useGuide=guidedRequested||keepSeason&&driveCoach?.intro;guidedRequested=false;activeLesson=useGuide&&keepSeason?driveCoach?.lesson||0:Math.min(driveProfile.lessons,2);raceLapTarget=useGuide?1:LAPS_TO_WIN;
  cancelOnlineConnect();
  if(online?.transport?.session)leaveOnline();
  $('restartBtn').disabled=false;$('pauseBtn').disabled=false;resetTouch();
@@ -1305,7 +1305,7 @@ function raceControls(car,i,dt,before,localBend){
  }else{
   controls=drivingCore.humanControls(car,controlsFor(i),dt);
  }
- if(driveCoach?.intro&&car.isAI&&car.speed>98)controls={...controls,throttle:0,brake:Math.max(controls.brake||0,car.speed>104?.35:0)};
+ if(driveCoach?.intro&&car.isAI&&car.speed>LEARNING_RACES[driveCoach.lesson].cap-2)controls={...controls,throttle:0,brake:Math.max(controls.brake||0,car.speed>LEARNING_RACES[driveCoach.lesson].cap+4?.35:0)};
  return controls;
 }
 function physics(car,i,dt){return raceSession.advanceVehicle(car,i,dt);}
@@ -1491,6 +1491,7 @@ function drawCarBody(context,car){
    if(detail){rect(11,-3.6,2,1.5,'#fff4c4');rect(11,2.1,2,1.5,'#fff4c4');rect(-13,-8,1.3,2,'#1b2934');rect(-13,6,1.3,2,'#1b2934');}
   }else if(detail){rect(-1,-3.3,3,6.6,car.color);rect(-10,-4.5,2,.7,'#deeee47a');}
  }
+ if(!online?.active&&car.player===0&&!car.isAI&&driveProfile.livery&&driveMedalCount>=3){for(const side of [-1,1]){rect(-4,side*4,7,.8,'#ffe39a');rect(-3,side*5,4,.8,'#ffe39a');}rect(1,-1,2,2,'#fff5cd');}
  // Warm front lamps and red rear lamps keep heading readable in every paint.
  rect(11,-4.7,2.5,1.8,'#fff0b9');rect(11,2.9,2.5,1.8,'#fff0b9');
  const rearLight=visual.braking?'#ff685c':'#993747';
@@ -1582,12 +1583,26 @@ function toggleCamera(){
  if(mode==='duo')return;
  cameraMode=cameraMode==='near'?'overview':'near';updateCameraButton();if(raceState.running)resize();
 }
+function drawLearningRoute(context,car){
+ if(!driveCoach?.intro||!driveCoach.guided||car.player!==0||online?.active||car.done)return;
+ context.save();context.lineWidth=2.2;context.globalAlpha=.55;
+ for(let i=1;i<=(graphics==='lite'?3:6);i++){const at=car.progress+i*30,p=sampleAt(at),slow=car.speed>curvatureAt(at).safeSpeed*1.05;context.save();context.translate(p.x,p.y);context.rotate(p.angle);context.strokeStyle=slow?'#ffba70':'#78f8e1';context.beginPath();context.moveTo(-5,-4);context.lineTo(1,0);context.lineTo(-5,4);context.stroke();context.restore();}
+ const gate=car.checkpointPasses>=checkpoints.length?{...sampleAt(0),halfWidth:roadHalfWidthAt(0)}:checkpoints[car.nextCheckpoint];
+ context.globalAlpha=.8;context.save();context.translate(gate.x,gate.y);context.rotate(gate.angle);context.strokeStyle='#78f8e1';context.lineWidth=3;context.strokeRect(-7,-gate.halfWidth,14,gate.halfWidth*2);context.restore();context.restore();
+}
+function updateRouteAdvice(){
+ const box=$('routeAdvice');if(!box)return;const car=raceState.cars[0],show=driveCoach?.intro&&driveCoach.guided&&!car?.done&&!online?.active;box.classList.toggle('hidden',!show);if(!show)return;
+ const safeSpeed=Math.min(curvatureAt(car.progress+70).safeSpeed,curvatureAt(car.progress+140).safeSpeed),next=car.checkpointPasses>=checkpoints.length?'META':'CP'+(car.nextCheckpoint+1);
+ const tooFast=car.speed>safeSpeed*(driveCoach.routeBrake?.96:1.08);driveCoach.routeBrake=tooFast;
+ const message=driveCoach.outside>1?'RECUPERÁ LA PISTA · Soltá gas y buscá las flechas':tooFast?'CURVA CERCA · Levantá gas y frená antes de girar':'BUSCÁ LA SALIDA · Seguí la pista hacia '+next;
+ if(box.textContent!==message)box.textContent=message;box.classList.toggle('route-brake',tooFast);
+}
 function drawDrivingView(left,width,player,top=0,height=localViewHeight){
  const view=raceCamera(player,width,height);ctx.save();ctx.beginPath();ctx.rect(left,top,width,height);ctx.clip();
  ctx.translate(left+width/2,top+height/2);ctx.scale(view.zoom,view.zoom);ctx.translate(-view.x,-view.y);drawBackground(ctx);
  const centerLineColor=track.surface==='dirt'?'#ead0a3':track.surface==='grass'?'#cce88d':track.surface==='ice'?'#f4ffff':track.surface==='volcanic'?'#df8060':'#eef0d85c';
  if(!usesMaterialRaster()&&track.surface!=='dirt')strokeTrack(ctx,centerLineColor,2.5,[18,22],-raceState.elapsed*13);
- drawGroundEffects(ctx);drawTrialGhost(ctx);raceState.cars.filter(car=>!car.retired).map(renderedCar).sort((a,b)=>a.speed-b.speed).forEach(car=>drawCar(ctx,car));ctx.restore();
+ drawGroundEffects(ctx);if(raceState.cars[player])drawLearningRoute(ctx,raceState.cars[player]);drawTrialGhost(ctx);raceState.cars.filter(car=>!car.retired).map(renderedCar).sort((a,b)=>a.speed-b.speed).forEach(car=>drawCar(ctx,car));ctx.restore();
 }
 function drawSpeedFeedback(view){
  if(graphics==='lite'||motionPreference?.matches||raceState.paused||raceState.countdownRemaining>0)return;
@@ -1660,6 +1675,7 @@ function finishRace(){
  $('resultText').textContent=(raceFormat==='trial'?'CONTRARRELOJ · '+CAR_MODELS[human.model].name+' · '+barrierMode.toUpperCase()+(trialSaved?' · GUARDADO LOCAL':' · SOLO ESTA SESIÓN: NO SE PUDO GUARDAR')+(trialGhost?' · FANTASMA DISPONIBLE':' · SIN FANTASMA (MÁX. 180 s)'):raceFormat==='quick'?'PARTIDA RÁPIDA · RESULTADO INDEPENDIENTE':'25 / 18 / 15 / 12 PTS POR PUESTO · SIN TERMINAR: 0 PTS')+finalNote+(bestLap?' · '+(raceFormat==='trial'?'RÉCORD PERSONAL ':'RÉCORD DE PISTA ')+format(bestLap):'')+(raceState.cars.some(car=>car.newBestLap)?' · ¡NUEVO RÉCORD!':'');
  $('nextBtn').textContent=raceFormat==='trial'?'OTRO INTENTO ↻':raceFormat==='quick'?'REVANCHA ↻':stage===tracks.length-1?'NUEVA TEMPORADA ↻':'SIGUIENTE CIRCUITO →';
  $('nextBtn').onclick=()=>raceFormat!=='championship'?requestRace(mode,stage,true):stage===tracks.length-1?requestRace(mode,0,false):requestRace(mode,(stage+1)%tracks.length,true);
+ if(driveCoach?.intro&&human.done){$('nextBtn').textContent=driveProfile.lessons<3?'SIGUIENTE RETO →':'CARRERA RÁPIDA →';$('nextBtn').onclick=firstDrive;}
 }
 // Paint the preparation state before expensive first-use track/raster generation.
 async function requestRace(m,s=Number($('stageSelect').value),keepSeason=false){
@@ -1726,24 +1742,32 @@ function updatePracticeFeedback(){
  if(best&&!result)$('practiceFeedback').textContent+=' Mejor limpio '+time(best)+'.';
 }
 // Presentation-only first drive and earned medals. Never feeds controls or physics.
+const LEARNING_RACES=[{track:1,cap:100,title:'ENCONTRÁ TU TRAZADA'},{track:2,cap:110,title:'LEÉ EL TERRENO'},{track:0,cap:125,title:'TU PRIMER DUELO'}];
+let activeLesson=0;
 const DRIVE_PROFILE_KEY='pixelGP.driveMedals.v1';
 const DRIVE_MEDALS={clean:['TRAZADA LIMPIA','Pasá 3 checkpoints seguidos sin salir ni golpear.'],pass:['POSICIÓN GANADA','Adelantá y sostené la posición sin contacto.'],slide:['DERRAPE DOMINADO','Deslizá en pista y recuperá el control.']};
 function readDriveProfile(){
- const profile={version:1,tracks:{},finishes:0};
- try{const saved=JSON.parse(localStorage.getItem(DRIVE_PROFILE_KEY)||'null');if(saved?.version===1){profile.finishes=Number.isSafeInteger(saved.finishes)?clamp(saved.finishes,0,1000000):0;for(const item of tracks){const key=lapRecordKey(item),value=saved.tracks?.[key];if(value&&typeof value==='object')profile.tracks[key]=Object.fromEntries(Object.keys(DRIVE_MEDALS).filter(id=>value[id]===true).map(id=>[id,true]));}}}catch{}return profile;
+ const profile={version:1,tracks:{},finishes:0,lessons:0,livery:false};
+ try{const saved=JSON.parse(localStorage.getItem(DRIVE_PROFILE_KEY)||'null');if(saved?.version===1){profile.lessons=Number.isInteger(saved.lessons)?clamp(saved.lessons,0,3):0;profile.livery=saved.livery===true;profile.finishes=Number.isSafeInteger(saved.finishes)?clamp(saved.finishes,0,1000000):0;for(const item of tracks){const key=lapRecordKey(item),value=saved.tracks?.[key];if(value&&typeof value==='object')profile.tracks[key]=Object.fromEntries(Object.keys(DRIVE_MEDALS).filter(id=>value[id]===true).map(id=>[id,true]));}}}catch{}return profile;
 }
-let driveProfile=readDriveProfile(),driveCoach=null,guidedRequested=false;
-function syncDriveProfile(){if($('careerSummary')){const total=Object.values(driveProfile.tracks).reduce((sum,medals)=>sum+Object.keys(medals).length,0);$('careerSummary').textContent=total?total+' / 42 MEDALLAS · '+driveProfile.finishes+' CARRERAS COMPLETADAS · TODO EL GARAJE ABIERTO':'14 pistas abiertas · Sin desbloqueos obligatorios · Ganá tus primeras medallas';}}
+let driveProfile=readDriveProfile(),driveCoach=null,guidedRequested=false,liverySaveFailed=false,driveMedalCount=0;
+function driveMedalTotal(){return Object.values(driveProfile.tracks).reduce((sum,medals)=>sum+Object.keys(medals).length,0);}
+function syncDriveProfile(){
+ const total=driveMedalTotal(),lesson=LEARNING_RACES[driveProfile.lessons];driveMedalCount=total;
+ if($('careerSummary'))$('careerSummary').textContent=(total?total+' / 42 MEDALLAS · '+driveProfile.finishes+' CARRERAS COMPLETADAS':'14 pistas abiertas · Ganá tus primeras medallas')+' · APRENDIZAJE '+driveProfile.lessons+'/3'+(liverySaveFailed?' · DISEÑO SOLO EN ESTA SESIÓN':'');
+ const button=$('firstDriveBtn');if(button){button.querySelector?.('strong')&&(button.querySelector('strong').textContent=lesson?(driveProfile.lessons?'SIGUIENTE RETO →':'CORRER AHORA →'):'CARRERA RÁPIDA →');button.querySelector?.('small')&&(button.querySelector('small').textContent=lesson?'RETO '+(driveProfile.lessons+1)+'/3 · '+tracks[lesson.track].name+' · 1 VUELTA':'3 vueltas · Configuración del paddock');}
+ const cosmetic=$('earnedLivery');if(cosmetic){cosmetic.disabled=total<3;cosmetic.textContent=total<3?'DISEÑO LAUREL · '+total+'/3 MEDALLAS':'DISEÑO LAUREL: '+(driveProfile.livery?'EQUIPADO':'EQUIPAR');cosmetic.setAttribute('aria-pressed',String(total>=3&&driveProfile.livery));}
+}
 function setupDriveCoach(guided=false){
- driveCoach=mode==='solo'&&['quick','championship'].includes(raceFormat)?{guided,intro:guided,step:0,held:0,clean:0,impactAt:-Infinity,slide:0,recovery:0,outside:0,earned:new Set(),rivals:new Map(),noticeUntil:0,notice:'',saved:false}:null;
- $('driveRewards')?.classList.add('hidden');$('driveMoment')?.classList.add('hidden');renderDriveCoach();renderDriveObjectives();
+ driveCoach=mode==='solo'&&['quick','championship'].includes(raceFormat)?{guided,intro:guided,lesson:activeLesson,step:guided&&activeLesson>0?4:0,held:0,clean:0,impactAt:-Infinity,slide:0,recovery:0,outside:0,earned:new Set(),rivals:new Map(),noticeUntil:0,notice:'',saved:false}:null;
+ $('driveRewards')?.classList.add('hidden');$('driveMoment')?.classList.add('hidden');renderDriveCoach();renderDriveObjectives();updateRouteAdvice();
 }
 function renderDriveCoach(){
  const box=$('driveCoach');if(!box)return;box.classList.toggle('hidden',!driveCoach||!driveCoach.guided);
  if(!driveCoach?.guided)return;
  const touch=touchActive||touchMedia?.matches,pad=localInputs[0]?.startsWith('pad');
- const prompts=[['01 · SENTÍ EL GAS',touch?'Mantené GAS':pad?'Mantené RT o A':'Mantené W para acelerar','Llegá a 60 km/h. No hace falta girar todavía.'],['02 · BUSCÁ TU CURVA',touch?'GAS + una flecha':pad?'Mové suavemente el stick':'Gir á con A / D'.replace('Gir á','Girá'),'Probá toques cortos; soltá gas antes de cerrar la curva.'],['03 · FRENÁ ANTES',touch?'Soltá GAS y tocá FRENO':pad?'Soltá RT y apretá LT':'Soltá W y tocá S','Reducí velocidad antes de girar. Acelerar no resuelve todas las curvas.'],['04 · SEGUÍ LA PISTA','Pasá el próximo checkpoint','Ya tenés las herramientas. Tres pasos limpios te dan una medalla.'],['YA ESTÁS CORRIENDO','Ahora buscá tu primera medalla','Aprendé a tu ritmo. El rival de aprendizaje afloja a 100 km/h. Sin cambiar tu coche.']];
- const prompt=prompts[Math.min(4,driveCoach.step)];$('coachStep').textContent=prompt[0];$('coachInstruction').textContent=prompt[1];$('coachDetail').textContent=prompt[2];
+ const prompts=[['01 · SENTÍ EL GAS',touch?'Mantené GAS':pad?'Mantené RT o A':'Mantené W para acelerar','Llegá a 60 km/h. No hace falta girar todavía.'],['02 · BUSCÁ TU CURVA',touch?'GAS + una flecha':pad?'Mové suavemente el stick':'Gir á con A / D'.replace('Gir á','Girá'),'Probá toques cortos; soltá gas antes de cerrar la curva.'],['03 · FRENÁ ANTES',touch?'Soltá GAS y tocá FRENO':pad?'Soltá RT y apretá LT':'Soltá W y tocá S','Reducí velocidad antes de girar. Acelerar no resuelve todas las curvas.'],['04 · SEGUÍ LA PISTA','Pasá el próximo checkpoint','Ya tenés las herramientas. Tres pasos limpios te dan una medalla.'],['YA ESTÁS CORRIENDO','Ahora buscá tu primera medalla','Aprendé a tu ritmo. Rival de práctica: hasta '+LEARNING_RACES[driveCoach.lesson].cap+' km/h. Tu coche conserva sus prestaciones.']];
+ const prompt=driveCoach.step===4&&driveCoach.lesson>0?['RETO '+(driveCoach.lesson+1)+'/3 · '+LEARNING_RACES[driveCoach.lesson].title,'Leé la curva y buscá una medalla','Flechas ámbar: llegás rápido. Rival de práctica: hasta '+LEARNING_RACES[driveCoach.lesson].cap+' km/h.']:prompts[Math.min(4,driveCoach.step)];$('coachStep').textContent=prompt[0];$('coachInstruction').textContent=prompt[1];$('coachDetail').textContent=prompt[2];
 }
 function renderDriveObjectives(){const box=$('driveObjectives');if(!box)return;box.classList.toggle('hidden',!driveCoach);if(!driveCoach)return;box.textContent='MEDALLAS · '+Object.entries(DRIVE_MEDALS).map(([id,[name]])=>(driveCoach.earned.has(id)?'◆ ':'◇ ')+name).join('  /  ');}
 function driveMedal(id){if(!driveCoach||driveCoach.earned.has(id))return;driveCoach.earned.add(id);driveCoach.notice=DRIVE_MEDALS[id][0]+' · MEDALLA EN CARRERA';driveCoach.noticeUntil=raceState.elapsed+2.8;renderDriveObjectives();playTone(784,.09,.025);playTone(1175,.12,.025,.1);}
@@ -1778,22 +1802,25 @@ function updateDriveChallenge(dt){
   if(record.behind&&safe&&gap>12&&Math.hypot(car.x-rival.x,car.y-rival.y)<200){record.hold+=dt;if(record.hold>1.2){driveMedal('pass');record.behind=false;}}
   else record.hold=0;
  }
+ if(Math.floor(raceState.elapsed*5)!==driveCoach.routeTick){driveCoach.routeTick=Math.floor(raceState.elapsed*5);updateRouteAdvice();}
  const notice=$('driveMoment');if(notice){notice.classList.toggle('hidden',raceState.elapsed>=driveCoach.noticeUntil);if(driveCoach.notice&&notice.textContent!==driveCoach.notice)notice.textContent=driveCoach.notice;}
 }
 function finishDriveChallenge(){
  const box=$('driveRewards');if(!box)return;box.textContent='';box.classList.toggle('hidden',!driveCoach);if(!driveCoach)return;
  const car=raceState.cars[0],completed=car?.done&&car.lapTimes.length===raceLapTarget&&Number.isFinite(car.finishTime),key=lapRecordKey();
- let stored=true;if(completed&&!driveCoach.saved){driveCoach.saved=true;driveProfile.finishes=Math.min(1000000,driveProfile.finishes+1);driveProfile.tracks[key]||={};for(const id of driveCoach.earned)driveProfile.tracks[key][id]=true;try{localStorage.setItem(DRIVE_PROFILE_KEY,JSON.stringify(driveProfile));}catch{stored=false;}syncDriveProfile();}
+ let stored=true;if(completed&&!driveCoach.saved){driveCoach.saved=true;if(driveCoach.intro&&driveCoach.lesson===driveProfile.lessons)driveProfile.lessons=Math.min(3,driveProfile.lessons+1);driveProfile.finishes=Math.min(1000000,driveProfile.finishes+1);driveProfile.tracks[key]||={};for(const id of driveCoach.earned)driveProfile.tracks[key][id]=true;try{localStorage.setItem(DRIVE_PROFILE_KEY,JSON.stringify(driveProfile));}catch{stored=false;}syncDriveProfile();}
  const title=document.createElement('h3');title.textContent=completed?'TU PRÓXIMO OBJETIVO EMPIEZA ACÁ':'CADA INTENTO ENSEÑA';box.append(title);
  for(const [id,[name,detail]] of Object.entries(DRIVE_MEDALS)){const row=document.createElement('p');row.className=driveCoach.earned.has(id)?'medal-earned':'medal-pending';row.textContent=(driveCoach.earned.has(id)?'◆ ':'◇ ')+name+' · '+(driveCoach.earned.has(id)?completed?'CONSEGUIDA':'EN ESTE INTENTO':detail);box.append(row);}
  const hint=document.createElement('small');hint.textContent=!completed?'Completá la carrera para conservar tus medallas.':stored?'Medallas locales de esta pista. Sin ventajas de potencia ni contenido bloqueado.':'No se pudo guardar: logros disponibles solo en esta sesión.';box.append(hint);
 }
 async function firstDrive(){
- if(racePreparing)return;selectEvent('quick');$('stageSelect').value='1';$('carModel').value='corner';$('difficulty').value='easy';$('opponentCount').value='1';$('barrierMode').value='auto';updateMenuPreview();guidedRequested=true;
- const started=await requestRace('solo',1,false);if(!started)guidedRequested=false;
+ if(racePreparing)return;const lesson=LEARNING_RACES[driveProfile.lessons];selectEvent('quick');
+ if(lesson){$('stageSelect').value=String(lesson.track);$('carModel').value='corner';$('difficulty').value='easy';$('opponentCount').value='1';$('barrierMode').value='auto';}
+ updateMenuPreview();guidedRequested=!!lesson;const started=await requestRace('solo',Number($('stageSelect').value),false);if(!started)guidedRequested=false;
 }
 $('firstDriveBtn')?.addEventListener('click',firstDrive);
-$('coachSkip')?.addEventListener('click',()=>{if(driveCoach){driveCoach.guided=false;renderDriveCoach();canvas.focus({preventScroll:true});}});
+$('earnedLivery')?.addEventListener('click',()=>{if(driveMedalTotal()<3)return;driveProfile.livery=!driveProfile.livery;try{localStorage.setItem(DRIVE_PROFILE_KEY,JSON.stringify(driveProfile));liverySaveFailed=false;}catch{liverySaveFailed=true;}syncDriveProfile();updateGaragePreview();});
+$('coachSkip')?.addEventListener('click',()=>{if(driveCoach){driveCoach.guided=false;renderDriveCoach();updateRouteAdvice();canvas.focus({preventScroll:true});}});
 syncDriveProfile();
 
 function restartCurrent(){if(raceFormat==='practice')beginPracticeAttempt();else start(mode,stage,true);}
@@ -1913,9 +1940,9 @@ async function openOnlineLobby(){
  online={active:false,loaded:false,connected:false,room:null,transport:null,raceId:null,roster:[],blocked:false,lastEvent:0};
  $('onlineCreate').disabled=true;$('onlineJoin').disabled=true;$('onlineStatus').textContent='CARGANDO CONEXIÓN…';
  try{
-  if(typeof PixelOnlineClient==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-client.js?v=0.88',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
-  if(typeof PixelOnlinePrediction==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-prediction.js?v=0.88',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
-  const response=await fetch(new URL('online-config.json?v=0.88',document.baseURI),{cache:'no-store'});if(!response.ok)throw new Error('manifest');const config=await response.json();if(config.build!=='0.88'||config.protocol!==1||!/^[a-f0-9]{64}$/.test(config.simulation))throw new Error('manifest');
+  if(typeof PixelOnlineClient==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-client.js?v=0.89',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
+  if(typeof PixelOnlinePrediction==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-prediction.js?v=0.89',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
+  const response=await fetch(new URL('online-config.json?v=0.89',document.baseURI),{cache:'no-store'});if(!response.ok)throw new Error('manifest');const config=await response.json();if(config.build!=='0.89'||config.protocol!==1||!/^[a-f0-9]{64}$/.test(config.simulation))throw new Error('manifest');
   online.transport=PixelOnlineClient.create({simulation:config.simulation,onStatus:onlineStatus,onMessage:onlineMessage});online.loaded=true;
   let savedServer='';try{savedServer=localStorage.getItem('pixelGP.onlineServer.v1')||'';}catch(error){}
   $('onlineServer').value=PixelOnlineClient.preferredServer(config,location,savedServer);
@@ -1960,7 +1987,7 @@ function onlineMessage(message){
  }
 }
 function beginOnlineRace(message){
- raceLapTarget=online.room?.config?.laps||LAPS_TO_WIN;driveCoach=null;renderDriveCoach();renderDriveObjectives();$('driveMoment')?.classList.add('hidden');$('driveRewards')?.classList.add('hidden');
+ raceLapTarget=online.room?.config?.laps||LAPS_TO_WIN;driveCoach=null;renderDriveCoach();renderDriveObjectives();updateRouteAdvice();$('driveMoment')?.classList.add('hidden');$('driveRewards')?.classList.add('hidden');
  raceSession.stop('online');cancelAnimationFrame(raf);resetTouch();keys=Object.create(null);raceFormat='quick';practice=null;$('practiceBar')?.classList.add('hidden');mode='solo';
  const config=online.room.config;stage=config.track;track=tracks[stage];trackWorld=trackCore.createWorld(stage,config.barriers);
  raceSession=PixelRaceSession.create({world:trackWorld,geometry:trackCore,driving:drivingCore,rulesModule:PixelRaceRules,laps:config.laps,raceId:message.raceId});raceState=raceSession.state;raceRules=raceSession.rules;
