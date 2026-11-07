@@ -1,5 +1,15 @@
 # PIXEL GRAND PRIX — Hoja de ruta histórica y registro de avances
 
+### Conexión automática en el servicio único
+
+El manifiesto servido por el backend indica `sameOrigin: true`: la interfaz elige el dominio actual para las salas aunque el navegador conserve una dirección antigua. El manifiesto estático de Pages mantiene su configuración anterior. El campo SERVIDOR sigue editable. Los errores de versión ahora explican la necesidad de desplegar el mismo commit en Render. Prueba reproducible: `node tests/browser-hosting.cjs`, dos perfiles reales crean/se unen sin escribir servidor y con una URL obsoleta guardada. No acredita despliegue público.
+
+
+## Siguiente entrega prioritaria: acceso público y validación online
+
+Corrección implementada sobre 0.86: un único servicio sirve frontend y salas; lista de archivos públicos acotada y origen Render en receta. Comprobados localmente backend (11 tests), release Chromium y cuatro perfiles UI con llegada/reconexión/resultados/revancha. Mantiene las catorce pistas, modelos y núcleo compartido. Pendiente publicar el commit, actualizar variables del servicio existente, desplegar y comprobar dos dispositivos WAN; no cerrar online por pruebas locales. Después: medir latencia y recuperación reales antes de nuevas físicas, manteniendo el trabajo de conducción/CPU/modos del roadmap.
+
+
 La planificación abierta vigente continúa en [`ROADMAP_EVOLUCION.md`](ROADMAP_EVOLUCION.md), sin límite artificial de fases. Las 24 originales y sus decisiones se conservan aquí como contexto y registro.
 
 > Estado vigente: entrega **0.86**, Champion Road largo con secciones/pianos y doce checkpoints; quedan dos pistas uniformes. Backend compatible preparado: requiere despliegue manual en Render. Manejo humano y online público siguen abiertos. El «Estado real» inferior es histórico (0.62). Ver `ROADMAP_EVOLUCION.md` y `RELEASE_NOTES.md`.

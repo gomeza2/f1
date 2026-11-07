@@ -7,6 +7,15 @@
   if(secure&&url.protocol!=='wss:')throw new Error('Esta página necesita un servidor seguro HTTPS/WSS.');
   if(url.pathname==='/'||url.pathname==='')url.pathname='/ws';if(url.pathname!=='/ws')throw new Error('Usá la dirección del servidor o su ruta /ws.');return url.href;
  }
+ function preferredServer(config,location,saved=''){
+  if(config.sameOrigin===true)return location.origin;
+  if(saved){try{
+   const url=new URL(endpoint(saved,location.protocol==='https:'));
+   const loopback=host=>['localhost','127.0.0.1','[::1]'].includes(host)||host.endsWith('.localhost');
+   if(!loopback(url.hostname)||loopback(location.hostname))return saved;
+  }catch{ /* Discard unusable saved addresses, keep the configured public default. */ }}
+  return config.serverUrl||'';
+ }
  function create({simulation,WebSocketImpl=globalThis.WebSocket,now=()=>performance.now(),onMessage=()=>{},onStatus=()=>{},timers=null}){
   let socket=null,url='',session=null,room=null,stopped=true,retry=null,handshake=null,deadline=0,seq=0,raceId=null,frames=[],received=-Infinity,lastTick=-1,joined=false;
   const setTimer=(fn,ms)=>timers?timers.setTimeout(fn,ms):setTimeout(fn,ms),clearTimer=id=>timers?timers.clearTimeout(id):clearTimeout(id);
@@ -25,7 +34,7 @@
    ws.onmessage=event=>{
     if(socket!==ws||stopped)return;let m;try{m=JSON.parse(event.data);}catch{lost('Respuesta de servidor inválida.');return;}
     if(m.type==='hello'){
-     if(m.protocol!==1||m.simulation!==simulation){lost('Versiones incompatibles. Actualizá el juego y el servidor.');return;}
+     if(m.protocol!==1||m.simulation!==simulation){lost('El juego y el servidor tienen versiones distintas. Recargá el juego; si sigue igual, el administrador debe desplegar el mismo commit en Render.');return;}
      send({type:'hello',protocol:1,simulation});return;
     }
     if(m.type==='welcome'){welcomed=true;clearTimer(handshake);if(session){handshake=setTimer(()=>{if(socket===ws&&!joined)lost('La reconexión venció antes de confirmar la sesión.');},Math.max(0,deadline-now()));send({type:'resume',code:session.code,token:session.resumeToken});}else{notify('connected');const action=request;request=null;if(action)send(action);}return;}
@@ -38,7 +47,7 @@
      if(pendingInputs.has(ack)){const delay=clampAck(now()-pendingInputs.get(ack));ackDelayMs=ackDelayMs===null?delay:ackDelayMs*.8+delay*.2;}for(const id of pendingInputs.keys())if(id<=ack)pendingInputs.delete(id);
      const at=now();if(frames.at(-1)?.tick===m.tick)frames.pop();frames.push({tick:m.tick,cars:m.state.cars});frames=frames.slice(-6);received=at;
     }
-    if(m.type==='error'&&['bad_token','version_mismatch','not_in_room'].includes(m.code)){lost(m.code==='bad_token'?'La reconexión venció. Volvé a unirte desde la sala.':'La sesión dejó de estar disponible.');return;}
+    if(m.type==='error'&&['bad_token','version_mismatch','not_in_room'].includes(m.code)){lost(m.code==='bad_token'?'La reconexión venció. Volvé a unirte desde la sala.':m.code==='version_mismatch'?'El servidor necesita la misma versión del juego. Actualizá el despliegue en Render.':'La sesión dejó de estar disponible.');return;}
     if(['left','room_closed'].includes(m.type)){forget();}
     onMessage(m);
    };
@@ -65,5 +74,5 @@
   }
   return {connect,close,send,input,pose,get session(){return session&&{...session};},get room(){return room;},get tick(){return lastTick;},get metrics(){return {ackDelayMs,pendingInputs:pendingInputs.size};},get stale(){return now()-received>500;}};
  }
- return {create,endpoint};
+ return {create,endpoint,preferredServer};
 });

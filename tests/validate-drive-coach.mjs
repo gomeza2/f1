@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {loadGame} from './helpers/game-harness.mjs';
+const source=readFileSync(new URL('../script.js',import.meta.url),'utf8').replace('function setupDriveCoach(guided=false){','function setupDriveCoach(guided=false){globalThis.testGame.coach={setup:setupDriveCoach,update:updateDriveChallenge,event:driveEvent,finish:finishDriveChallenge,get state(){return driveCoach},get profile(){return driveProfile}};');
+const {game:g,element:e}=loadGame({sourceOverride:source});e('eventType').value='quick';g.start('solo',1);g.setCountdown(0);g.setElapsed(10);const api=g.coach,car=g.cars[0];
+api.setup(true);assert.equal(api.state.step,0);car.speed=0;car.handbrake=true;for(let i=0;i<120;i++)api.update(1/60);assert.equal(api.state.earned.size,0,'Stationary handbrake earned medal');
+car.handbrake=false;car.speed=100;for(let i=0;i<25;i++)api.update(1/60);assert.equal(api.state.step,1);car.steer=.5;for(let i=0;i<25;i++)api.update(1/60);assert.equal(api.state.step,2);car.braking=true;for(let i=0;i<25;i++)api.update(1/60);assert.equal(api.state.step,3);car.braking=false;
+api.event({type:'checkpoint'},car);assert.equal(api.state.step,4);api.event({type:'impact'},car);assert.equal(api.state.clean,0);g.setElapsed(12);for(let i=0;i<3;i++)api.event({type:'checkpoint'},car);assert.ok(api.state.earned.has('clean'));api.finish();assert.equal(api.profile.finishes,0,'Unfinished race banked progression');
+api.setup(false);g.setElapsed(20);car.speed=140;car.drift=.8;car.steer=.5;car.yawRate=1;for(let i=0;i<50;i++)api.update(1/60);assert.equal(api.state.earned.has('slide'),false,'Slide awarded without recovery');car.drift=0;car.steer=0;car.yawRate=0;for(let i=0;i<50;i++)api.update(1/60);assert.ok(api.state.earned.has('slide'));
+api.setup(false);g.setElapsed(30);car.raceProgress=100;g.cars[1].raceProgress=150;api.update(1/60);car.raceProgress=180;for(let i=0;i<80;i++)api.update(1/60);assert.ok(api.state.earned.has('pass'),'Clean sustained overtake not recognized');
+car.done=true;car.lapTimes=[40,39,38];car.finishTime=117;api.finish();api.finish();assert.equal(api.profile.finishes,1,'Finish stored twice');
+e('eventType').value='trial';g.start('solo',0);assert.equal(g.coach.state,null);e('eventType').value='quick';g.start('duo',0);assert.equal(g.coach.state,null);
+const broken=loadGame({sourceOverride:source,storage:{getItem(){return '{broken'},setItem(){throw Error('quota')}}});broken.element('eventType').value='quick';broken.game.start('solo',1);assert.equal(broken.game.coach.profile.finishes,0);
+console.log('PASS: actual action-gated tutorial, no stationary rewards, impact reset, three clean gates, drift requires recovery, unfinished race cannot bank medals, single finish award, trial/local isolation and malformed storage fallback. Component scenes are instrumented.');

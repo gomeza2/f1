@@ -41,3 +41,9 @@ try{
 console.log('PASS: simulation fingerprint, endpoint/TLS/credential rules, handshake, command-only inputs/ack, stale tick rejection, bounded interpolation, canonical state immutability and closed-socket isolation.');
 
 })().catch(error=>{console.error(error);process.exitCode=1;});
+const publicConfig={serverUrl:'https://pixel-grand-prix-rooms.onrender.com'},pagesLocation={origin:'https://gomeza2.github.io',hostname:'gomeza2.github.io',protocol:'https:'};
+for(const saved of ['http://localhost:8787','ws://127.0.0.1:8787/ws','wss://localhost:8787/ws','broken','http://old.example'])assert.equal(api.preferredServer(publicConfig,pagesLocation,saved),publicConfig.serverUrl);
+assert.equal(api.preferredServer(publicConfig,pagesLocation,'https://custom.example'),'https://custom.example');
+assert.equal(api.preferredServer({...publicConfig,sameOrigin:true},pagesLocation,'https://obsolete.example'),pagesLocation.origin);
+assert.equal(api.preferredServer(publicConfig,{origin:'http://localhost:8080',hostname:'localhost',protocol:'http:'},'http://localhost:8787'),'http://localhost:8787');
+console.log('PASS: public client rejects saved loopback/insecure/invalid URLs, preserves explicit secure custom servers and local development, same-origin hosting wins.');

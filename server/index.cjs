@@ -1,8 +1,30 @@
 'use strict';
 const http = require('node:http');
+const fs = require('node:fs');
+const path = require('node:path');
+// Explicit public assets only: never expose server sources, tests or repository metadata.
+const publicAssets = new Set(['index.html', 'style.css', 'script.js', 'driving-core.js', 'track-core.js', 'race-rules.js', 'race-session.js', 'ghost-lap.js', 'engine-audio.js', 'online-client.js', 'online-prediction.js', 'online-config.json']);
+const assetTypes = {'.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json'};
 const {WebSocketServer, WebSocket} = require('ws');
 const {RoomService} = require('./room-service.cjs');
 const P = require('./protocol.cjs');
+const serverVersion = require('./package.json').version;
+const clientBuild = JSON.parse(fs.readFileSync(path.join(__dirname, '../online-config.json'), 'utf8')).build;
+function deploymentInfo() {
+  const revision = process.env.RENDER_GIT_COMMIT;
+  return {serverVersion, clientBuild, revision: /^[a-f0-9]{40,64}$/.test(revision || '') ? revision : null};
+}
+function runtimeOptions(env = process.env) {
+  // Hosting PORT wins over a stale local override. The CLI is reachable by Render's proxy.
+  const port = Number(env.PORT || env.PGP_PORT || 8787), host = env.PGP_HOST || '0.0.0.0';
+  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new RangeError('Invalid PORT/PGP_PORT');
+  const allowedOrigins = (env.PGP_ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+  for (const origin of allowedOrigins) {
+    const parsed = new URL(origin);
+    if (!['http:', 'https:'].includes(parsed.protocol) || parsed.origin !== origin) throw new Error('PGP_ALLOWED_ORIGINS requires exact HTTP/HTTPS origins without paths');
+  }
+  return {port, host, allowedOrigins};
+}
 function createApp({autoTick = true, clock = () => performance.now(), allowedOrigins = [], maxPerIp = 16, serviceOptions = {}, onError = () => console.error('Pixel GP: internal room error')} = {}) {
   const service = new RoomService({...serviceOptions, now: clock});
   let closing = false, closePromise = null;
@@ -10,9 +32,24 @@ function createApp({autoTick = true, clock = () => performance.now(), allowedOri
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     if (req.method !== 'GET') { res.writeHead(405).end('GET only'); return; }
-    if (req.url === '/health') { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ok: !closing, protocol: P.PROTOCOL, simulation: P.SIMULATION, ...service.stats()})); return; }
-    if (req.url === '/protocol') { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(service.manifest())); return; }
-    if (req.url === '/') { res.setHeader('Content-Type', 'text/plain; charset=utf-8'); res.end('PIXEL GRAND PRIX — servidor de salas privadas 0.86\nGET /health · GET /protocol · WebSocket /ws\nServidor local de desarrollo. El cliente estático conecta a /ws desde ONLINE PRIVADO.\n'); return; }
+    if (req.url === '/health') { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ok: !closing, ...deploymentInfo(), protocol: P.PROTOCOL, simulation: P.SIMULATION, ...service.stats()})); return; }
+    if (req.url === '/protocol') { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({...service.manifest(), ...deploymentInfo()})); return; }
+    const pathname = new URL(req.url, 'http://localhost').pathname;
+    const asset = pathname === '/' ? 'index.html' : pathname.slice(1);
+    if (publicAssets.has(asset)) {
+      fs.readFile(path.join(__dirname, '..', asset), (error, data) => {
+        if (error) { res.writeHead(503).end('Game asset unavailable'); return; }
+        res.setHeader('Content-Type', assetTypes[path.extname(asset)]);
+        // A game hosted here connects here, including custom domains and local development.
+        if (asset === 'online-config.json') {
+          const config = JSON.parse(data);
+          res.end(JSON.stringify({...config, sameOrigin: true}));
+          return;
+        }
+        res.end(data);
+      });
+      return;
+    }
     res.writeHead(404).end('Not found');
   });
   const wss = new WebSocketServer({noServer: true, maxPayload: 4096, perMessageDeflate: false});
@@ -87,11 +124,9 @@ function createApp({autoTick = true, clock = () => performance.now(), allowedOri
   return {server, service, listen, close, tick, pump};
 }
 if (require.main === module) {
-  const port = Number(process.env.PGP_PORT || process.env.PORT || 8787), host = process.env.PGP_HOST || '127.0.0.1';
-  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new RangeError('Invalid PGP_PORT');
-  const allowedOrigins = (process.env.PGP_ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+  const {port, host, allowedOrigins} = runtimeOptions();
   const app = createApp({allowedOrigins});
-  app.listen(port, host).then(() => console.log('Pixel GP private-room server listening on port ' + port)).catch(() => { console.error('Pixel GP could not listen'); process.exitCode = 1; });
+  app.listen(port, host).then(() => console.log('Pixel GP rooms ' + serverVersion + ' listening on ' + host + ':' + port + ' (protocol ' + P.PROTOCOL + ', client ' + clientBuild + ')')).catch(() => { console.error('Pixel GP could not listen'); process.exitCode = 1; });
   for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => app.close().then(() => process.exit(0)));
 }
-module.exports = {createApp};
+module.exports = {createApp, runtimeOptions};

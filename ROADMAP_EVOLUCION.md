@@ -1,5 +1,19 @@
 # PIXEL GRAND PRIX — evolución abierta
 
+## 0.88 — primera rivalidad y medallas de conducción
+
+CORRER AHORA inicia una vuelta de aprendizaje en Neon Harbor, Corner King y rival de ritmo suave, con tutorial interactivo omisible. Los modos normales mantienen tres vueltas. Portada con arte original, señales periféricas de velocidad y medallas locales por gates limpios, adelantar y recuperar un derrape; solo se conservan al terminar. Todos los coches/pistas siguen abiertos. No cambian física compartida, récords, campeonato, contrarreloj/fantasmas, local ni salas online.
+
+Pruebas del recorrido de tres carreras completas, escritorio/táctil, progresión y regresiones documentadas en [AUDIT_088.md](AUDIT_088.md). La diversión y el balance humano siguen pendientes de probar con principiantes. Próximo: evaluación humana del aprendizaje/ritmo y mejora visual de coches/escenarios, conservando presupuesto y autoridad online.
+
+
+## Audio y ambiente 0.87 — fase 26
+
+Se amplía el sintetizador existente: retención/carga, seis texturas de terreno ligadas al material real, catorce ambientes filtrados con ducking, un motor CPU cercano reutilizable y roce/golpe según intensidad física. Llegada con motivo y vueltas distinguibles por P1–P4. Sin nuevos controles: General/Motores/Efectos conservados. Foco, pausa, mute y menú silencian todas las capas. Recursos web/manifiesto 0.87; física, IA, catorce trazados, modos y récords intactos, misma huella de servidor.
+
+Validación técnica y navegador real, incluyendo cuatro humanos, materiales, CPU y ciclo de vida; escucha humana/hardware pendientes. Evidencia y protocolo de escucha: [AUDIO_087.md](tests/experiments/AUDIO_087.md). Siguiente: ajustar por escucha y perfilar sesión móvil sostenida, sin declarar cerrada fase 26.
+
+
 Plan vigente desde 0.42. Reemplaza los límites y prioridades antiguas; `ROADMAP_24_FASES.md` conserva el historial útil. Las fases pueden dividirse, reordenarse o ampliarse con evidencia. No representan un número fijo de entregas ni un compromiso de que todo quede resuelto en una actualización.
 
 ## Auditoría de partida

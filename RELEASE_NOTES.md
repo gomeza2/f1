@@ -1,4 +1,33 @@
-# PIXEL GRAND PRIX — entrega 0.86
+# PIXEL GRAND PRIX — entrega 0.88
+
+## 0.88 — primera rivalidad y medallas de conducción
+
+CORRER AHORA inicia una vuelta de aprendizaje en Neon Harbor, Corner King y rival de ritmo suave, con tutorial interactivo omisible. Los modos normales mantienen tres vueltas. Portada con arte original, señales periféricas de velocidad y medallas locales por gates limpios, adelantar y recuperar un derrape; solo se conservan al terminar. Todos los coches/pistas siguen abiertos. No cambian física compartida, récords, campeonato, contrarreloj/fantasmas, local ni salas online.
+
+Pruebas del recorrido de tres carreras completas, escritorio/táctil, progresión y regresiones documentadas en [AUDIT_088.md](AUDIT_088.md). La diversión y el balance humano siguen pendientes de probar con principiantes. Próximo: evaluación humana del aprendizaje/ritmo y mejora visual de coches/escenarios, conservando presupuesto y autoridad online.
+
+
+## Arranque de producción y diagnóstico de Render
+
+PORT del hosting tiene prioridad; bind CLI 0.0.0.0 por defecto; validación de orígenes exactos, rama main/raíz explícitas en Blueprint. Health/protocol muestran servidor 0.87.0, cliente 0.87 y revisión proporcionada por Render. Pages evita direcciones locales/inseguras guardadas. Build y 14 tests aprobados, incluyendo CLI y WSS con TLS/proxy local. Servicio público pendiente de acceso/despliegue real; ver HOSTING.md. No cambia simulación ni funciones de salas.
+
+
+## Audio y ambiente 0.87 — fase 26
+
+Se amplía el sintetizador existente: retención/carga, seis texturas de terreno ligadas al material real, catorce ambientes filtrados con ducking, un motor CPU cercano reutilizable y roce/golpe según intensidad física. Llegada con motivo y vueltas distinguibles por P1–P4. Sin nuevos controles: General/Motores/Efectos conservados. Foco, pausa, mute y menú silencian todas las capas. Recursos web/manifiesto 0.87; física, IA, catorce trazados, modos y récords intactos, misma huella de servidor.
+
+Validación técnica y navegador real, incluyendo cuatro humanos, materiales, CPU y ciclo de vida; escucha humana/hardware pendientes. Evidencia y protocolo de escucha: [AUDIO_087.md](tests/experiments/AUDIO_087.md). Siguiente: ajustar por escucha y perfilar sesión móvil sostenida, sin declarar cerrada fase 26.
+
+
+### Conexión automática en el servicio único
+
+El manifiesto servido por el backend indica `sameOrigin: true`: la interfaz elige el dominio actual para las salas aunque el navegador conserve una dirección antigua. El manifiesto estático de Pages mantiene su configuración anterior. El campo SERVIDOR sigue editable. Los errores de versión ahora explican la necesidad de desplegar el mismo commit en Render. Prueba reproducible: `node tests/browser-hosting.cjs`, dos perfiles reales crean/se unen sin escribir servidor y con una URL obsoleta guardada. No acredita despliegue público.
+
+
+## Corrección de acceso a Render (sobre 0.86)
+
+La raíz del servidor ahora entrega el juego y sus recursos públicos, conservando endpoints de diagnóstico y WebSocket. La receta permite el origen exacto de Render además de Pages; los servicios existentes deben actualizar esa variable. Sin cambios de física, trazados, récords, protocolo ni huella. Validación local: 11 pruebas de servidor aprobadas y carrera UI de cuatro Chromium con reconexión/resultados iguales. Despliegue y aceptación pública pendientes; ver HOSTING.md.
+
 
 ## Qué incluye esta base
 

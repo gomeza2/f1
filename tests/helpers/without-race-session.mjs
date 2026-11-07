@@ -104,6 +104,9 @@ const edits=[
 const names={"cars": "cars", "elapsed": "elapsed", "running": "running", "paused": "paused", "countdownRemaining": "countdownRemaining", "goFlashRemaining": "goFlashRemaining", "accumulator": "simulationAccumulator"};
 export function withoutRaceSession(source){
  if(!source.includes('let raceSession=createRaceSession()'))return source;
+ // Observer/UI additions are absent from historical three-lap physics references.
+ source=source.replace('updateDriveChallenge(dt);','').replace('driveEvent(event,car);','').replace('laps:raceLapTarget,raceId:','laps:LAPS_TO_WIN,raceId:');
+ source=source.replace(/ if\(driveCoach\?\.intro&&car\.isAI&&car\.speed>98\).*?\n/,'');
  source=withoutPracticeSessionHooks(source);
  source=source.replace(/\braceState\.(cars|elapsed|running|paused|countdownRemaining|goFlashRemaining|accumulator)\b/g,(_,name)=>names[name]);
  for(const [current,previous] of [...edits].reverse()){if(!source.includes(current))throw Error('Race session migration anchor changed: '+current.slice(0,80));source=source.replace(current,previous);}

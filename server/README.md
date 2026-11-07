@@ -1,9 +1,12 @@
-# Servidor privado de Pixel Grand Prix — 0.86
+# Servidor privado de Pixel Grand Prix — 0.87
+
+Diagnóstico y despliegue actuales en [HOSTING.md](../HOSTING.md). No hay binario de desarrollo distinto: `node server/index.cjs` es el comando de producción. `/health` y `/protocol` informan serverVersion/clientBuild/revision además del protocolo y huella reales. La marca literal «servidor local» de 0.86 no indicaba modo de ejecución. Verificar el commit de Render antes de atribuir un fallo al texto.
+
 
 **Actualización 0.86:** Champion Road tiene nueva geometría compartida. Desplegar este mismo commit en Render mediante **Manual Deploy → Deploy latest commit**; conservar Free/Build/Start/variables. La huella nueva es `ad20dd46ef387058811cdd3072626a264f39238ab9141d9a9c044ff99042c8f0`. Un backend viejo se rechaza por versión. Ver `../HOSTING.md`; aquí no se confirma despliegue público.
 
 
-Backend autoritativo separado del frontend estático. **Desde 0.80 el menú ONLINE PRIVADO conecta a estas salas.** La raíz HTTP del servidor sigue siendo un diagnóstico, no sirve los archivos del juego. El frontend configura por defecto la URL de Render aportada por el usuario. Para alojamiento propuesto ver `../HOSTING.md`; latencia humana/hosting y predicción pendientes en 33.2.
+Backend autoritativo separado del frontend estático. **Desde 0.80 el menú ONLINE PRIVADO conecta a estas salas.** La raíz HTTP ahora sirve el juego completo; los diagnósticos siguen en /health y /protocol. El frontend configura por defecto la URL de Render aportada por el usuario. Para alojamiento propuesto ver `../HOSTING.md`; latencia humana/hosting y predicción pendientes en 33.2.
 
 ## Ejecutar y comprobar
 
@@ -15,9 +18,9 @@ npm start --prefix server
 npm test --prefix server
 ```
 
-Escucha por defecto en `127.0.0.1:8787`. `GET /health` muestra solo contadores/protocolo/huella; `GET /protocol` expone catálogo y límites; WebSocket en `/ws`, sin parámetros de URL. No sirve los archivos del juego. Los modos offline siguen funcionando sin Node ni npm.
+La CLI escucha por defecto en `0.0.0.0:8787`; `createApp().listen()` conserva loopback para pruebas. Render proporciona `PORT`, que tiene prioridad sobre `PGP_PORT`. `GET /health` muestra solo contadores/protocolo/huella; `GET /protocol` expone catálogo y límites; WebSocket en `/ws`, sin parámetros de URL. También sirve los archivos públicos del juego en su raíz. Los modos offline siguen funcionando sin Node ni npm.
 
-Variables opcionales: `PGP_PORT` (1–65535, preferente), `PORT` (puerto asignado por el hosting), `PGP_HOST` y `PGP_ALLOWED_ORIGINS` (orígenes exactos separados por coma, sin rutas). Por defecto solo acepta Origin de localhost/127.0.0.1 de su propio puerto; permite clientes CLI sin Origin. Para frontend en otro puerto se debe declarar su origen. Para Internet falta configurar TLS/WSS, proceso supervisado, proxy y alojamiento; no exponer tokens en URLs/logs. El filtro Origin es protección del navegador, no autenticación de cuentas. No se confía en cabeceras de IP reenviadas: detrás de un proxy el límite por IP corresponde al proxy.
+Variables opcionales: `PORT` (puerto asignado por el hosting, preferente), `PGP_PORT` (1–65535, override local sin PORT), `PGP_HOST` y `PGP_ALLOWED_ORIGINS` (orígenes exactos separados por coma, sin rutas). Por defecto solo acepta Origin de localhost/127.0.0.1 de su propio puerto; permite clientes CLI sin Origin. Para frontend en otro puerto se debe declarar su origen. Para Internet falta configurar TLS/WSS, proceso supervisado, proxy y alojamiento; no exponer tokens en URLs/logs. El filtro Origin es protección del navegador, no autenticación de cuentas. No se confía en cabeceras de IP reenviadas: detrás de un proxy el límite por IP corresponde al proxy.
 
 Para la prueba opcional de navegador, instalar Playwright/Chromium en el entorno de desarrollo y ejecutar `node tests/browser-online-server.cjs` desde la raíz (admite `CHROMIUM_PATH`). No se añaden esas dependencias al frontend/servidor productivo.
 
@@ -64,6 +67,6 @@ La única dependencia runtime es `ws` fijada en lockfile. No modificar los módu
 
 ## Conectar el juego en desarrollo
 
-Servir la raíz estática, por ejemplo `python3 -m http.server 8080` desde el repositorio. En otra terminal, iniciar `PGP_ALLOWED_ORIGINS=http://localhost:8080 npm start --prefix server`. Abrir `http://localhost:8080/`, pulsar ONLINE PRIVADO y usar `http://localhost:8787`. Crear sala, abrir otro navegador/perfil y unirse con el mismo servidor/código. Elegir auto/control, confirmar LISTO y largar como anfitrión. La raíz del Web Service no sirve el frontend.
+Servir la raíz estática, por ejemplo `python3 -m http.server 8080` desde el repositorio. En otra terminal, iniciar `PGP_ALLOWED_ORIGINS=http://localhost:8080 npm start --prefix server`. Abrir `http://localhost:8080/`, pulsar ONLINE PRIVADO y usar `http://localhost:8787`. Crear sala, abrir otro navegador/perfil y unirse con el mismo servidor/código. Elegir auto/control, confirmar LISTO y largar como anfitrión. La raíz del Web Service también sirve el frontend; declarar el origen público exacto en PGP_ALLOWED_ORIGINS.
 
 `node server/scripts/client-config.cjs --check` verifica compatibilidad del manifiesto estático; regenerarlo sin `--check` cuando cambien los módulos físicos. Preserva el `serverUrl` público configurado, si existe. La dirección puede quedar vacía y ser ingresada en la interfaz; solo se guarda la URL no secreta en localStorage. Token de reanudación solo en memoria del transporte, no persistido ni incluido en invitaciones.

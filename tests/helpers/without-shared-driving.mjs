@@ -48,6 +48,7 @@ const edits=[
  ]
 ];
 export function withoutSharedDriving(source){
+ source=source.replaceAll("['soloStart','localStart','catalogueBtn','firstDriveBtn']","['soloStart','localStart','catalogueBtn']");
  source=withoutSharedTracks(source);
  if(!source.includes('const drivingCore=PixelDrivingCore.create();'))return source;
  // Cache-busting revisions do not change the historical physics being checked.
