@@ -3,6 +3,12 @@
 const assert=require('node:assert/strict'),WebSocket=require('ws');
 const {inspect,endpoint}=require('../../online-client.js'),{Peer}=require('../test/helpers.cjs');
 const config=require('../../online-config.json');
+let latestReport=null;
+function report(passed,error=''){
+ const data={passed,address:url.origin,expectedCommit:expectedCommit||null,observedRevision:latestReport?.health?.revision||null,serverVersion:latestReport?.health?.serverVersion||null,http:latestReport?.error||latestReport?.health?.ok||false,websocket:latestReport?.websocket,error};
+ if(process.env.GITHUB_STEP_SUMMARY)require('node:fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## Public Render verification\n\n```json\n'+JSON.stringify(data,null,2)+'\n```\n');
+ return data;
+}
 const address=process.argv[2]||config.serverUrl,url=new URL(address),expectedCommit=process.argv[3]||'';
 if(expectedCommit&&!/^[a-f0-9]{40,64}$/.test(expectedCommit))throw Error('Expected commit must be a Git SHA.');
 if((process.env.HTTPS_PROXY||process.env.HTTP_PROXY)&&!['localhost','127.0.0.1','[::1]'].includes(url.hostname))throw Error('A network proxy is configured. This checker has no WebSocket proxy agent; run it in GitHub Actions or a browser with supported routing. Do not bypass the proxy.');
@@ -10,7 +16,7 @@ class BrowserSocket extends WebSocket{constructor(value){super(value,{origin:'ht
 (async()=>{
  const end=Date.now()+360000;let result;
  while(Date.now()<end){
-  result=await inspect(address,{simulation:config.simulation,WebSocketImpl:BrowserSocket,timeoutMs:12000});
+  result=await inspect(address,{simulation:config.simulation,WebSocketImpl:BrowserSocket,timeoutMs:12000});latestReport=result;
   const revisionOK=!expectedCommit||result.health?.revision===expectedCommit;
   if(result.health?.ok&&revisionOK&&result.websocket.ok)break;
   console.log(JSON.stringify({waiting:true,http:result.error||result.health?.serverVersion,websocket:result.websocket.detail,revision:result.health?.revision||null}));
@@ -24,5 +30,6 @@ class BrowserSocket extends WebSocket{constructor(value){super(value,{origin:'ht
   const session=await peers[0].request({type:'create',name:'Deployment check'},'session'),joined=await peers[1].request({type:'join',code:session.code,name:'Check second client'},'session');assert.equal(joined.room.players.length,2);
   for(const peer of peers)await peer.request({type:'leave'},'left');
  }finally{for(const peer of peers)await peer.close();}
+ report(true);
  console.log(JSON.stringify({passed:true,address:url.origin,serverVersion:result.health.serverVersion,clientBuild:result.health.clientBuild,revision:result.health.revision,checks:['health','protocol','WSS handshake','create/join','leave']}));
-})().catch(error=>{console.error(error.message);process.exitCode=1;});
+})().catch(error=>{report(false,error.message);console.error('::error title=Render verification failed::'+error.message.replaceAll('%','%25').replaceAll('\r','%0D').replaceAll('\n','%0A'));process.exitCode=1;});
