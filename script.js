@@ -7,7 +7,7 @@ if(typeof PixelDrivingCore==='undefined'||typeof PixelTrackCore==='undefined'||t
  try{
   for(const [name,file,marker] of [['PixelDrivingCore','driving-core.js','drivingCore'],['PixelTrackCore','track-core.js','trackCore'],['PixelRaceRules','race-rules.js','raceRules'],['PixelGhostLap','ghost-lap.js','ghostLap'],['PixelRaceSession','race-session.js','raceSession']]){
    if(typeof globalThis[name]!=='undefined')continue;
-   const dependency=new URL(file,base);dependency.searchParams.set('v','0.89');
+   const dependency=new URL(file,base);dependency.searchParams.set('v','0.89.1');
    await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=dependency.href;script.dataset[marker]='fallback';script.onload=resolve;script.onerror=reject;document.head.append(script);});
    if(typeof globalThis[name]?.create!=='function')throw new Error('Shared module unavailable');
   }
@@ -1918,8 +1918,9 @@ function onlineStatus(state,detail=''){
 }
 function renderOnlineRoom(){
  if(!online)return;const room=online.room,self=room?.players.find(p=>p.pilotId===online.transport.session?.pilotId),host=!!self&&room.hostPilotId===self.pilotId,lobby=room?.phase==='lobby',connected=online.connected;
- $('onlineRoom').classList.toggle('hidden',!self);for(const id of ['onlineCreate','onlineJoin'])$(id).disabled=!!self||!online.loaded||online.connecting;
- $('onlineServer').disabled=!!self||online.connecting;$('onlineName').disabled=!!self||online.connecting;$('onlineCancel')?.classList.toggle('hidden',!online.connecting);
+ $('onlineRoom').classList.toggle('hidden',!self);for(const id of ['onlineCreate','onlineJoin'])$(id).disabled=!!self||!online.loaded||online.connecting||online.checking;
+ $('onlineInspect').disabled=!!self||!online.loaded||online.connecting||online.checking;
+ $('onlineServer').disabled=!!self||online.connecting||online.checking;$('onlineName').disabled=!!self||online.connecting;$('onlineCancel')?.classList.toggle('hidden',!online.connecting&&!online.checking);
  if(!self)return;
  $('onlineRoomCode').textContent=room.code;$('onlinePilots').replaceChildren();
  for(const pilot of room.players){const li=document.createElement('li');li.style.setProperty('--pilot-color',CAR_PAINTS[pilot.paint]?.hex||'#fff');const name=document.createElement('strong');name.textContent=pilot.name+(pilot.pilotId===self.pilotId?' · VOS':'');const info=document.createElement('span');info.textContent=(CAR_MODELS[pilot.model]?.name||pilot.model)+' · '+(!pilot.connected?'RECONECTANDO':pilot.ready?'LISTO':'ELIGIENDO')+(pilot.pilotId===room.hostPilotId?' · ANFITRIÓN':'');li.append(name,info);$('onlinePilots').append(li);}
@@ -1940,10 +1941,10 @@ async function openOnlineLobby(){
  online={active:false,loaded:false,connected:false,room:null,transport:null,raceId:null,roster:[],blocked:false,lastEvent:0};
  $('onlineCreate').disabled=true;$('onlineJoin').disabled=true;$('onlineStatus').textContent='CARGANDO CONEXIÓN…';
  try{
-  if(typeof PixelOnlineClient==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-client.js?v=0.89',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
-  if(typeof PixelOnlinePrediction==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-prediction.js?v=0.89',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
-  const response=await fetch(new URL('online-config.json?v=0.89',document.baseURI),{cache:'no-store'});if(!response.ok)throw new Error('manifest');const config=await response.json();if(config.build!=='0.89'||config.protocol!==1||!/^[a-f0-9]{64}$/.test(config.simulation))throw new Error('manifest');
-  online.transport=PixelOnlineClient.create({simulation:config.simulation,onStatus:onlineStatus,onMessage:onlineMessage});online.loaded=true;
+  if(typeof PixelOnlineClient==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-client.js?v=0.89.1',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
+  if(typeof PixelOnlinePrediction==='undefined')await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL('online-prediction.js?v=0.89.1',document.baseURI).href;script.onload=resolve;script.onerror=reject;document.head.append(script);});
+  const response=await fetch(new URL('online-config.json?v=0.89.1',document.baseURI),{cache:'no-store'});if(!response.ok)throw new Error('manifest');const config=await response.json();if(config.build!=='0.89.1'||config.protocol!==1||!/^[a-f0-9]{64}$/.test(config.simulation))throw new Error('manifest');
+  online.transport=PixelOnlineClient.create({simulation:config.simulation,onStatus:onlineStatus,onMessage:onlineMessage});online.loaded=true;online.simulation=config.simulation;
   let savedServer='';try{savedServer=localStorage.getItem('pixelGP.onlineServer.v1')||'';}catch(error){}
   $('onlineServer').value=PixelOnlineClient.preferredServer(config,location,savedServer);
   for(const [id,items] of [['onlineModel',Object.entries(CAR_MODELS).map(([value,item])=>[value,item.name])],['onlinePaint',Object.entries(CAR_PAINTS).map(([value,item])=>[value,item.name])],['onlineTrack',tracks.map((item,i)=>[String(i),item.name])]]){for(const [value,label] of items){const option=document.createElement('option');option.value=value;option.textContent=label;$(id).append(option);}}
@@ -2031,7 +2032,16 @@ function finishOnlineRace(message){
  $('resultText').textContent='Misma clasificación para todos · Sin modificar récords o campeonato locales';$('nextBtn').textContent='VOLVER A LA SALA';$('nextBtn').onclick=openOnlineLobby;$('resultTitle').focus({preventScroll:true});$('restartBtn').disabled=false;
 }
 $('onlineSetupBtn')?.addEventListener('click',openOnlineLobby);
-function cancelOnlineConnect(){if(online?.connecting){online.transport.close();onlineStatus('idle','CONEXIÓN CANCELADA · PODÉS VOLVER A INTENTAR');}}
+async function inspectOnlineServer(){
+ if(!online?.loaded||online.connecting||online.checking||online.room)return;
+ const current=online;current.checking=true;current.inspection=new AbortController();renderOnlineRoom();$('onlineDiagnostic').textContent='COMPROBANDO HTTP Y WEBSOCKET… Render Free puede necesitar despertar.';
+ try{const result=await PixelOnlineClient.inspect($('onlineServer').value.trim(),{simulation:current.simulation,signal:current.inspection.signal});
+  if(online!==current||current.inspection.signal.aborted)return;
+  $('onlineDiagnostic').textContent=result.websocket.ok?'WEBSOCKET CONFIRMADO · '+(result.health?'HTTP '+(result.health.ok?'OK':'NO DISPONIBLE')+' · Servidor '+(result.health.serverVersion||'sin versión de diagnóstico'):result.error):result.websocket.detail+(result.error?' · '+result.error:'');
+ }catch(error){$('onlineDiagnostic').textContent=error.message;}finally{current.checking=false;if(online===current)renderOnlineRoom();}
+}
+$('onlineInspect')?.addEventListener('click',inspectOnlineServer);
+function cancelOnlineConnect(){if(online?.checking)$('onlineDiagnostic').textContent='COMPROBACIÓN CANCELADA';online?.inspection?.abort();if(online?.connecting){online.transport.close();onlineStatus('idle','CONEXIÓN CANCELADA · PODÉS VOLVER A INTENTAR');}}
 $('onlineCancel')?.addEventListener('click',cancelOnlineConnect);
 $('onlineLobby')?.addEventListener('cancel',cancelOnlineConnect);
 $('onlineClose')?.addEventListener('click',()=>{cancelOnlineConnect();$('onlineLobby').close();});

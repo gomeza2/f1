@@ -10,7 +10,7 @@ services:
     buildCommand: node server/scripts/client-config.cjs --check && npm ci --prefix server --omit=dev
     startCommand: node server/index.cjs
     healthCheckPath: /health
-    autoDeploy: false
+    autoDeploy: true
     envVars:
       - key: NODE_VERSION
         value: 24.19.0

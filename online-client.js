@@ -16,6 +16,29 @@
   }catch{ /* Discard unusable saved addresses, keep the configured public default. */ }}
   return config.serverUrl||'';
  }
+ async function inspect(value,{simulation,fetchImpl=globalThis.fetch,WebSocketImpl=globalThis.WebSocket,signal,timeoutMs=12000}={}){
+  const socketUrl=endpoint(value,globalThis.location?.protocol==='https:'),healthUrl=new URL(socketUrl);healthUrl.protocol=healthUrl.protocol==='wss:'?'https:':'http:';healthUrl.pathname='/health';
+  const controller=new AbortController(),abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)controller.abort();
+  const timer=setTimeout(abort,timeoutMs);
+  try{
+   const http=async()=>{try{const response=await fetchImpl(healthUrl.href,{cache:'no-store',signal:controller.signal});if(!response.ok)return {error:'HTTP '+response.status};return {health:await response.json()};}catch(error){return {error:controller.signal.aborted?'Tiempo de espera agotado o comprobación cancelada.':'No se pudo leer /health (red, TLS u origen no permitido).'};}};
+   const websocket=()=>new Promise(resolve=>{
+    let ws,finished=false;
+    const done=result=>{if(finished)return;finished=true;controller.signal.removeEventListener('abort',cancel);if(ws){ws.onmessage=null;ws.onclose=null;ws.onerror=null;ws.close();}resolve(result);};
+    const cancel=()=>done({ok:false,detail:'Comprobación cancelada o servidor sin respuesta.'});
+    if(controller.signal.aborted){cancel();return;}controller.signal.addEventListener('abort',cancel,{once:true});
+    try{ws=new WebSocketImpl(socketUrl);}catch{done({ok:false,detail:'No se pudo abrir WebSocket.'});return;}
+    ws.onmessage=event=>{let message;try{message=JSON.parse(event.data);}catch{done({ok:false,detail:'El servidor envió una respuesta inválida.'});return;}
+     if(message.type==='hello'){if(message.protocol!==1||simulation&&message.simulation!==simulation){done({ok:false,detail:'Juego y servidor incompatibles: desplegá el mismo núcleo en Render.'});return;}ws.send(JSON.stringify({type:'hello',protocol:message.protocol,simulation:message.simulation}));}
+     if(message.type==='welcome')done({ok:true,detail:'Handshake WebSocket confirmado; no se creó ninguna sala.'});
+    };
+    ws.onerror=()=>done({ok:false,detail:'WebSocket rechazado o inaccesible: revisar origen permitido, TLS y disponibilidad de Render.'});
+    ws.onclose=()=>done({ok:false,detail:'El servidor cerró WebSocket antes de confirmar la conexión.'});
+   });
+   const [httpResult,wsResult]=await Promise.all([http(),websocket()]);
+   return {...httpResult,websocket:wsResult};
+  }finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
+ }
  function create({simulation,WebSocketImpl=globalThis.WebSocket,now=()=>performance.now(),onMessage=()=>{},onStatus=()=>{},timers=null}){
   let socket=null,url='',session=null,room=null,stopped=true,retry=null,handshake=null,deadline=0,seq=0,raceId=null,frames=[],received=-Infinity,lastTick=-1,joined=false;
   const setTimer=(fn,ms)=>timers?timers.setTimeout(fn,ms):setTimeout(fn,ms),clearTimer=id=>timers?timers.clearTimeout(id):clearTimeout(id);
@@ -74,5 +97,5 @@
   }
   return {connect,close,send,input,pose,get session(){return session&&{...session};},get room(){return room;},get tick(){return lastTick;},get metrics(){return {ackDelayMs,pendingInputs:pendingInputs.size};},get stale(){return now()-received>500;}};
  }
- return {create,endpoint,preferredServer};
+ return {create,endpoint,preferredServer,inspect};
 });

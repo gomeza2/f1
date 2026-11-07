@@ -19,6 +19,7 @@ const assert = require('node:assert/strict');
       await page.click('#onlineSetupBtn');
       await page.waitForFunction(() => !document.getElementById('onlineCreate').disabled);
       assert.equal(await page.locator('#onlineServer').inputValue(), url.http);
+      await page.click('#onlineInspect');await page.waitForFunction(()=>document.getElementById('onlineDiagnostic').textContent.includes('WEBSOCKET CONFIRMADO'));assert.equal(app.service.rooms.size,i===0?0:1,'Diagnostic created an extra room');
       if (i === 0) await page.click('#onlineCreate');
       else {
         await page.fill('#onlineCode', await pages[0].locator('#onlineRoomCode').textContent());

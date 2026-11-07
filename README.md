@@ -1,5 +1,10 @@
 # PIXEL GRAND PRIX
 
+## 0.89.1 — conexión de Render y comprobación pública
+
+Orígenes seguros por defecto, incorporación de la URL oficial suministrada por Render, normalización de URLs de Pages, diagnóstico HTTP/CORS y botón COMPROBAR SERVIDOR. Blueprint propone auto-deploy On Commit; debe activarse en el panel si el servicio existente es manual. Workflow de GitHub verifica commit desplegado, health/protocol, WSS y creación/unión/limpieza de una sala temporal. No cambia la simulación. Guía y límites de verificación en [HOSTING.md](HOSTING.md).
+
+
 ## 0.89 — encontrá tu trazada, después buscá tu duelo
 
 La primera experiencia continúa en tres retos opcionales de una vuelta: Neon Harbor, Dusty Mesa y Sunset, con ritmos de rival 100/110/125. El progreso lleva a carrera rápida normal; no repite eternamente la misma introducción. Flechas de carretera, señal de curva y próximo checkpoint/META ayudan a leer el recorrido. Tres medallas habilitan el diseño LAUREL de P1 offline, equipable y persistente, sin ventajas físicas ni contenido previo bloqueado.

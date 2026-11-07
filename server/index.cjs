@@ -8,6 +8,7 @@ const assetTypes = {'.html': 'text/html; charset=utf-8', '.css': 'text/css; char
 const {WebSocketServer, WebSocket} = require('ws');
 const {RoomService} = require('./room-service.cjs');
 const P = require('./protocol.cjs');
+const DEFAULT_BROWSER_ORIGINS = ['https://gomeza2.github.io', 'https://pixel-grand-prix-rooms.onrender.com'];
 const serverVersion = require('./package.json').version;
 const clientBuild = JSON.parse(fs.readFileSync(path.join(__dirname, '../online-config.json'), 'utf8')).build;
 function deploymentInfo() {
@@ -18,12 +19,21 @@ function runtimeOptions(env = process.env) {
   // Hosting PORT wins over a stale local override. The CLI is reachable by Render's proxy.
   const port = Number(env.PORT || env.PGP_PORT || 8787), host = env.PGP_HOST || '0.0.0.0';
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new RangeError('Invalid PORT/PGP_PORT');
-  const allowedOrigins = (env.PGP_ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+  const allowedOrigins = env.PGP_ALLOWED_ORIGINS?.trim() ? env.PGP_ALLOWED_ORIGINS.split(',').map(s => s.trim()).filter(Boolean) : [...DEFAULT_BROWSER_ORIGINS];
+  // Render supplies its own canonical public URL; no trust in forwarded request headers.
+  if (env.RENDER_EXTERNAL_URL) {
+    const external = new URL(env.RENDER_EXTERNAL_URL);
+    if (external.protocol !== 'https:' || external.username || external.password || external.pathname !== '/' || external.search || external.hash) throw new Error('Invalid RENDER_EXTERNAL_URL');
+    if (!allowedOrigins.includes(external.origin)) allowedOrigins.push(external.origin);
+  }
+  const normalizedOrigins = [];
   for (const origin of allowedOrigins) {
     const parsed = new URL(origin);
-    if (!['http:', 'https:'].includes(parsed.protocol) || parsed.origin !== origin) throw new Error('PGP_ALLOWED_ORIGINS requires exact HTTP/HTTPS origins without paths');
+    if (!['http:', 'https:'].includes(parsed.protocol) || parsed.username || parsed.password || parsed.search || parsed.hash) throw new Error('PGP_ALLOWED_ORIGINS requires HTTP/HTTPS URLs without credentials, queries or fragments');
+    // Browser Origin never contains /f1/: normalize pasted page URLs to their exact origin.
+    if (!normalizedOrigins.includes(parsed.origin)) normalizedOrigins.push(parsed.origin);
   }
-  return {port, host, allowedOrigins};
+  return {port, host, allowedOrigins: normalizedOrigins};
 }
 function createApp({autoTick = true, clock = () => performance.now(), allowedOrigins = [], maxPerIp = 16, serviceOptions = {}, onError = () => console.error('Pixel GP: internal room error')} = {}) {
   const service = new RoomService({...serviceOptions, now: clock});
@@ -31,10 +41,18 @@ function createApp({autoTick = true, clock = () => performance.now(), allowedOri
   const server = http.createServer((req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
+    let pathname;try { pathname = new URL(req.url, 'http://localhost').pathname; } catch { res.writeHead(400).end('Invalid URL'); return; }
+    const diagnostic = ['/health', '/protocol'].includes(pathname);
+    if (diagnostic) {
+      res.setHeader('Vary', 'Origin');
+      const origin = req.headers.origin, port = server.address()?.port;
+      const permitted = origin && [...allowedOrigins, 'http://localhost:' + port, 'http://127.0.0.1:' + port].includes(origin);
+      if (permitted) res.setHeader('Access-Control-Allow-Origin', origin);
+      if (req.method === 'OPTIONS') { res.writeHead(permitted ? 204 : 403).end(); return; }
+    }
     if (req.method !== 'GET') { res.writeHead(405).end('GET only'); return; }
-    if (req.url === '/health') { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ok: !closing, ...deploymentInfo(), protocol: P.PROTOCOL, simulation: P.SIMULATION, ...service.stats()})); return; }
-    if (req.url === '/protocol') { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({...service.manifest(), ...deploymentInfo()})); return; }
-    const pathname = new URL(req.url, 'http://localhost').pathname;
+    if (pathname === '/health') { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ok: !closing, allowedBrowserOrigins: allowedOrigins, ...deploymentInfo(), protocol: P.PROTOCOL, simulation: P.SIMULATION, ...service.stats()})); return; }
+    if (pathname === '/protocol') { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({...service.manifest(), ...deploymentInfo()})); return; }
     const asset = pathname === '/' ? 'index.html' : pathname.slice(1);
     if (publicAssets.has(asset)) {
       fs.readFile(path.join(__dirname, '..', asset), (error, data) => {

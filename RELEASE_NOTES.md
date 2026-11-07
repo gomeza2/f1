@@ -1,4 +1,9 @@
-# PIXEL GRAND PRIX — entrega 0.89
+# PIXEL GRAND PRIX — entrega 0.89.1
+
+## 0.89.1 — conexión de Render y comprobación pública
+
+Orígenes seguros por defecto, incorporación de la URL oficial suministrada por Render, normalización de URLs de Pages, diagnóstico HTTP/CORS y botón COMPROBAR SERVIDOR. Blueprint propone auto-deploy On Commit; debe activarse en el panel si el servicio existente es manual. Workflow de GitHub verifica commit desplegado, health/protocol, WSS y creación/unión/limpieza de una sala temporal. No cambia la simulación. Guía y límites de verificación en [HOSTING.md](HOSTING.md).
+
 
 ## 0.89 — encontrá tu trazada, después buscá tu duelo
 

@@ -1,6 +1,6 @@
 {
   "name": "pixel-grand-prix-server",
-  "version": "0.87.0",
+  "version": "0.89.1",
   "private": true,
   "description": "Authoritative private-room server using the existing Pixel GP simulation",
   "engines": {

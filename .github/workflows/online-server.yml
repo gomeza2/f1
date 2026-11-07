@@ -1,0 +1,34 @@
+name: Online server and public Render check
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: online-server-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  local-server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node server/scripts/client-config.cjs --check && npm ci --prefix server
+      - run: npm test --prefix server
+      - run: node tests/validate-online-client.cjs && node tests/validate-online-network.cjs
+  public-render:
+    needs: local-server
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --prefix server --omit=dev
+      - name: Wait for pushed commit, verify WSS and temporary private room
+        run: node server/scripts/verify-online.cjs https://pixel-grand-prix-rooms.onrender.com "$GITHUB_SHA"
